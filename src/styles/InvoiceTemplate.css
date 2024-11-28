@@ -1,0 +1,100 @@
+.invoice-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.invoice-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.invoice-header h1 {
+  font-size: 2em;
+}
+
+.logo {
+  text-align: right;
+}
+
+.bill-to {
+  margin-bottom: 20px;
+}
+
+.bill-to h2 {
+  margin-bottom: 5px;
+}
+
+.bill-to-details {
+  display: flex;
+  justify-content: space-between;
+}
+
+.bill-to-details div {
+  width: 23%;
+}
+
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.invoice-table th, .invoice-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.invoice-table th {
+  background-color: #f2f2f2;
+}
+
+.notes {
+  margin-bottom: 20px;
+}
+
+.summary {
+  text-align: right;
+  margin-bottom: 20px;
+}
+
+.summary-item, .summary-total {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+}
+
+.summary-total {
+  font-weight: bold;
+}
+
+.invoice-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #ddd;
+  padding-top: 20px;
+}
+
+.signature-section {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.signature-section div {
+  text-align: center;
+  width: 23%;
+}
+
+.terms {
+  margin-top: 20px;
+}
+
+.terms h3 {
+  margin-bottom: 5px;
+}

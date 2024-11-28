@@ -1,0 +1,57 @@
+.generalView {
+  margin-top: 10vh;
+  /* height: 90vh; */
+  margin-left: 2vw;
+}
+
+.openSans {
+  font-family: "Open Sans", sans-serif;
+}
+
+.poppins {
+  font-family: "Poppins", sans-serif;
+}
+
+.tableHeader {
+  font-family: "Poppins,sans-serif";
+  font-size: "0.6rem";
+  color: "#575F6E";
+}
+
+.labelText {
+  font-size: 0.75rem;
+  /* background-color: #2d1b1b; */
+}
+
+.generalRadio .form-check-inline {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.form-check-inline {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.generalRadio input[type="radio"] {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-width: 0.2rem;
+  border-radius: 50%;
+  margin-right: 0.1rem;
+}
+
+.generalRadio input:checked[type=radio] {
+
+  border-width: 0.1rem;
+}
+
+/* .form-check-input[type=radio] {
+      width: 1.25rem;
+      height: 1.25rem;
+      border-width: 0.1rem;
+      border-radius: 50%;
+  }
+    */

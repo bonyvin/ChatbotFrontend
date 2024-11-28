@@ -1,0 +1,139 @@
+.mainView {
+  flex-direction: row;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+}
+
+.loginView {
+  background-color: rgba(28, 36, 75, 1);
+  /* width: 70%; */
+  flex: 1;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.textStyle {
+  font-weight: 700;
+  color: white;
+  font-size: 1.5rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.X {
+  font-size: 3rem;
+}
+
+.textContainer {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.imageContainer {
+  background-color: white;
+  width: 30%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header {
+  height: 10%;
+  display: flex;
+  flex-direction: column;
+}
+
+.openSans {
+  font-family: "Open Sans", sans-serif;
+}
+
+.inputStyle:focus {
+  outline: 0;
+}
+
+/* .checkboxStyle{
+    outline-color: red;
+    background-color: #130c0c;
+    background: #a52a2a;
+    color: green;
+    border-color: rgb(33, 57, 78);
+  } */
+#loginViewBg {
+  background-color: rgba(28, 36, 75, 1);
+}
+
+#checkb {
+  /* width: 20px;
+    height: 20px; */
+  cursor: pointer;
+  background: rgba(40, 40, 40, 0.2);
+  color: black;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border-width: 5px;
+  left: -5px;
+  top: -5px;
+}
+
+#checkb:checked {
+  background: rgba(40, 40, 40, 0.7);
+}
+
+.checkbox-container {
+  display: inline-block;
+  /* margin: 20px;
+    width: 100px;
+    height: 100px; */
+  overflow: hidden;
+}
+
+#textID:hover {
+  color: aquamarine;
+}
+
+.custom-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 7px;
+  transition: all 0.3s;
+  pointer-events: none;
+}
+
+.custom-input {
+  position: relative;
+  padding-top: 20px;
+  /* Adjust this value to align placeholder vertically */
+}
+
+.custom-input:focus + .custom-placeholder,
+.custom-input:not(:placeholder-shown) + .custom-placeholder {
+  transform: translateY(-100%);
+  font-size: 12px;
+  /* Adjust this value as needed */
+  color: #6c757d;
+  /* Adjust this value as needed */
+}
+
+.top-label {
+  /* position: absolute; */
+
+  background-color: rgb(255, 255, 255);
+  /* padding: 0 5px; */
+  top: 1rem;
+  left: 2rem;
+  /* left: 1; */
+  font-size: 12px;
+}
+
+.tableHeader {
+  font-family: "Poppins,sans-serif";
+  font-size: "0.6rem";
+  color: "#575F6E";
+}

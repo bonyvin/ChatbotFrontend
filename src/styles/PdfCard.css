@@ -1,0 +1,59 @@
+:root {
+    --primary: #283d76;
+    --white: #ffffff;
+  }
+  .fileContainer {
+    margin-left: 0.55rem;
+    /* width: 240px; */
+    width: 70%;
+    border-radius: 5px;
+    padding: 15px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+    background-color: white;
+    margin-bottom: 1rem;
+}
+  
+  .flex {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex:1;
+    justify-content: space-between;
+  }
+  .buttons {
+    color:var(--primary) ;
+    margin:0.2rem;
+  }
+  .fileIcon {
+    margin:0.55rem;
+  }
+  
+  .bold {
+    font-size: 13px;
+    font-weight: 600;
+  }
+  
+  .thin {
+    font-size: 11px;
+    color: #6f6f6f;
+    font-weight: 500;
+  }
+  
+  .btn {
+    border-radius: 3px;
+    border: 1px solid gray;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 3px;
+    font-size: 11px;
+    color: #4f4f4f;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+  }
+  
