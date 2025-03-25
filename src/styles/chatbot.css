@@ -1,5 +1,5 @@
- /* @const PRIMARY: #283d76; */
- :root {
+/* @const PRIMARY: #283d76; */
+:root {
   --primary: #283d76;
   --white: #ffffff;
 }
@@ -78,6 +78,14 @@
   align-items: center;
   padding: 10px;
   justify-content: space-evenly;
+  background-color: #283d76;
+  border-radius: 0.5rem;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+
+  /* position: fixed;
+  bottom: 0;
+  right: 0;
+  width:40%; */
 }
 
 .chatbot-input-form input {
@@ -124,7 +132,12 @@
   margin-top: 0;
   margin-bottom: 0.2rem;
 }
-
+.containerUserUpload {
+  align-items: center;
+  display: flex;
+  justify-content: flex-end;
+  margin: 0rem 2.5rem 0rem 0.2rem;
+}
 .containerBot {
   /* height: 100%; */
   display: flex;
@@ -134,6 +147,7 @@
   width: 90%;
   margin-top: 0;
   margin-bottom: 0.2rem;
+  margin-left:1rem
 }
 
 .message-bubble {
@@ -152,7 +166,7 @@
   border-top-right-radius: 0;
   position: relative;
   text-align: left;
-
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
 }
 
 .message-bubble:after {
@@ -166,6 +180,9 @@
   border-color: transparent transparent transparent #b9ccf3;
   top: 0;
   right: -1rem;
+  
+  /* Adjust drop-shadow to be applied only on the right side */
+  filter: drop-shadow(9px 4px 5px rgba(0, 0, 0, 0.2));
 }
 
 .message-bubble-bot {
@@ -184,6 +201,7 @@
   border-top-left-radius: 0;
   position: relative;
   text-align: left;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
 
 }
 
@@ -195,18 +213,25 @@
   height: 0;
   border-style: solid;
   border-width: 0.9rem 0rem 0rem 1.2rem;
-  /* border-width:  0.9rem 0.9rem 0  0; */
   border-color: #ffffff transparent transparent transparent;
   top: 0;
   left: -1rem;
+  
+  /* Adjust drop-shadow to be applied only on the left side */
+  filter: drop-shadow(-8px 2px 5px rgba(0, 0, 0, 0.2));
 }
 
 .imageBackground {
   background-image: url("../images/bgImage.png");
   /* width: 1300px; */
-  background-color: #FFFAF3;
+  background-color: #fffaf3;
+  width: inherit;
 }
 
-.botText{
+.botText {
   text-align: left;
+}
+.paneIcon {
+  color: #ffffff;
+  cursor: pointer;
 }

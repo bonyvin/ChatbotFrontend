@@ -1,10 +1,6 @@
 import Box from "@mui/joy/Box";
 import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
-// import AvatarWithStatus from './AvatarWithStatus';
-// import ChatBubble from './ChatBubble';
-// import ChatbotPaneHeader from './ChatbotPaneHeader';
-// import { ChatProps, MessageProps } from '../types/types';
 import React, {
   useEffect,
   useState,
@@ -29,28 +25,39 @@ import axios from "axios";
 import { StyledModalRoot } from "@mui/joy/Modal/Modal";
 import PdfCard from "./PDF Generation/PdfCard";
 import ReactMarkdown from "react-markdown";
+import "../styles/chatbot.css";
+import { styled } from "@mui/material/styles";
+import { Backdrop, CircularProgress, IconButton } from "@mui/material";
+import data from "@emoji-mart/data";
+import Picker from "@emoji-mart/react";
+import typingIndicator from "../images/typingIndicator1.gif";
+import TypingIndicatorComponent from "./TypingIndicatorComponent";
 
 export default function ChatbotPane() {
   const [messages, setMessages] = useState([]);
   const value = useContext(AuthContext);
   const [itemsArray, setItemsArray] = useState();
   const [quantitiesArray, setQuantitiesArray] = useState();
+  const [invoiceCostArray, setInvoiceCostArray] = useState();
   const [pdfData, setPdfData] = useState();
-  const [responseData, setResponseData] = useState();
   const { input, setInput } = value;
-  // const [input, setInput] = useState("");
+  const prevPoDetailsDataRef = useRef(value.poDetailsData);
+  const [pdfCardVisible, setPdfCardVisible] = useState(false);
+  const regexPattern =
+    /(non\s*-?\s*merchandise)|(merchandise)|(credit\s*-?\s*note)|(debit\s*-?\s*note)/i;
+  const messageEl = useRef(null);
+  const [loading, setLoading] = useState(false);
+  const prevIdRef = useRef(null);
+  const [isPickerVisible, setPickerVisible] = useState(false);
+  const pickerRef = useRef(null);
+  const [typing, setTyping] = useState(false);
+  const typingTimeoutRef = useRef(null);
+  const [uploadLoading, setUploadLoading] = useState(false);
 
-  useEffect(() => {
-    if (value.formSave) {
-      saveFormData();
-    }
-    if (value.formSubmit) {
-      submitFormData();
-    }
-  }, [value.formSave, value.formSubmit]);
-  console.log("ITem details input: ", value.itemDetailsInput);
+  //FORM ACTIONS
+  //save
+
   const saveFormData = async () => {
-    console.log("Inside save form data", value.itemDetailsInput);
     value.setItemDetails(value.itemDetailsInput);
     const getTrueValueKey = (obj) => {
       return Object.keys(obj).find((key) => obj[key] === true);
@@ -77,7 +84,6 @@ export default function ChatbotPane() {
         );
         return matchingPoDetail !== undefined;
       });
-    // console.log("Filtered values:",filteredItems,filteredQuantities)
     let savedData = `
     ${trueValueKey ? `Type of Invoice: ${trueValueKey},` : ""}
     ${
@@ -117,22 +123,74 @@ export default function ChatbotPane() {
       quantitiesPresent ? `Quantity: ${filteredQuantities}` : ""
     }
     `;
-
-    setInput(
-      "Invoice type: Debit Note,Date: 26/06/2024,Supplier Id: SUP1123,Total amount: 6700,Total tax: 342,Items: ID123, ID124, Quantity: 2, 4 ,PO number: PO123"
-    );
     await handleMessageSubmit(savedData);
     value.setFormSave((prevState) => !prevState);
   };
+  //submit
   const submitFormData = async () => {
-    // await invoiceHeaderCreation();
     await handleMessageSubmit("Please submit the data provided");
-
     value.setFormSubmit((prevState) => !prevState);
+
+    //to test get invoice details
+    // await getInvoiceDetails("INV498");
   };
+  //clear
+  const clearFormData = () => {
+    value.setPoDetailsData([]);
+    value.setInvoiceData({
+      invoiceType: "",
+      invoiceDate: "",
+      poNumber: "",
+      totalAmount: "",
+      totalTax: "",
+      items: "",
+      quantity: "",
+      userInvNo: "",
+    });
+    value.setPoHeaderData({
+      currency: "",
+      paymentTerm: "",
+      totalCost: "",
+      exchangeRate: "",
+    });
 
-  const messageEl = useRef(null);
-
+    value.setTypeOfInvoice({
+      merchandise: false,
+      nonMerchandise: false,
+      debitNote: false,
+      creditNote: false,
+    });
+    value.setItemDetails({
+      items: "",
+      quantity: "",
+      invoiceCost: "",
+    });
+    value.setItemDetailsInput({
+      items: "",
+      quantity: "",
+      invoiceCost: "",
+    });
+    value.setinvoiceDatafromConversation({});
+    setTimeout(() => {
+      value.setModalDetails({
+        visible: false,
+        text: "Data cleared",
+        isSuccessful: false,
+      });
+    }, 10000);
+  };
+  useEffect(() => {
+    if (value.formSave) {
+      saveFormData();
+    }
+    if (value.formSubmit) {
+      submitFormData();
+    }
+  }, [value.formSave, value.formSubmit]);
+  // useEffect(()=>{
+  //   typeSelection(value.invoiceDatafromConversation)
+  // },[value.invoiceDatafromConversation])
+  //SCROLLING FUNCTIONALITY
   const scrollToBottom = () => {
     if (messageEl.current) {
       messageEl.current.scrollTop = messageEl.current.scrollHeight;
@@ -141,88 +199,23 @@ export default function ChatbotPane() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-  const [loading, setLoading] = useState(false);
-  const prevIdRef = useRef(null);
-  const getPoDetails = useCallback(
-    async (id) => {
-      if (prevIdRef.current && prevIdRef.current !== id) {
-        console.log(`ID has changed from ${prevIdRef.current} to ${id}`);
-        value.setinvoiceDatafromConversation({});
-        value.setItemDetails({
-          items: "",
-          quantity: "",
-        });
-        value.setItemDetailsInput({
-          items: "",
-          quantity: "",
-        });
-      }
-      console.log(
-        "After emptying: ",
-        value.itemDetails,
-        value.itemDetailsInput
-      );
-      // Update the previous id with the current one
-      prevIdRef.current = id;
-      try {
-        const response = await axios.get(
-          `http://localhost:8000/poDetails/${id}`
-        );
-        const poHeader = response.data.po_header;
-
-        // Update poHeaderData with fetched details
-        const updatedPoHeaderData = {
-          ...value.poHeaderData,
-          currency: poHeader.currency,
-          totalCost: poHeader.totalCost,
-          invoiceNo: "INV" + value.invoiceCounter,
-          exchangeRate: 1,
-          paymentTerm: poHeader.payment_term,
-        };
-        value.setPoHeaderData(updatedPoHeaderData);
-
-        // Prepare and set poDetailsData
-        const newUpdatedData = response.data.po_details.map((item) => ({
-          ...item,
-          invQty: 0,
-          invAmt: 0,
-        }));
-        value.setPoDetailsData(newUpdatedData);
-        console.log(
-          "PO Ids inside get po",
-          id,
-          response.data.po_details.map((item) => item.poId)
-        );
-        console.log("Updated data inside getpo:", newUpdatedData);
-        // After setting poDetailsData, call the updateItemDetails function
-        if (newUpdatedData.length > 0) {
-          value.setItemDetailsInput({
-            items: newUpdatedData.map((item) => item.itemId),
-            quantity: newUpdatedData.map((item) => item.invQty),
-          });
-          updateItemDetails(value.invoiceData);
-        }
-      } catch (error) {
-        console.error("Error fetching PO details:", error);
-        let errorMsg =
-          "Sorry, we couldn't find this Purchase Order in our database, please try another PO number";
-        // setMessages([
-        //   ...messages,
-        //   { text: errorMsg, fromUser: false },
-        // ]);
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          { text: errorMsg, fromUser: false },
-        ]);
-
-        // Handle error appropriately, e.g., show a notification or set an error state
-      } finally {
-        setLoading(false);
-      }
-    },
-    [value]
-  );
-
+  useEffect(() => {
+    value.setSystemDocumentId(`INV${value.invoiceCounter}`);
+  }, [value.invoiceCounter]);
+  //EMOJI PICKER
+  const handleEmojiSelect = (emoji) => {
+    setInput((prev) => prev + emoji.native);
+    setPickerVisible(false);
+  };
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!pickerRef.current?.contains(e.target)) setPickerVisible(false);
+    };
+    if (isPickerVisible)
+      document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isPickerVisible]);
+  //DATE FORMATTING
   function formatDate(date) {
     const regex = /^(\d{2})[\/-](\d{2})[\/-](\d{4})$/;
     const match = date.match(regex);
@@ -237,261 +230,10 @@ export default function ChatbotPane() {
       return date;
     }
   }
+  //TYPE OF INVOICE
   const typeofInv = Object.keys(value.typeOfInvoice).find(
     (key) => value.typeOfInvoice[key]
   );
-  function sumQuantities(str) {
-    if (str) {
-      const quantitiesArray = str
-        .split(",")
-        .map((num) => parseInt(num.trim(), 10));
-      const totalQuantity = quantitiesArray.reduce(
-        (sum, current) => sum + current,
-        0
-      );
-      str = totalQuantity;
-    }
-    return str;
-  }
-
-  const createInvoice = () => {
-    console.log("Create Invoice");
-  };
-  const clearFormData = () => {
-    value.setinvoiceDatafromConversation({});
-    value.setPoDetailsData([]);
-    value.setInvoiceData({
-      invoiceType: "",
-      invoiceDate: "",
-      poNumber: "",
-      totalAmount: "",
-      totalTax: "",
-      items: "",
-      quantity: "",
-      supplierId: "",
-    });
-    getPoDetails("");
-    value.setPoHeaderData({
-      currency: "",
-      paymentTerm: "",
-      invoiceNo: "",
-      totalCost: "",
-      exchangeRate: "",
-    });
-
-    value.setTypeOfInvoice({
-      merchandise: false,
-      nonMerchandise: false,
-      debitNote: false,
-      creditNote: false,
-    });
-    value.setItemDetails({
-      items: "",
-      quantity: "",
-    });
-    value.setItemDetailsInput({
-      items: "",
-      quantity: "",
-    });
-    value.setinvoiceDatafromConversation({});
-  };
-  console.log("POdetailsdata", value.poDetailsData);
-  const invoiceDetailsCreation = async () => {
-    try {
-      setPdfCardVisible(true);
-      console.log("Inv creation po details:", value.poDetailsData);
-      const updatedInvoiceItems = value.poDetailsData.map((item) => ({
-        ...item,
-        invoiceNumber: value.poHeaderData.invoiceNo,
-        totalItemCost: item.invAmt,
-        itemQuantity: item.invQty,
-      }));
-      console.log("Details Called");
-      const response = await axios({
-        method: "post",
-        url: `http://localhost:8000/invDetailsAdd/`,
-        headers: {
-          "Content-Type": "application/json",
-          accept: "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
-        data: updatedInvoiceItems,
-      });
-      console.log("invoice Details Creation Response:", response.data);
-    } catch (error) {
-      console.log("Invoice DEtails Creation Error:", error, error.data);
-    }
-  };
-  const invoiceHeaderCreation = async () => {
-    console.log("Creation invoice called");
-    // extractAndSave(value.invoiceData);
-    const invData = {
-      invoiceId: value.poHeaderData.invoiceNo,
-      supplierId: value.invoiceData.supplierId,
-      invoiceType: typeofInv,
-      currency: value.poHeaderData.currency,
-      payment_term: value.poHeaderData.paymentTerm,
-      invoice_status: "pending",
-      total_cost: value.invoiceData.totalAmount,
-      total_tax: value.invoiceData.totalTax,
-      total_amount: value.invoiceData.totalAmount,
-    };
-
-    try {
-      console.log(
-        "Creation Called",
-        invData,
-        formatDate(value.invoiceData.invoiceDate),
-        sumQuantities(value.itemDetails.quantity)
-      );
-      const response = await axios({
-        method: "post",
-        url: `http://localhost:8000/invCreation/`,
-        headers: {
-          "Content-Type": "application/json",
-          accept: "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
-        data: {
-          ...invData,
-          invoicedate: formatDate(value.invoiceData.invoiceDate),
-          total_qty: sumQuantities(value.itemDetails.quantity),
-        },
-      });
-      console.log("invoice Creation Response:", response.data);
-      await invoiceDetailsCreation();
-      setPdfData(value);
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          component: (
-            <PdfCard
-              title={"Invoice Number: " + value.poHeaderData.invoiceNo}
-              invoiceID={value.poHeaderData.invoiceNo}
-            />
-          ),
-          fromUser: false,
-          isFile: true,
-        },
-      ]);
-      await clearDataApi();
-
-      // Set pdfCardVisible to true to ensure it stays visible
-      setPdfCardVisible(false);
-    } catch (error) {
-      console.log("Invoice Creation Error:", error, error.data);
-    }
-  };
-
-  const clearDataApi = async () => {
-    value.setModalVisible(true);
-    value.setIsActive(false);
-
-    try {
-      console.log("clearDataApi");
-      const response = await axios({
-        method: "post",
-        url: `http://localhost:8000/clearData?submitted=submitted`,
-        headers: {
-          "Content-Type": "application/json",
-          accept: "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
-      });
-      console.log("invoice Clear Response:", response.data);
-      clearFormData();
-    } catch (error) {
-      console.log("Invoice Clear Error:", error, error.data);
-    }
-  };
-  const [pdfCardVisible, setPdfCardVisible] = useState(false);
-
-  const handleMessageSubmit = async (input) => {
-    // e.preventDefault();
-    if (!input.trim()) return;
-    const newMessages = [...messages, { text: input, fromUser: true }];
-    setMessages(newMessages);
-    setInput("");
-    try {
-      const response = await axios({
-        method: "post",
-        url: `http://localhost:8000/creation/response?query=${input}`,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      console.log("Data response", response.data);
-      console.log("Context:", value);
-      console.log("Extracted Data:", value.extractedData);
-      if (response.data.test_model_reply == "Creation") {
-        value.setIsActive(true);
-      } else if (response.data.test_model_reply == "Fetch") {
-        value.setIsActive(false);
-      } else if (response.data.submissionStatus == "submitted") {
-        value.setIsActive(false);
-      }
-
-      console.log("Conversation data:", response.data.conversation);
-      const invoice_json = JSON.parse(response.data.invoice_json);
-      value.setinvoiceDatafromConversation(
-        response.data.invoiceDatafromConversation
-      );
-
-      invoiceCheck2(invoice_json, response.data.invoiceDatafromConversation);
-
-      // typeSelection(response.data.invoiceDatafromConversation);
-      // updateItemDetails(response.data.invoiceDatafromConversation);
-      const botReply = response.data.conversation.slice(-1);
-      const reply = botReply[0].slice(5);
-      const formattedConversation = response.data.conversation
-        .slice(-1)
-        .map((text, index) => (
-          <ReactMarkdown key={index} className={"botText"}>
-            {text.slice(5)}
-          </ReactMarkdown>
-        ));
-
-      const formattedMessage = reply.split(/- /g).map((part, index) => {
-        if (index === 0) {
-          return <React.Fragment key={index}>{part}</React.Fragment>;
-        } else {
-          // Add line break after each "- "
-          return (
-            <React.Fragment key={index}>
-              <br />
-              {`•${part}`}
-            </React.Fragment>
-          );
-        }
-      });
-      setMessages([
-        ...newMessages,
-        { text: formattedConversation, fromUser: false },
-      ]);
-
-      console.log("Invoice Counter", value.invoiceCounter);
-      if (response.data.submissionStatus == "submitted") {
-        updateItemDetails(response.data.invoiceDatafromConversation);
-        console.log(
-          "submissionStatus",
-          "Item Details before calling invoiceheadercreation",
-          value.itemDetails
-        );
-        value.setInvoiceCounter((prevCounter) => prevCounter + 1);
-        await invoiceHeaderCreation();
-      } else {
-        console.log("invoice Creation not submitted");
-        value.setModalVisible(false);
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
-  const defaultTheme = createTheme();
-  const theme = useTheme();
-  const isLargeScreen = useMediaQuery(theme.breakpoints.up("lg"));
-  const regexPattern =
-    /(non\s*-?\s*merchandise)|(merchandise)|(credit\s*-?\s*note)|(debit\s*-?\s*note)/i;
   const typeSelection = useCallback(
     (invoiceDatafromConversation) => {
       const invoiceVal = invoiceDatafromConversation;
@@ -503,26 +245,8 @@ export default function ChatbotPane() {
         debitNote: false,
       };
       if (invoiceVal && Object.keys(invoiceVal).length !== 0) {
-        const invoiceType = invoiceVal["invoiceType"];
-        // if (invoiceType) {
-        //   const match = invoiceType.match(regexPattern);
-        //   if (match) {
-        //     const [_, nonMerchandise, merchandise, creditNote, debitNote] = match;
-        //     value.setTypeOfInvoice({
-        //       nonMerchandise: !!nonMerchandise,
-        //       merchandise: !!merchandise,
-        //       creditNote: !!creditNote,
-        //       debitNote: !!debitNote,
-        //     });
-        //   } else {
-        //     value.setTypeOfInvoice({
-        //       nonMerchandise: false,
-        //       merchandise: false,
-        //       creditNote: false,
-        //       debitNote: false,
-        //     });
-        //   }
-        // }
+        const invoiceType = invoiceVal["Invoice Type"];
+        // const invoiceType = invoiceVal["invoiceType"];
         if (invoiceType) {
           const match = invoiceType.match(regexPattern);
           if (match) {
@@ -567,258 +291,837 @@ export default function ChatbotPane() {
         }
       }
     },
-    [
-      value.invoiceData,
-      value.invoiceData.invoiceType,
-      value.invoiceData.invoiceType,
-    ]
+    [value.invoiceDatafromConversation, value.invoiceData.invoiceType]
   );
+  //SUM OF QUANTITIES
+  function sumQuantities(input) {
+    if (!input) return input;
 
+    const quantitiesArray = Array.isArray(input)
+      ? input
+      : input.split(",").map((num) => parseInt(num.trim(), 10));
+
+    return quantitiesArray.reduce((sum, current) => sum + current, 0);
+  }
+
+  //GET INV DETAILS
+  const handleRadioChange = (type) => {
+    value.setTypeOfInvoice({
+      merchandise: type === "merchandise",
+      nonMerchandise: type === "nonMerchandise",
+      debitNote: type === "debitNote",
+      creditNote: type === "creditNote",
+    });
+  };
   const updateItemDetails = useCallback(
     (invoiceDatafromConversation) => {
-      // console.log("UpdateItemDetail called","length of po:",value.poDetailsData.length)
-      if (Object.keys(invoiceDatafromConversation).length > 0) {
-        let updatedInvoiceData = { ...value.itemDetails };
-        // if(Object.values(value.itemDetails.items).length == 0){
-        //   console.log("Empty itemssss")
-        // }
-        console.log("update item details ", value.itemDetails.items);
-        const items = invoiceDatafromConversation["Items"];
-        const quantity = invoiceDatafromConversation["Quantity"];
-        // const items = invoiceDatafromConversation["items"];
-        // const quantity = invoiceDatafromConversation["quantity"];
-        let arrayItems = [];
-        let arrayQty = [];
-        console.log("arrayitems and array qty", arrayItems, arrayQty);
-        if (items && quantity) {
-          updatedInvoiceData.items = items;
-          arrayItems = items.split(", ").map((item) => item.trim());
-          setItemsArray(arrayItems);
-          updatedInvoiceData.quantity = quantity;
-          arrayQty = quantity
-            .split(", ")
-            .map((quantity) => parseInt(quantity.trim(), 10));
-          setQuantitiesArray(arrayQty);
-        } else {
-          value.setItemDetails({
-            items: "",
-            quantity: "",
-          });
-        }
-        const tempDictionary = {};
-        arrayItems.forEach((item, index) => {
-          tempDictionary[item] = arrayQty[index];
+      if (
+        !invoiceDatafromConversation ||
+        !Array.isArray(invoiceDatafromConversation.Items) ||
+        invoiceDatafromConversation.Items.length === 0
+      ) {
+        value.setItemDetails({
+          items: [],
+          quantity: [],
+          invoiceCost: [],
         });
-        setDictionary(tempDictionary);
-        value.setItemDetails(updatedInvoiceData);
-        // console.log(
-        //   "updatedinvoicedata:",
-        //   updatedInvoiceData,
-        //   "Type: ",
-        //   typeof updatedInvoiceData
-        // );
-        if (itemsArray && quantitiesArray) {
-          value.setItemDetailsInput({
-            items: itemsArray,
-            quantity: quantitiesArray,
-          });
-        }
-        updatePo();
-
-        // if (value.poDetailsData.length > 0) {
-        //   updatePo();
-        // }
+        return;
       }
-      // if(value.poDetailsData.length>0){
-      //   let updatedInvoiceData = { ...value.itemDetails };
-      //   // if(Object.values(value.itemDetails.items).length == 0){
-      //   //   console.log("Empty itemssss")
-      //   // }
-      //   console.log(
-      //     "update item details ",value.itemDetails.items
-      //   );
-      //   const items = value.poDetailsData.map((item) => item.itemId);
-      //   const quantity = value.poDetailsData.map((item) => item.invQty);
-      //   let arrayItems = [];
-      //   let arrayQty = [];
-      //   console.log("arrayitems and array qty", arrayItems, arrayQty);
-      //   if (items && quantity) {
-      //     updatedInvoiceData.items = items;
-      //     arrayItems = items.toString().split(", ").map((item) => item.trim());
-      //     setItemsArray(arrayItems);
-      //     updatedInvoiceData.quantity = quantity;
-      //     arrayQty = quantity.toString().split(", ")
-      //       .map((quantity) => parseInt(quantity.trim(), 10));
-      //     setQuantitiesArray(arrayQty);
-      //   } else {
-      //     value.setItemDetails({
-      //       items: "",
-      //       quantity: "",
-      //     });
-      //   }
-      //   const tempDictionary = {};
-      //   arrayItems.forEach((item, index) => {
-      //     tempDictionary[item] = arrayQty[index];
-      //   });
-      //   setDictionary(tempDictionary);
-      //   value.setItemDetails(updatedInvoiceData);
-      //   // value.setItemDetailsInput(updatedInvoiceData);
-      //   if (itemsArray && quantitiesArray) {
-      //     value.setItemDetailsInput({
-      //       items: itemsArray,
-      //       quantity: quantitiesArray,
-      //     });
-      //   }
-      //   updatePo();
-      // }
-      else {
+      console.log(Array.isArray(invoiceDatafromConversation.Items).length);
+      const { Items: itemsArray = [] } = invoiceDatafromConversation; // Extract "Items" array
+      console.log("updateitemdetails invdfc: ", itemsArray);
+
+      // Ensure correct mapping of extracted values
+      const tempDictionary = itemsArray.reduce((acc, item) => {
+        acc[item["Item ID"]] = {
+          quantity: item.Quantity || 0,
+          invoiceCost: item["Invoice Cost"] || 0,
+        };
+        return acc;
+      }, {});
+
+      // Extract structured arrays for state update
+      const updatedItems = itemsArray.map((item) => item["Item ID"]);
+      const updatedQuantities = itemsArray.map((item) => item.Quantity || 0);
+      const updatedInvoiceCosts = itemsArray.map(
+        (item) => item["Invoice Cost"] || 0
+      );
+
+      setItemsArray(updatedItems);
+      setQuantitiesArray(updatedQuantities);
+      setInvoiceCostArray(updatedInvoiceCosts);
+
+      const updatedInvoiceData = {
+        items: updatedItems,
+        quantity: updatedQuantities,
+        invoiceCost: updatedInvoiceCosts,
+      };
+      console.log("UpdatedInvoiceData: ", updatedInvoiceData, tempDictionary);
+
+      value.setItemDetails(updatedInvoiceData);
+      value.setItemDetailsInput({
+        items: updatedItems,
+        quantity: updatedQuantities,
+        invoiceCost: updatedInvoiceCosts,
+      });
+
+      // Use prevPoDetailsDataRef.current for comparison
+      const prevPoDetailsData = prevPoDetailsDataRef.current || [];
+
+      const updatedPoDetails = prevPoDetailsData.map((item) =>
+        tempDictionary[item.itemId]
+          ? {
+              ...item,
+              invQty: tempDictionary[item.itemId].quantity,
+              invAmt:
+                tempDictionary[item.itemId].quantity *
+                tempDictionary[item.itemId].invoiceCost,
+              invCost: tempDictionary[item.itemId].invoiceCost,
+            }
+          : item
+      );
+
+      // Identify new items not present in prevPoDetailsData
+      const newItems = Object.keys(tempDictionary)
+        .filter(
+          (itemId) =>
+            !prevPoDetailsData.some((entry) => entry.itemId === itemId)
+        )
+        .map((itemId) => ({
+          itemId,
+          invQty: tempDictionary[itemId].quantity,
+          invAmt:
+            tempDictionary[itemId].quantity *
+            tempDictionary[itemId].invoiceCost,
+          invCost: tempDictionary[itemId].invoiceCost,
+          itemQuantity: 0,
+          itemDescription: "",
+          totalItemCost: 0,
+          supplierId: "",
+          itemCost: 0,
+          poId: prevPoDetailsData[0]?.poId || "", // Preserve existing PO ID
+        }));
+
+      // Merge updates and new items
+      value.setPoDetailsData([...updatedPoDetails, ...newItems]);
+    },
+    [value.setItemDetails, value.setItemDetailsInput, value.setPoDetailsData]
+  );
+  //PO DETAILS
+  const getPoDetails = useCallback(
+    async (id, invoiceDatafromConversation) => {
+      if (prevIdRef.current && prevIdRef.current !== id) {
+        console.log(`ID has changed from ${prevIdRef.current} to ${id}`);
+        value.setPoDetailsData([]); // Clear old data before fetching new PO details
         value.setItemDetails({
           items: "",
           quantity: "",
+          invoiceCost: "",
+        });
+        value.setItemDetailsInput({
+          items: "",
+          quantity: "",
+          invoiceCost: "",
         });
       }
-    },
-    [
-      value.poDetailsData,
-      value.invoiceData,
-      value.invoiceData.invoiceType,
-      value.invoiceData,
-      value.invoiceData.invoiceType,
-    ]
-  );
-  const [dictionary, setDictionary] = useState({});
+      prevIdRef.current = id; // Update the previous ID
+      try {
+        const response = await axios.get(
+          `http://localhost:8000/poDetails/${id}`
+        );
+        console.log("PO Response: ", response.data);
+        console.log(
+          "PO supplier:",
+          response.data.po_details[0]?.supplierId,
+          response.data.po_details
+        );
+        if (response.status === 200 || response.status === 201) {
+          const poHeader = response.data.po_header;
+          const updatedPoHeaderData = {
+            ...value.poHeaderData,
+            currency: poHeader.currency,
+            totalCost: poHeader.totalCost,
+            supplierId: poHeader.supplierId,
+            // invoiceNo: "INV" + value.invoiceCounter,
+            exchangeRate: 1,
+            paymentTerm: poHeader.payment_term,
+          };
 
-  // useEffect(() => {
-  //   typeSelection(value.invoiceDatafromConversation);
-  //   updateItemDetails(value.invoiceDatafromConversation);
-  // }, [value.invoiceData, value.invoiceData.invoiceType, value.poDetailsData,]);
+          value.setPoHeaderData(updatedPoHeaderData);
+          const newUpdatedData = response.data.po_details.map((item) => ({
+            ...item,
+            invQty: 0,
+            invAmt: 0,
+            invCost: 0,
+          }));
+          value.setItemListPo(
+            response.data.po_details.map((item) => item.itemId)
+          );
+          value.setPoDetailsData(newUpdatedData); // Update poDetailsData
+          prevPoDetailsDataRef.current = newUpdatedData; // Update ref immediately after setting state
 
-  // useEffect(() => {
-  //   if (value.invoiceDatafromConversation) {
-  //     typeSelection(value.invoiceDatafromConversation);
-  //     updateItemDetails(value.invoiceDatafromConversation);
-  //   }
-  // }, [value.invoiceData, value.invoiceData.invoiceType,value.invoiceData, value.invoiceData.invoiceType,value.poDetailsData]);
+          if (newUpdatedData.length > 0) {
+            value.setItemDetailsInput({
+              items: newUpdatedData.map((item) => item.itemId),
+              quantity: newUpdatedData.map((item) => item.invQty),
+              invoiceCost: newUpdatedData.map((item) => item.invCost),
+            });
+          }
 
-  useEffect(() => {
-    if (value.invoiceDatafromConversation) {
-      typeSelection(value.invoiceDatafromConversation);
-      updateItemDetails(value.invoiceDatafromConversation);
-    }
-  }, [
-    value.invoiceData.invoiceType,
-    value.invoiceDatafromConversation,
-    value.poDetailsData,
-  ]);
-  // useEffect(() => {
-  //   if (value.poDetailsData && value.poDetailsData.length > 0) {
-  //     updateItemDetails(value.invoiceData);
-  //     typeSelection(value.invoiceDatafromConversation);
-
-  //   }
-  // }, [value.poDetailsData]);
-
-  // useEffect(()=>{
-
-  // },[value.poDetailsData])
-
-  const updatePo = () => {
-    const data = convertItemDetailsToData(value.itemDetails);
-    console.log("Item details in update po", data, value.poDetailsData);
-    const updatedItemsDetails = value.poDetailsData.map((item) => {
-      if (data[item.itemId] !== undefined) {
-        // console.log("Inside ", dictionary[item.itemId],dictionary);
-        return {
-          ...item,
-          invQty: data[item.itemId],
-          invAmt: parseInt(data[item.itemId]) * parseInt(item.itemCost), // Example calculation for amount
-        };
+          // updateItemDetails(invoiceDatafromConversation); // Call updateItemDetails after state is set
+          return true;
+        } else {
+          return false;
+        }
+      } catch (error) {
+        value.setPoDetailsData([]);
+        value.setPoHeaderData({
+          currency: "",
+          paymentTerm: "",
+          totalCost: "",
+          exchangeRate: "",
+        });
+        console.error("Error fetching PO details:", error);
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          {
+            text: "Sorry, we couldn't find this Purchase Order in our database, please try another PO number",
+            fromUser: false,
+          },
+        ]);
+        return false;
+      } finally {
+        setLoading(false);
       }
-      return item;
-    });
-    console.log("Updated", updatedItemsDetails);
-    const hasChanges =
-      JSON.stringify(updatedItemsDetails) !==
-      JSON.stringify(value.poDetailsData);
-
-    if (hasChanges) {
-      value.setPoDetailsData(updatedItemsDetails);
-    }
-  };
-  const convertItemDetailsToData = (itemDetails) => {
-    const allEmpty = Object.values(itemDetails).every((value) => value === "");
-    console.log("convert item details to data", itemDetails, allEmpty);
-    // const defaultItemDetails = {
-    //   items: value.poDetailsData.map((item) => item.itemId),
-    //   quantity: value.poDetailsData.map((item) => item.invQty),
-    // };
-    // console.log("default ite,Details", defaultItemDetails);
-    const { items, quantity } = itemDetails;
-    // const { items, quantity } = allEmpty? defaultItemDetails:itemDetails;
-    const itemArray = items
-      .toString()
-      .split(",")
-      .map((item) => item.trim());
-    const quantityArray = quantity
-      .toString()
-      .split(",")
-      .map((qty) => parseInt(qty.trim(), 10));
-
-    const data = itemArray.reduce((acc, item, index) => {
-      acc[item] = quantityArray[index];
-      return acc;
-    }, {});
-
-    console.log("Converted Item Detail: ", data);
-    return data;
-  };
-  useEffect(() => {
-    updatePo();
-  }, [value.itemDetails]);
+    },
+    [value.setPoDetailsData, value.setItemDetails, value.setItemDetailsInput, value.setPoHeaderData, value.setItemListPo, updateItemDetails]
+  );
+  //EXTRACTING FIELD DATA FROM BACKEND
   const invoiceCheck2 = useCallback(
-    (invoiceObject, invoiceDatafromConversation) => {
+    async (invoiceObject, invoiceDatafromConversation) => {
       let updatedInvoiceData = { ...value.invoiceData };
+      let poStatus = false;
+      for (const key of Object.keys(invoiceObject)) {
+        if (invoiceObject[key] !== null) {
+          switch (key) {
+            case "Invoice Type":
+              updatedInvoiceData.invoiceType = invoiceObject[key];
+              break;
+            case "Quantities":
+              updatedInvoiceData.quantity = invoiceObject[key];
+              break;
+            case "Invoice Number":
+              updatedInvoiceData.userInvNo = invoiceObject[key];
+              break;
+            case "Total Amount":
+              updatedInvoiceData.totalAmount = invoiceObject[key];
+              break;
+            case "Date":
+              updatedInvoiceData.invoiceDate = formatDate(invoiceObject[key]);
+              break;
+            case "Total Tax":
+              updatedInvoiceData.totalTax = invoiceObject[key];
+              break;
+            case "Items":
+              updatedInvoiceData.items = invoiceObject[key];
+              break;
+            case "PO Number":
+              updatedInvoiceData.poNumber = invoiceObject[key];
 
-      Object.keys(invoiceObject).forEach(async (key) => {
-        if (key === "invoice type" && invoiceObject[key] !== null) {
-          updatedInvoiceData.invoiceType = invoiceObject[key];
+              poStatus = await getPoDetails(
+                invoiceObject[key],
+                invoiceDatafromConversation
+              );
+              console.log("PO status INSIDE GET PO DETAILS:", poStatus);
+              if (poStatus) {
+                updateItemDetails(invoiceDatafromConversation);
+              } else {
+                value.setinvoiceDatafromConversation({
+                  ...value.invoiceDatafromConversation,
+                  Items: "",
+                  Quantity: "",
+                });
+              }
+            // if(!poStatus){
+            //   break
+            // }
+          }
         }
-        if (key === "po number" && invoiceObject[key] !== null) {
-          updatedInvoiceData.poNumber = invoiceObject[key];
+      }
 
-          await getPoDetails(invoiceObject[key]);
-        }
-        if (key === "quantity" && invoiceObject[key] !== null) {
-          updatedInvoiceData.quantity = invoiceObject[key];
-        }
-        if (key === "supplier id" && invoiceObject[key] !== null) {
-          updatedInvoiceData.supplierId = invoiceObject[key];
-        }
-        if (key === "total amount" && invoiceObject[key] !== null) {
-          updatedInvoiceData.totalAmount = invoiceObject[key];
-        }
-        if (key === "date" && invoiceObject[key] !== null) {
-          updatedInvoiceData.invoiceDate = formatDate(invoiceObject[key]);
-        }
-        if (key === "total tax" && invoiceObject[key] !== null) {
-          updatedInvoiceData.totalTax = invoiceObject[key];
-        }
-        if (key === "items" && invoiceObject[key] !== null) {
-          updatedInvoiceData.items = invoiceObject[key];
-        }
-      });
       value.setInvoiceData(updatedInvoiceData);
       typeSelection(invoiceDatafromConversation);
-      console.log("update item details:");
-      updateItemDetails(invoiceDatafromConversation);
-    },
-    [getPoDetails, updateItemDetails]
-  );
+      // updateItemDetails(invoiceDatafromConversation);
 
-  console.log("PDf data:", pdfData);
-  useEffect(() => {
-    // const updateDictionary = { it1: 23, it2: 34 };
-  }, [dictionary, value.poDetailsData.length]);
+      return poStatus; // Default success when no PO validation is involved.
+    },
+    // [
+    //   getPoDetails,
+    //   updateItemDetails,
+    //   value.poDetailsData,
+    //   value.invoiceDatafromConversation,
+    // ]
+    [
+      getPoDetails,
+      updateItemDetails,
+  //   value.poDetailsData, // Remove unstable dependency
+      value.invoiceDatafromConversation,
+     value.setInvoiceData, // Add stable setters
+     value.setinvoiceDatafromConversation
+    ]
+  );
+  // useEffect(() => {
+  //   if (value.invoiceDatafromConversation) {
+  //     updateItemDetails(value.invoiceDatafromConversation);
+  //   }
+  // }, [value.poDetailsData, value.invoiceDatafromConversation, updateItemDetails]);
+  // useEffect(() => {
+  //   if (
+  //     value.invoiceDatafromConversation &&
+  //     Array.isArray(value.invoiceDatafromConversation.Items) &&
+  //     value.invoiceDatafromConversation.Items.length > 0
+  //   ) {
+  //     updateItemDetails(value.invoiceDatafromConversation);
+  //   }
+  // }, [value.invoiceDatafromConversation?.Items?.length]);
+  const prevInvoiceDataRef = useRef();
+
+useEffect(() => {
+  if (
+    value.invoiceDatafromConversation &&
+    JSON.stringify(prevInvoiceDataRef.current) !== JSON.stringify(value.invoiceDatafromConversation)
+  ) {
+    updateItemDetails(value.invoiceDatafromConversation);
+    prevInvoiceDataRef.current = value.invoiceDatafromConversation; // Update ref
+  }
+}, [value.invoiceDatafromConversation, updateItemDetails]);
+  //API CALLS
+  //user input
+  const handleMessageSubmit = async (
+    inputText,
+    inputFromUpload,
+    isPoTriggered = false
+  ) => {
+    if (!inputText.trim()) return;
+
+    // Update messages and clear input field
+    setMessages((prevMessages) => {
+      const newMessages =
+        inputFromUpload || isPoTriggered
+          ? [...prevMessages]
+          : [...prevMessages, { text: inputText, fromUser: true }];
+      if (!inputFromUpload) setInput("");
+      return newMessages;
+    });
+    setInput("");
+    setLoading(true);
+
+    // Start a typing indicator
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => setTyping(true), 1500);
+
+    try {
+      const response = await axios.post(
+        `http://localhost:8000/creation/response`,
+        {
+          user_id: "admin",
+          message: inputText,
+        },
+        { headers: { "Content-Type": "application/json" } }
+      );
+      console.log("Data response", response.data);
+
+      if (response.status === 200 || response.status === 201) {
+        const invoice_json = response.data.invoice_json;
+        // Convert numeric fields if necessary
+        let updatedInvoiceJson = {
+          ...invoice_json,
+          ...(invoice_json["total amount"] && {
+            "total amount": parseFloat(
+              invoice_json["total amount"].replace(/,/g, "")
+            ),
+          }),
+          ...(invoice_json["total tax"] && {
+            "total tax": parseFloat(
+              invoice_json["total tax"].replace(/,/g, "")
+            ),
+          }),
+        };
+
+        value.setinvoiceDatafromConversation(
+          response.data.invoiceDatafromConversation
+        );
+        // Only run the invoice check (which triggers PO lookup) on a normal user query.
+        if (
+          !isPoTriggered &&
+          prevIdRef.current !== updatedInvoiceJson["PO Number"]
+        ) {
+          prevIdRef.current = updatedInvoiceJson["PO Number"];
+          const invoiceCheckStatus = await invoiceCheck2(
+            updatedInvoiceJson,
+            response.data.invoiceDatafromConversation
+          );
+          // updateItemDetails(response.data?.invoiceDatafromConversation);
+
+          // If a PO number is found and details were fetched successfully,
+          // call handleMessageSubmit a second time with the PO items.
+          if (
+            updatedInvoiceJson["PO Number"] &&
+            invoiceCheckStatus &&
+            response.data?.po_items?.length > 0
+          ) {
+            await handleMessageSubmit(
+              `Add these items with cost and quantities - 0 : ${JSON.stringify(
+                response.data?.po_items?.map((item) => item.itemId)
+              )}`,
+              inputFromUpload,
+              true
+            );
+          } else {
+            // Process a normal non-PO response
+            const botReply = response.data.chat_history.slice(-1);
+            const formattedConversation = response.data.chat_history
+              .slice(-1)
+              .map((text, index) => (
+                <ReactMarkdown key={index} className="botText">
+                  {inputFromUpload
+                    ? "Here is what I could extract from the uploaded document:\n" +
+                      text.slice(5)
+                    : text.slice(5)}
+                </ReactMarkdown>
+              ));
+            setMessages((prevMessages) => [
+              ...prevMessages,
+              { text: formattedConversation, fromUser: false },
+            ]);
+            if (response.data.submissionStatus === "submitted") {
+              value.setInvoiceCounter((prevCounter) => prevCounter + 1);
+              await invoiceHeaderCreation();
+            }
+          }
+        } else {
+          // For a PO-triggered submission, handle the response as needed.
+          const botReply = response.data.chat_history.slice(-1);
+          const formattedConversation = response.data.chat_history
+            .slice(-1)
+            .map((text, index) => (
+              <ReactMarkdown key={index} className="botText">
+                {inputFromUpload
+                  ? "Here are the PO Items details:\n" + text.slice(5)
+                  : text.slice(5)}
+              </ReactMarkdown>
+            ));
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            { text: formattedConversation, fromUser: false },
+          ]);
+          if (response.data.submissionStatus === "submitted") {
+            value.setInvoiceCounter((prevCounter) => prevCounter + 1);
+            await invoiceHeaderCreation();
+          }
+        }
+
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+          typingTimeoutRef.current = null;
+        }
+        setTyping(false);
+      }
+    } catch (error) {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+      setTyping(false);
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleMessageSubmit1 = async (input, inputFromUpload) => {
+    if (!input.trim()) return;
+    setMessages((prevMessages) => {
+      const newMessages = inputFromUpload
+        ? [...prevMessages] // Do not add any new message for inputFromUpload
+        : [...prevMessages, { text: input, fromUser: true }];
+
+      if (!inputFromUpload) {
+        setInput(""); // Clear input if it's not from an upload
+      }
+
+      return newMessages;
+    });
+    // setMessages(newMessages);
+    setInput("");
+    //typingIndicator
+    typingTimeoutRef.current = setTimeout(() => {
+      setTyping(true);
+    }, 1500);
+
+    //typingIndicator
+    try {
+      const response = await axios.post(
+        // `http://localhost:8000/creation/response?query=${input}`,
+        `http://localhost:8000/creation/response`, // API endpoint
+        {
+          user_id: "admin", // The user_id value
+          message: input, // The message value
+        },
+
+        { headers: { "Content-Type": "application/json" } }
+      );
+      console.log("Data response", response.data);
+      if (response.data.test_model_reply === "Creation") {
+        value.setIsActive(true);
+      } else if (response.data.test_model_reply === "Fetch") {
+        value.setIsActive(false);
+        // await getInvoiceDetails("INV498");
+      } else if (response.data.submissionStatus === "submitted") {
+        value.setIsActive(false);
+      }
+      if (response.status === 200 || response.status === 201) {
+        const invoice_json = response.data.invoice_json;
+        // const invoice_json = JSON.parse(response.data.invoice_json);
+        let updatedInvoiceJson = {
+          ...invoice_json,
+          ...(invoice_json["total amount"] && {
+            "total amount": parseFloat(
+              invoice_json["total amount"].replace(/,/g, "")
+            ),
+          }),
+          ...(invoice_json["total tax"] && {
+            "total tax": parseFloat(
+              invoice_json["total tax"].replace(/,/g, "")
+            ),
+          }),
+        };
+        // console.log(
+        //   "invoice_json: ",
+        //   invoice_json,
+        //   "updatedInvoiceJson: ",
+        //   updatedInvoiceJson
+        // );
+        value.setinvoiceDatafromConversation(
+          response.data.invoiceDatafromConversation
+        );
+
+        const invoiceCheckStatus = await invoiceCheck2(
+          updatedInvoiceJson,
+          response.data.invoiceDatafromConversation
+        );
+        const uploadText =
+          "Here is what I could extract from the uploaded document: \n";
+        // if (value.invoiceData.poNumber === "") {
+        if (
+          response.data.invoice_json["PO Number"] === undefined ||
+          response.data.invoice_json["PO Number"] === "" ||
+          response.data.invoice_json["PO Number"] === null
+        ) {
+          const botReply = response.data.chat_history.slice(-1);
+          const reply = botReply[0].slice(5);
+          const formattedConversation = response.data.chat_history
+            .slice(-1)
+            .map((text, index) => (
+              <ReactMarkdown key={index} className={"botText"}>
+                {/* {text.slice(5)} */}
+                {inputFromUpload ? uploadText + text.slice(5) : text.slice(5)}
+              </ReactMarkdown>
+            ));
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            { text: formattedConversation, fromUser: false },
+          ]);
+          // }
+          if (response.data.submissionStatus == "submitted") {
+            // let validationStatus = await itemQuantityValidation();
+            // if (validationStatus) {
+            value.setInvoiceCounter((prevCounter) => prevCounter + 1);
+            await invoiceHeaderCreation();
+            // }
+          } else {
+            value.setModalVisible(false);
+          }
+        } else {
+          if (invoiceCheckStatus) {
+            const botReply = response.data.chat_history.slice(-1);
+            const reply = botReply[0].slice(5);
+            const formattedConversation = response.data.chat_history
+              .slice(-1)
+              .map((text, index) => (
+                <ReactMarkdown key={index} className={"botText"}>
+                  {inputFromUpload ? uploadText + text.slice(5) : text.slice(5)}
+                </ReactMarkdown>
+              ));
+            setMessages((prevMessages) => [
+              ...prevMessages,
+              { text: formattedConversation, fromUser: false },
+            ]);
+
+            if (response.data.submissionStatus == "submitted") {
+              // let validationStatus = await itemQuantityValidation();
+              // if (validationStatus) {
+              value.setInvoiceCounter((prevCounter) => prevCounter + 1);
+              await invoiceHeaderCreation();
+              // }
+            } else {
+              value.setModalVisible(false);
+            }
+          } else {
+            console.log("invoiceCheckStatus:FALSEEEEEEEEEEEEEEEEEEEEE");
+          }
+        }
+        //typingIndicator
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+          typingTimeoutRef.current = null;
+        }
+        setTyping(false);
+        //typingIndicator
+      }
+    } catch (error) {
+      //typingIndicator
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+      setTyping(false);
+      //typingIndicator
+
+      console.error("Error fetching data:", error);
+    }
+  };
+  //create invoice details
+  const invoiceDetailsCreation = async () => {
+    try {
+      setPdfCardVisible(true);
+      const updatedInvoiceItems = value.poDetailsData.map((item) => ({
+        ...item,
+        invoiceNumber: value.systemDocumentId,
+        itemCost: item.invCost,
+        totalItemCost: item.invAmt,
+        itemQuantity: item.invQty,
+      }));
+      const response = await axios({
+        method: "post",
+        url: `http://localhost:8000/invDetailsAdd/`,
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+        data: updatedInvoiceItems,
+      });
+      value.setModalDetails({
+        visible: true,
+        text: "Invoice Created Successfully",
+        isSuccessful: true,
+      });
+
+      // console.log("invoice Details Creation Response:", response.data);
+    } catch (error) {
+      value.setModalDetails({
+        visible: true,
+        text: "An Error occured while creating Invoice",
+        isSuccessful: false,
+      });
+      setMessages([
+        ...messages,
+        { text: "An Error occured while creating Invoice", fromUser: false },
+      ]);
+      console.log("Invoice DEtails Creation Error:", error, error.data);
+    }
+  };
+  //create invoice header
+  const invoiceHeaderCreation = async () => {
+    // extractAndSave(value.invoiceData);
+    const invData = {
+      invoiceId: value.systemDocumentId,
+      userInvNo: value.invoiceData.userInvNo,
+      invoiceType: typeofInv,
+      currency: value.poHeaderData.currency,
+      payment_term: value.poHeaderData.paymentTerm,
+      invoice_status: "Pending",
+      total_cost: value.invoiceData.totalAmount - value.invoiceData.totalTax,
+      total_tax: value.invoiceData.totalTax,
+      total_amount: value.invoiceData.totalAmount,
+      invoicedate: formatDate(value.invoiceData.invoiceDate),
+      total_qty: sumQuantities(value.itemDetails.quantity),
+      storeId:'STORE001'
+    };
+    try {
+      const response = await axios({
+        method: "post",
+        url: `http://localhost:8000/invCreation/`,
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+        data: invData,
+      });
+      // console.log("invoice Creation Response:", response.data);
+      await invoiceDetailsCreation();
+      setPdfData(value);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          component: (
+            <PdfCard
+              title={"Invoice Number: " + value.invoiceData.userInvNo}
+              invoiceID={value.invoiceData.userInvNo}
+              systemDocId={value.systemDocumentId}
+            />
+          ),
+          fromUser: false,
+          isFile: true,
+        },
+      ]);
+
+      // value.setModalText("Invoice created successfully!");
+      await clearDataApi();
+
+      // Set pdfCardVisible to true to ensure it stays visible
+      setPdfCardVisible(false);
+    } catch (error) {
+      value.setModalDetails({
+        visible: true,
+        text: "An Error occured while creating Invoice",
+        isSuccessful: false,
+      });
+      setMessages([
+        ...messages,
+        { text: "An Error occured while creating Invoice", fromUser: false },
+      ]);
+      console.log("Invoice Header Creation Error:", error, error.data);
+    }
+  };
+
+  const formatInvoice = (jsonData) => {
+    console.log("JSON data: ", jsonData.date);
+    let modifiedDate = "";
+    try {
+      const dateObject = new Date(jsonData.date);
+      if (!isNaN(dateObject)) {
+        modifiedDate =
+          `${(dateObject.getMonth() + 1).toString().padStart(2, "0")}/` +
+          `${dateObject.getDate().toString().padStart(2, "0")}/` +
+          `${dateObject.getFullYear()}`;
+      } else {
+        console.log("Invalid date");
+      }
+    } catch (error) {
+      console.log("Error parsing date:", error);
+    }
+
+    const modifiedJsonData = { ...jsonData, date: modifiedDate };
+    console.log("mod", modifiedJsonData);
+    return Object.entries(jsonData)
+      .map(
+        ([key, value]) =>
+          `${key
+            .replace(/_/g, " ") // Replace underscores with spaces
+            .replace(/\b\w/g, (char) => char.toUpperCase())}: ${value ?? "N/A"}`
+      )
+      .join("\n");
+  };
+
+  const uploadInvoice = async (event) => {
+    let file = event.target.files[0];
+    console.log("Event:", event.target.files);
+    const formData = new FormData();
+    formData.append("file", file);
+    let fileDetails = {
+      status: true,
+      name: file?.name,
+      file: file,
+    };
+    setUploadLoading(true);
+
+    try {
+      const response = await axios({
+        method: "POST",
+        url: `http://localhost:8000/uploadGpt/`,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        data: formData,
+      });
+      // const response = await axios.post(
+      //   "http://localhost:8000/upload/",
+      //   formData,
+      //   {
+      //     headers: {
+      //       "Content-Type": "multipart/form-data",
+      //     },
+      //   }
+      // );
+      console.log("upload response: ", response.data);
+      if (response.status === 200 || response.status === 201) {
+        // await clearDataApi();
+        //PDF VIEW
+        if (file && file.type === "application/pdf") {
+          setUploadLoading(false);
+
+          value.setUploadedFile(fileDetails);
+
+          // value.setModalText("Invoice uploaded successfully!");
+          value.setModalDetails({
+            visible: true,
+            text: "Invoice uploaded successfully!",
+            isSuccessful: true,
+          });
+
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            {
+              component: <PdfCard uploadedFile={fileDetails} />,
+              fromUser: true,
+              isFile: true,
+            },
+          ]);
+          await handleMessageSubmit(
+            formatInvoice(response.data.structured_data),
+            true
+          );
+        } else {
+          alert("Please upload a valid PDF file.");
+          await clearDataApi();
+        }
+      }
+    } catch (error) {
+      setUploadLoading(false);
+      console.log("Upload Error:", error, error.data);
+      value.setModalDetails({
+        visible: true,
+        text: "An Error occured while creating Invoice",
+        isSuccessful: false,
+      });
+    }
+  };
+  //clear data
+  const clearDataApi = async () => {
+    value.setModalVisible(true);
+    value.setIsActive(false);
+
+    try {
+      // console.log("clearDataApi");
+      const response = await axios({
+        method: "post",
+        url: `http://localhost:8000/clearData?submitted=submitted`,
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+
+      // console.log("invoice Clear Response:", response.data);
+      clearFormData();
+    } catch (error) {
+      // console.log("Invoice Clear Error:", error, error.data);
+    }
+  };
+  console.log("checkConsole", value);
 
   return (
     <Sheet
@@ -833,6 +1136,13 @@ export default function ChatbotPane() {
       }}
       ref={messageEl}
     >
+      <Backdrop
+        sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
+        open={uploadLoading}
+        onClick={() => setUploadLoading(false)}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
       <Box
         style={{
           display: "flex",
@@ -842,13 +1152,6 @@ export default function ChatbotPane() {
           justifyContent: "flex-end",
         }}
       >
-        {/* {messages.map((message, index) => (
-          <>
-            <ChatMessage
-              key={index}
-              text={message.text}
-              fromUser={message.fromUser}
-            /></>))} */}
         {messages.map((message, index) => (
           <div
             key={index}
@@ -862,26 +1165,8 @@ export default function ChatbotPane() {
               isFile={message.isFile}
             />
           </div>
-        ))}
-        {/* {index == messages.length - 1 && value.modalVisible && pdfData && (
-              <ChatMessage
-                key={index}
-                text={
-                  <PdfCard
-                    title={"Invoice Number: " + pdfData.poHeaderData.invoiceNo}
-                    invoiceID={pdfData.poHeaderData.invoiceNo}
-                  />
-                }
-                fromUser={message.fromUser}
-              />
-            )} */}
-
-        {/* {value.modalVisible && pdfData && (
-          <PdfCard
-            title={"Invoice Number: " + pdfData.poHeaderData.invoiceNo}
-            invoiceID={pdfData.poHeaderData.invoiceNo} 
-          />
-        )} */}
+        ))}{" "}
+        {typing && <TypingIndicatorComponent scrollToBottom={scrollToBottom} />}
       </Box>
       <form
         onSubmit={(e) => {
@@ -890,14 +1175,20 @@ export default function ChatbotPane() {
         }}
         id="form1"
         className="chatbot-input-form"
-        style={{
-          display: "flex",
-          backgroundColor: "#283d76",
-          borderRadius: "0.5rem",
-        }}
       >
-        <Add style={{ color: "white" }} />
-        <Smiley style={{ color: "white" }} />
+        <label className="paneIcon">
+          <input
+            type="file"
+            style={{ display: "none" }}
+            onChange={(e) => uploadInvoice(e)}
+            onClick={(event) => (event.target.value = "")}
+          />
+          <Add className="paneIcon" />
+        </label>
+        <Smiley
+          className="paneIcon"
+          onClick={() => setPickerVisible(!isPickerVisible)} // Toggle emoji picker visibility
+        />
         <input
           id="inputValue"
           type="text"
@@ -910,11 +1201,19 @@ export default function ChatbotPane() {
           style={{ margin: "0.5rem", height: "2rem" }}
         />
         <SendIcon
-          style={{ color: "white" }}
+          className="paneIcon"
           onClick={() => handleMessageSubmit(input)}
         />
         <i className="fa fa-paper-plane-o" aria-hidden="true"></i>
       </form>
+      {isPickerVisible && (
+        <div
+          style={{ position: "absolute", zIndex: 1000, bottom: "4rem" }}
+          ref={pickerRef}
+        >
+          <Picker data={data} onEmojiSelect={handleEmojiSelect} />
+        </div>
+      )}
     </Sheet>
   );
 }

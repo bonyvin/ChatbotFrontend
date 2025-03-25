@@ -18,7 +18,7 @@ export default function Chatbot() {
           height: "90vh",
           backgroundColor: "white",
           marginTop: "10vh",
-          display:'flex',
+          display: "flex",
           alignItems: "flex-end",
         }}
       >

@@ -22,10 +22,21 @@ const ChatMessage = ({ text, fromUser, isFile = false }) => {
             You
             <img src={user} style={{ width: "2rem", marginLeft: "0.3rem" }} />
           </div>
-          <div className="container">
+          {/* <div className="container">
             <div className={`message-bubble ${fromUser ? "user" : "bot"}`}>
               {text}
             </div>
+          </div> */}
+          <div className={isFile ? "" : "container"}>
+            {isFile ? (
+              <div className="containerUserUpload">{text}</div>
+            ) : (
+              <div
+                className={`message-bubble user`}
+              >
+                {text}
+              </div>
+            )}
           </div>
         </div>
       ) : (
@@ -46,12 +57,12 @@ const ChatMessage = ({ text, fromUser, isFile = false }) => {
             />
             ExpX
           </div>
-          <div className={isFile?"":"containerBot"}>
+          <div className={isFile ? "" : "containerBot"}>
             {isFile ? (
               <div>{text}</div>
             ) : (
               <div
-                className={`message-bubble-bot ${fromUser ? "user" : "bot"}`}
+                className={`message-bubble-bot bot`}
               >
                 {text}
               </div>

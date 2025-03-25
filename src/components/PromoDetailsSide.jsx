@@ -1,0 +1,1233 @@
+// React and hooks
+import React, { useContext, useEffect, useRef, useState } from "react";
+
+// Images
+import loginImage from "../images/loginBackground.png";
+import kpmgWhite from "../images/kpmgWhite.png";
+import symbolBlue from "../images/symbolBlue.png";
+
+// Pages
+import SignInSide from "../Pages/Login";
+
+// Material UI components
+import {
+  Grid,
+  Typography,
+  Button,
+  InputAdornment,
+  InputBase,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
+  Dialog,
+  FormControlLabel,
+  Checkbox,
+  DialogActions,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+} from "@mui/material";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import {
+  HomeRoundedIcon,
+  ChevronRightRoundedIcon,
+  EmailRoundedIcon,
+  AccessTimeFilledRoundedIcon,
+  VideocamRoundedIcon,
+  InsertDriveFileRoundedIcon,
+  EditRoundedIcon,
+  ExpandMore,
+  ExpandLess,
+  CloudUploadIcon,
+  SendIcon,
+  Visibility,
+  Cancel,
+} from "@mui/icons-material";
+// Joy UI components
+import {
+  AspectRatio,
+  Box,
+  Divider,
+  FormControl,
+  FormLabel,
+  FormHelperText,
+  Input,
+  IconButton,
+  Textarea,
+  Stack,
+  Select,
+  Option,
+  Tabs,
+  TabList,
+  Tab,
+  Breadcrumbs,
+  Link,
+  Card,
+  CardActions,
+  CardOverflow,
+} from "@mui/joy";
+
+// Bootstrap components
+import { Form } from "react-bootstrap";
+
+// React PDF
+import { BlobProvider, PDFDownloadLink } from "@react-pdf/renderer";
+
+// Context
+import { AuthContext } from "../context/ContextsMasterFile";
+
+// Custom Components
+import Chatbot from "./Chatbot";
+import Chatb from "./Chatb";
+import PromoChatbotPane from "./PromoChatbotPane";
+import PopUp from "./PopUp";
+import { DynamicCutoutInput } from "./DynamicCutoutInput";
+import Invoice from "./PDF Generation/Invoice";
+import ItemInfoPopup from "./ItemInfoPopup";
+import SupplierInfoPopUp from "./SupplierInfoPopUp";
+
+// React Icons
+import { BsFillInfoCircleFill } from "react-icons/bs";
+import { FiUpload } from "react-icons/fi";
+import zIndex from "@mui/material/styles/zIndex";
+import Promotion from "./PDF Generation/Promotion";
+import PreviewDocs from "./PDF Generation/PreviewDocs";
+
+// PDF Viewer
+import { PDFViewer } from "@react-pdf/renderer";
+
+function PromoDetailsSide() {
+  const messagesEndRef = useRef(null);
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+  const [supplierPopupStatus, setSupplierPopupStatus] = useState(false);
+  const [itemPopupStatus, setItemPopupStatus] = useState(false);
+  const [tableToggle, setTableToggle] = useState(false);
+  const [promoPreview, setPromoPreview] = useState(false);
+
+  const handleTableExpand = () => {
+    setTableToggle(!tableToggle);
+  };
+  useEffect(() => {
+    scrollToBottom();
+  }, [tableToggle]);
+  const value = useContext(AuthContext);
+  useEffect(() => {
+    if (value.promotionData.itemList.length > 0) {
+      setSelectedItems((prevSelectedItems) => {
+        const updatedState = { ...prevSelectedItems };
+
+        value.promotionData.itemList.forEach((item) => {
+          updatedState[item] = true;
+        });
+
+        return updatedState;
+      });
+
+      value.promotionData.excludedItemList.map((item) =>
+        setExcludedSelectedItems({
+          ...excludedSelectedItems,
+          [item]: true,
+        })
+      );
+    }
+  }, [
+    value.promotionData.itemList,
+    value.promotionData.excludedItemList,
+    value.promoTotalItemsArray,
+  ]);
+  const showForm = value.isActive;
+
+  const handleRadioChange = (type) => {
+    value.setTypeOfPromotion({
+      simple: type === "simple",
+      buyXGetY: type === "buyXGetY",
+      threshold: type === "threshold",
+      giftWithPurchase: type === "giftWithPurchase",
+    });
+    value.setPromotionData({ ...value.promotionData, promotionType: type });
+  };
+
+  const handleItemAndQuantity = (itemId, qty, invCost) => {
+    if (value.poDetailsData.length === 1) {
+      value.setItemDetailsInput(() => ({
+        items: [itemId],
+        quantity: [qty],
+        invoiceCost: [invCost],
+      }));
+    } else if (value.poDetailsData.length > 1) {
+      value.setItemDetailsInput((prevState) => {
+        const itemIndex = prevState.items.indexOf(itemId);
+
+        if (itemIndex > -1) {
+          // Update quantity and invoiceCost for existing item
+          const updatedQuantities = [...prevState.quantity];
+          const updatedInvoiceCosts = [...prevState.invoiceCost];
+          updatedQuantities[itemIndex] = qty;
+          updatedInvoiceCosts[itemIndex] = invCost;
+
+          return {
+            items: [...prevState.items],
+            quantity: updatedQuantities,
+            invoiceCost: updatedInvoiceCosts,
+          };
+        } else {
+          // Add new item, quantity, and invoiceCost
+          return {
+            items: [...prevState.items, itemId],
+            quantity: [...prevState.quantity, qty],
+            invoiceCost: [...prevState.invoiceCost, invCost],
+          };
+        }
+      });
+    } else {
+      console.log("poDetailsData length <= 0, handleItemAndQuantity");
+    }
+  };
+
+  const hierarchyTypeOptions = ["Department", "Class", "Sub Class"];
+  const discountTypeOptions = ["Fixed Price", "% Off", "Buy One Get One Free"];
+  const handleChangeHierarchy = (event, newValue) => {
+    // console.log("Hei",newValue)
+    value.setPromotionData({
+      ...value.promotionData,
+      hierarchyType: newValue,
+    });
+  };
+  const handleChangeDiscount = (event, newValue) => {
+    value.setPromotionData({
+      ...value.promotionData,
+      discountType: newValue,
+    });
+  };
+  const initialItemsState =
+    value.promoTotalItemsArray?.reduce((acc, item) => {
+      acc[item] = false;
+      return acc;
+    }, {}) || {};
+
+  // Separate states for items and excluded items
+  const [selectedItems, setSelectedItems] = useState(initialItemsState);
+  const [excludedSelectedItems, setExcludedSelectedItems] =
+    useState(initialItemsState);
+
+  // State to control modal visibility and type ("items" or "excluded")
+  const [itemModalVisible, setItemModalVisible] = useState(false);
+  const [modalType, setModalType] = useState(null);
+
+  // Generic change handler that updates the proper state based on modalType
+  const handleCheckboxChange = (event) => {
+    const { name, checked } = event.target;
+    if (modalType === "items") {
+      setSelectedItems((prev) => ({ ...prev, [name]: checked }));
+    } else if (modalType === "excluded") {
+      setExcludedSelectedItems((prev) => ({ ...prev, [name]: checked }));
+    }
+  };
+
+  // Function to open modal and set the type
+  const handleItemModal = (type) => {
+    setModalType(type); // type should be "items" or "excluded"
+    setItemModalVisible(true);
+  };
+
+  return (
+    <Grid container component="main" style={{}}>
+      <Grid
+        item
+        xs={8}
+        sm={8}
+        md={8}
+        container
+        component="main"
+        style={{ padding: "1rem" }}
+        className="imageBackground"
+        ref={messagesEndRef}
+      >
+        <div style={{ position: "absolute" }}>
+          <PopUp {...value.modalDetails} />
+          <ItemInfoPopup
+            visible={itemPopupStatus}
+            setVisible={setItemPopupStatus}
+          />
+          <SupplierInfoPopUp
+            visible={supplierPopupStatus}
+            setVisible={setSupplierPopupStatus}
+          />
+          <Dialog
+            open={itemModalVisible}
+            onClose={() => setItemModalVisible(false)}
+            aria-labelledby="responsive-dialog-title"
+          >
+            <DialogTitle id="responsive-dialog-title">
+              {"Select from list of items"}
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText
+                style={{ display: "flex", flexDirection: "column" }}
+              >
+                {value.promoTotalItemsArray &&
+                  value.promoTotalItemsArray.map((item) => (
+                    <FormControlLabel
+                      key={item}
+                      control={
+                        <Checkbox
+                          onChange={handleCheckboxChange}
+                          name={item}
+                          checked={
+                            modalType === "items"
+                              ? selectedItems[item]
+                              : excludedSelectedItems[item]
+                          }
+                        />
+                      }
+                      label={item}
+                    />
+                  ))}
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions style={{ justifyContent: "space-between" }}>
+              <Button
+                variant="contained"
+                onClick={() => setItemModalVisible(false)}
+              >
+                OK
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => setItemModalVisible(false)}
+              >
+                Cancel
+              </Button>
+            </DialogActions>
+          </Dialog>
+          {/* <PopUp visible={value.modalVisible} text={value.modalText} /> */}
+          <Dialog
+            open={promoPreview}
+            onClose={() => setPromoPreview(false)}
+            aria-labelledby="responsive-dialog-title"
+            style={{
+              width: "90%",
+              height: "90%",
+              margin: "auto",
+            }}
+            PaperProps={{
+              style: {
+                width: "100%",
+                height: "100%",
+                maxWidth: "unset",
+                maxHeight: "unset",
+                margin: 0,
+              },
+            }}
+          >
+            <div
+              className="dialog-container"
+              style={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                overflow: "hidden",
+              }}
+            >
+              {/* Use PDFViewer to allow for real-time updates */}
+              <PDFViewer
+                style={{
+                  flex: 1,
+                  width: "100%",
+                  height: "100%",
+                  border: "none",
+                  overflow: "hidden",
+                }}
+              >
+                <PreviewDocs
+                  promoPreview={true}
+                  invoicePreview={false}
+                  poPreview={false}
+                  value={value}
+                />
+              </PDFViewer>
+            </div>
+          </Dialog>
+        </div>
+
+        {/* {!showForm ? (
+          <Card
+            className="generalView"
+            style={{ width: "100%", padding: "2rem" }}
+            
+          >
+            <img src={symbolBlue} style={{ width: "4.2rem" }}></img>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                width: "60%",
+              }}
+            >
+              <Typography
+                className="OpenSans"
+                style={{
+                  fontSize: "2rem",
+                  fontWeight: "700",
+                  color: "#00338D",
+                  marginBottom: "1.5rem",
+                  marginTop: "1.5rem",
+                }}
+              >
+                Welcome Charles !
+              </Typography>
+              <Typography
+                style={{
+                  fontSize: "1rem",
+                  fontWeight: "500",
+                  color: "#00338D",
+                  textAlign: "left",
+                }}
+              >
+                Need help with purchase orders, invoices, payments, ASNs,
+                promotions or more? I've got you covered - happy to assist!
+              </Typography>
+            </div>
+          </Card>
+        ) : ( */}
+
+        <Card
+          className="generalView"
+          style={{ width: "100%" }}
+          ref={messagesEndRef}
+        >
+          <Card ref={messagesEndRef}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+              }}
+            >
+              <Typography
+                style={{
+                  fontSize: "1rem",
+                  fontWeight: "700",
+                  fontFamily: "Poppins,sans-sherif",
+                }}
+              >
+                Promotions
+              </Typography>
+              <Typography style={{ fontSize: "0.6rem" }}>
+                Fields marked as * are mandatory
+              </Typography>
+            </div>
+
+            <Form className="generalRadio">
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <Typography
+                  style={{
+                    fontSize: "0.8rem",
+                    fontWeight: "600",
+                    fontFamily: "Poppins,sans-sherif",
+                  }}
+                >
+                  Type
+                </Typography>
+              </div>
+              <div
+                style={{
+                  //   display: "flex",
+                  //   justifyContent: "space-between",
+                  width: "90%",
+                }}
+              >
+                <div
+                  className="mb-3"
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    flex: 1,
+                  }}
+                >
+                  <Form.Check
+                    inline
+                    label="Simple"
+                    name="group1"
+                    type={"radio"}
+                    id={`inline- -1`}
+                    className="labelText"
+                    checked={value.typeOfPromotion.simple}
+                    onChange={() => handleRadioChange("simple")}
+                    // checked={value.promotionData.invoiceType.match(/merchandise/i) }
+                  />
+                  <Form.Check
+                    inline
+                    label="Buy X, Get Y"
+                    disabled
+                    name="group1"
+                    type={"radio"}
+                    id={`inline- -2`}
+                    className="labelText"
+                    checked={value.typeOfPromotion.buyXGetY}
+                    onChange={() => handleRadioChange("buyXGetY")}
+                    // checked={value.promotionData.invoiceType === "Non - Merchandise"}
+                  />
+                  <Form.Check
+                    inline
+                    label="Threshold"
+                    disabled
+                    name="group1"
+                    type={"radio"}
+                    id={`inline- -3`}
+                    className="labelText"
+                    checked={value.typeOfPromotion.threshold}
+                    onChange={() => handleRadioChange("threshold")}
+                    // checked={value.promotionData.invoiceType.match(/debit\s*-\s*\s*note\s*: ?(.*?)(?:,|$)/i) }
+                  />
+                  <Form.Check
+                    inline
+                    label="GWP (Gift with Purchase)"
+                    disabled
+                    name="group1"
+                    type={"radio"}
+                    id={`inline- -4`}
+                    className="labelText"
+                    // checked={value.promotionData.invoiceType === "Credit Note"}
+                    checked={value.typeOfPromotion.giftWithPurchase}
+                    onChange={() => handleRadioChange("giftWithPurchase")}
+                  />
+                </div>
+              </div>
+            </Form>
+          </Card>
+          <Card ref={messagesEndRef}>
+            <Stack
+              direction="row"
+              spacing={3}
+              sx={{ display: { xs: "none", md: "flex" }, my: 1 }}
+            >
+              <Stack spacing={2} sx={{ flexGrow: 1 }}>
+                <div
+                  style={{ display: "flex", justifyContent: "space-between" }}
+                >
+                  <Typography
+                    style={{
+                      fontSize: "0.8rem",
+                      fontWeight: "600",
+                      fontFamily: "Poppins,sans-sherif",
+                    }}
+                  >
+                    Level
+                  </Typography>
+                </div>
+                <Stack
+                  direction="row"
+                  spacing={12}
+                  sx={{ alignItems: "center", width: "90%" }}
+                >
+                  <Typography
+                    style={{
+                      fontSize: "0.75rem",
+                      fontWeight: "600",
+                      fontFamily: "Poppins,sans-sherif",
+                      flexDirection: "row",
+                      display: "flex",
+                      width: "6rem",
+                    }}
+                  >
+                    Hierarchy<div style={{ color: "red" }}>*</div>
+                  </Typography>
+
+                  <FormControl sx={{ flex: 1, position: "relative" }}>
+                    <Form.Label
+                      id="custom"
+                      className="position-absolute top-0 translate-middle custom"
+                      style={{
+                        zIndex: 2,
+                        padding: "0 4px", // Optional: Add some padding to the label to prevent overlap
+                      }}
+                    >
+                      <span style={{ backgroundColor: "#FBFCFE", zIndex: 2 }}>
+                        Hierarchy Type
+                      </span>
+                      <div style={{ color: "red", zIndex: 2 }}>{"*"}</div>
+                    </Form.Label>
+                    <Select
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      value={value.promotionData.hierarchyType}
+                      placeholder="Select Hierarchy Type"
+                      onChange={handleChangeHierarchy}
+                      sx={{
+                        zIndex: 1,
+                        "& .MuiSelect-button": { color: "#212529" }, // Ensures black color for placeholder
+                      }}
+                    >
+                      {hierarchyTypeOptions.map((item) => (
+                        <Option key={item} value={item}>
+                          {item}
+                        </Option>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <FormControl sx={{ flex: 1 }}>
+                    <DynamicCutoutInput
+                      label="Value"
+                      required={true}
+                      placeholder="Add Value here"
+                      value={value.promotionData.hierarchyValue}
+                      fun={(text) =>
+                        value.setPromotionData({
+                          ...value.promotionData,
+                          hierarchyValue: text,
+                        })
+                      }
+                    />
+                  </FormControl>
+                </Stack>
+                <Stack
+                  direction="row"
+                  spacing={12}
+                  sx={{ alignItems: "center", width: "90%" }}
+                >
+                  <Typography
+                    style={{
+                      fontSize: "0.75rem",
+                      fontWeight: "600",
+                      fontFamily: "Poppins,sans-sherif",
+                      flexDirection: "row",
+                      display: "flex",
+                      width: "6rem",
+                    }}
+                  >
+                    Item<div style={{ color: "red" }}>*</div>
+                  </Typography>
+                  <FormControl sx={{ flex: 1 }}>
+                    <DynamicCutoutInput
+                      label="Item Type"
+                      required={true}
+                      placeholder="Add Item IDs"
+                      value={Object.keys(selectedItems).filter(
+                        (key) => selectedItems[key] === true
+                      )}
+                      // value={Object.values(selectedItems).filter((item)=>item==true).key}
+                      fun={(text) =>
+                        value.setPromotionData({
+                          ...value.promotionData,
+                          itemList: text,
+                        })
+                      }
+                      style={{}}
+                      EndComponent={
+                        <Visibility
+                          style={{
+                            backgroundColor: "white",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => handleItemModal("items")}
+                          id="item"
+                        ></Visibility>
+                      }
+                    />
+                  </FormControl>
+                  <FormControl
+                    sx={{ flex: 1, display: "flex", flexDirection: "row" }}
+                  >
+                    {!value.itemUpload.items && (
+                      <Button
+                        variant="outlined"
+                        endIcon={<FiUpload style={{ fontSize: "1rem" }} />}
+                        style={{
+                          fontFamily: "Poppins,sans-serif",
+                          width: "50%",
+                          fontSize: "0.8rem",
+                          position: "relative", // Make the button the container for the file input
+                          overflow: "hidden",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Upload
+                        {/* Hidden file input */}
+                        <input
+                          type="file"
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100%",
+                            opacity: 0,
+                            cursor: "pointer", // Ensures the input behaves like a button
+                          }}
+                          onChange={(e) =>
+                            value.setItemUpload({
+                              ...value.itemUpload,
+                              items: true,
+                              eventItems: e,
+                            })
+                          }
+                          onClick={(event) => (event.target.value = "")} // To allow uploading the same file again
+                        />
+                      </Button>
+                    )}
+                    {value.itemUpload.items && (
+                      <div style={{ display: "flex" }}>
+                        <a
+                          href={URL.createObjectURL(
+                            value.itemUpload.eventItems.target.files[0]
+                          )}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {value.itemUpload.eventItems.target.files[0].name
+                            .length < 12
+                            ? value.itemUpload.eventItems.target.files[0].name
+                            : value.itemUpload.eventItems.target.files[0].name.substring(
+                                0,
+                                10
+                              ) + "..."}
+                        </a>
+                        <Cancel
+                          onClick={() =>
+                            value.setItemUpload({
+                              ...value.itemUpload,
+                              items: false,
+                              eventItems: null,
+                            })
+                          }
+                        />
+                      </div>
+                    )}
+
+                    <div
+                      style={{
+                        fontFamily: "Poppins,sans-serif",
+                        width: "50%",
+                        fontSize: "0.5rem",
+                        display: "flex",
+                        // justifyContent:'center',
+                        alignItems: "flex-end",
+                        padding: "0.25rem",
+                        paddingLeft: "0.5rem",
+                      }}
+                    >
+                      Only Excel files allowed
+                    </div>
+                  </FormControl>
+                </Stack>
+                <Stack
+                  direction="row"
+                  spacing={12}
+                  sx={{ alignItems: "center", width: "90%" }}
+                >
+                  <Typography
+                    style={{
+                      fontSize: "0.75rem",
+                      fontWeight: "600",
+                      fontFamily: "Poppins,sans-sherif",
+                      flexDirection: "row",
+                      display: "flex",
+                      width: "6rem",
+                    }}
+                  >
+                    Exclusions
+                  </Typography>
+                  <FormControl sx={{ flex: 1 }}>
+                    <DynamicCutoutInput
+                      label="Exclusions"
+                      required={false}
+                      placeholder="Add Item IDs to exclude"
+                      value={Object.keys(excludedSelectedItems).filter(
+                        (key) => excludedSelectedItems[key] === true
+                      )}
+                      fun={(text) =>
+                        value.setPromotionData({
+                          ...value.promotionData,
+                          excludedItemList: text,
+                        })
+                      }
+                      style={{}}
+                      EndComponent={
+                        <Visibility
+                          style={{
+                            backgroundColor: "white",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => handleItemModal("excluded")}
+                          id="exclusionItem"
+                        ></Visibility>
+                      }
+                    />
+                  </FormControl>
+                  <FormControl
+                    sx={{ flex: 1, display: "flex", flexDirection: "row" }}
+                  >
+                    {!value.itemUpload.excludedItems && (
+                      <Button
+                        variant="outlined"
+                        endIcon={<FiUpload style={{ fontSize: "1rem" }} />}
+                        style={{
+                          fontFamily: "Poppins,sans-serif",
+                          width: "50%",
+                          fontSize: "0.8rem",
+                          position: "relative", // Make the button the container for the file input
+                          overflow: "hidden",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Upload
+                        {/* Hidden file input */}
+                        <input
+                          type="file"
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100%",
+                            opacity: 0,
+                            cursor: "pointer", // Ensures the input behaves like a button
+                          }}
+                          onChange={(e) =>
+                            value.setItemUpload({
+                              ...value.itemUpload,
+                              excludedItems: true,
+                              eventExcludedItems: e,
+                            })
+                          }
+                          onClick={(event) => (event.target.value = "")} // To allow uploading the same file again
+                        />
+                      </Button>
+                    )}
+                    {value.itemUpload.excludedItems && (
+                      <div style={{ display: "flex" }}>
+                        <a
+                          href={URL.createObjectURL(
+                            value.itemUpload.eventExcludedItems.target.files[0]
+                          )}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {value.itemUpload.eventExcludedItems.target.files[0]
+                            .name.length < 12
+                            ? value.itemUpload.eventExcludedItems.target
+                                .files[0].name
+                            : value.itemUpload.eventExcludedItems.target.files[0].name.substring(
+                                0,
+                                10
+                              ) + "..."}
+                        </a>
+                        <Cancel
+                          onClick={() =>
+                            value.setItemUpload({
+                              ...value.itemUpload,
+                              excludedItems: false,
+                              event: null,
+                            })
+                          }
+                        />
+                      </div>
+                    )}
+                    <div
+                      style={{
+                        fontFamily: "Poppins,sans-serif",
+                        width: "50%",
+                        fontSize: "0.5rem",
+                        display: "flex",
+                        // justifyContent:'center',
+                        alignItems: "flex-end",
+                        padding: "0.25rem",
+                        paddingLeft: "0.5rem",
+                      }}
+                    >
+                      Only Excel files allowed
+                    </div>
+                  </FormControl>
+                </Stack>
+              </Stack>
+            </Stack>
+          </Card>
+          <Card ref={messagesEndRef}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <Typography
+                style={{
+                  fontSize: "0.8rem",
+                  fontWeight: "600",
+                  fontFamily: "Poppins,sans-sherif",
+                }}
+              >
+                Discount Details
+              </Typography>
+              <IconButton aria-label="exp" onClick={handleTableExpand}>
+                {tableToggle ? <ExpandLess /> : <ExpandMore />}
+              </IconButton>
+            </div>
+            {tableToggle && (
+              <Stack
+                ref={messagesEndRef}
+                direction="row"
+                spacing={3}
+                sx={{ display: { xs: "none", md: "flex" }, my: 1 }}
+              >
+                <Stack spacing={2} sx={{ flexGrow: 1 }}>
+                  <Stack
+                    direction="row"
+                    spacing={12}
+                    sx={{ alignItems: "center", width: "90%" }}
+                  >
+                    <Typography
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: "600",
+                        fontFamily: "Poppins,sans-sherif",
+                        flexDirection: "row",
+                        display: "flex",
+                        width: "6rem",
+                      }}
+                    >
+                      Discount<div style={{ color: "red" }}>*</div>
+                    </Typography>
+                    <FormControl sx={{ flex: 1, position: "relative" }}>
+                      <Form.Label
+                        id="custom"
+                        className="position-absolute top-0 translate-middle custom"
+                        style={{
+                          zIndex: 2,
+                          padding: "0 4px", // Optional: Add some padding to the label to prevent overlap
+                        }}
+                      >
+                        <span style={{ backgroundColor: "#FBFCFE", zIndex: 2 }}>
+                          Discount Type
+                        </span>
+                        <div style={{ color: "red", zIndex: 2 }}>{"*"}</div>
+                      </Form.Label>
+                      <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        value={value.promotionData.discountType}
+                        placeholder="Select Discount Type"
+                        onChange={handleChangeDiscount}
+                        sx={{
+                          zIndex: 1,
+                          "& .MuiSelect-button": { color: "#212529" }, // Ensures black color for placeholder
+                        }}
+                      >
+                        {discountTypeOptions.map((item) => (
+                          <Option key={item} value={item}>
+                            {item}
+                          </Option>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    <FormControl sx={{ flex: 1 }}>
+                      <DynamicCutoutInput
+                        label="Discount Amount"
+                        required={true}
+                        placeholder="Add Amount here"
+                        value={value.promotionData.discountValue}
+                        fun={(text) =>
+                          value.setPromotionData({
+                            ...value.promotionData,
+                            discountValue: text,
+                          })
+                        }
+                      />
+                    </FormControl>
+                  </Stack>
+                  <Stack
+                    direction="row"
+                    spacing={12}
+                    sx={{ alignItems: "center", width: "90%" }}
+                  >
+                    <Typography
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: "600",
+                        fontFamily: "Poppins,sans-sherif",
+                        flexDirection: "row",
+                        display: "flex",
+                        width: "6rem",
+                      }}
+                    >
+                      Date<div style={{ color: "red" }}>*</div>
+                    </Typography>
+                    <FormControl sx={{ flex: 1 }}>
+                      <DynamicCutoutInput
+                        label="Start Date"
+                        required={true}
+                        placeholder="Choose start date"
+                        value={value.promotionData.startDate}
+                        type="date"
+                        fun={(text) =>
+                          value.setPromotionData({
+                            ...value.promotionData,
+                            startDate: text,
+                          })
+                        }
+                        style={{}}
+                      />
+                    </FormControl>
+                    <FormControl sx={{ flex: 1 }}>
+                      <DynamicCutoutInput
+                        type="date"
+                        label="End Date"
+                        required={true}
+                        placeholder="Choose End Date"
+                        value={value.promotionData.endDate}
+                        fun={(text) =>
+                          value.setPromotionData({
+                            ...value.promotionData,
+                            endDate: text,
+                          })
+                        }
+                      />
+                    </FormControl>
+                  </Stack>
+                  <Stack
+                    direction="row"
+                    spacing={12}
+                    sx={{ alignItems: "center", width: "90%" }}
+                  >
+                    <Typography
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: "600",
+                        fontFamily: "Poppins,sans-sherif",
+                        flexDirection: "row",
+                        display: "flex",
+                        width: "6rem",
+                      }}
+                    >
+                      Location<div style={{ color: "red" }}>*</div>
+                    </Typography>
+                    <FormControl sx={{ flex: 1 }}>
+                      <DynamicCutoutInput
+                        label="Location"
+                        required={true}
+                        placeholder="Add Store IDs"
+                        value={value.promotionData.locationList}
+                        fun={(text) =>
+                          value.setPromotionData({
+                            ...value.promotionData,
+                            locationList: text,
+                          })
+                        }
+                      />
+                    </FormControl>
+                    <FormControl
+                      sx={{ flex: 1, display: "flex", flexDirection: "row" }}
+                    >
+                      <Button
+                        variant="outlined"
+                        endIcon={<FiUpload style={{ fontSize: "1rem" }} />}
+                        style={{
+                          fontFamily: "Poppins,sans-serif",
+                          width: "50%",
+                          fontSize: "0.8rem",
+                        }}
+                      >
+                        Upload
+                      </Button>
+                      <div
+                        style={{
+                          fontFamily: "Poppins,sans-serif",
+                          width: "50%",
+                          fontSize: "0.5rem",
+                          display: "flex",
+                          // justifyContent:'center',
+                          alignItems: "flex-end",
+                          padding: "0.25rem",
+                          paddingLeft: "0.5rem",
+                        }}
+                      >
+                        Only Excel files allowed
+                      </div>
+                    </FormControl>
+                  </Stack>
+                  <Stack
+                    direction="row"
+                    spacing={12}
+                    sx={{ alignItems: "center", width: "90%" }}
+                  >
+                    <Typography
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: "600",
+                        fontFamily: "Poppins,sans-sherif",
+                        flexDirection: "row",
+                        display: "flex",
+                        width: "6rem",
+                      }}
+                    >
+                      Exclusions
+                    </Typography>
+                    <FormControl sx={{ flex: 1 }}>
+                      <DynamicCutoutInput
+                        label="Exclusions"
+                        required={false}
+                        placeholder="Add Exclusions"
+                        value={value.promotionData.excludedLocationList}
+                        fun={(text) =>
+                          value.setPromotionData({
+                            ...value.promotionData,
+                            excludedLocationList: text,
+                          })
+                        }
+                        style={{}}
+                      />
+                    </FormControl>
+                    <FormControl
+                      sx={{ flex: 1, display: "flex", flexDirection: "row" }}
+                    >
+                      <Button
+                        variant="outlined"
+                        endIcon={<FiUpload style={{ fontSize: "1rem" }} />}
+                        style={{
+                          fontFamily: "Poppins,sans-serif",
+                          width: "50%",
+                          fontSize: "0.8rem",
+                        }}
+                      >
+                        Upload
+                      </Button>
+                      <div
+                        style={{
+                          fontFamily: "Poppins,sans-serif",
+                          width: "50%",
+                          fontSize: "0.5rem",
+                          display: "flex",
+                          // justifyContent:'center',
+                          alignItems: "flex-end",
+                          padding: "0.25rem",
+                          paddingLeft: "0.5rem",
+                        }}
+                      >
+                        Only Excel files allowed
+                      </div>
+                    </FormControl>
+                  </Stack>
+                </Stack>
+              </Stack>
+            )}
+          </Card>
+          <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
+            <CardActions
+              sx={{
+                justifyContent: "space-between",
+                marginLeft: "1rem",
+                marginRight: "1rem",
+              }}
+            >
+              {/* <CardActions sx={{ justifyContent: "space-evenly" }}> */}
+              <Button
+                size="md"
+                variant="solid"
+                style={{
+                  backgroundColor: "#283D76",
+                  fontFamily: "Poppins,sans-serif",
+                  color: "white",
+                }}
+                onClick={() => value.setFormSave((prevState) => !prevState)}
+              >
+                SAVE
+              </Button>
+              {/* <BlobProvider
+                document={<Invoice invoiceId={value.poHeaderData.invoiceNo} />}
+              >
+                {({ url, blob }) => (
+                  <a href={url} target="_blank">
+
+                  </a>
+                )}
+              </BlobProvider> */}
+              <Button
+                size="md"
+                variant="solid"
+                style={{
+                  backgroundColor: "#283D76",
+                  fontFamily: "Poppins,sans-serif",
+                  color: "white",
+                }}
+                onClick={() => setPromoPreview(true)}
+              >
+                PREVIEW
+              </Button>
+
+              <Button
+                size="md"
+                variant="solid"
+                style={{
+                  backgroundColor: "#283D76",
+                  fontFamily: "Poppins,sans-serif",
+                  color: "white",
+                }}
+                onClick={() => value.setFormSubmit((prevState) => !prevState)}
+              >
+                SUBMIT
+              </Button>
+            </CardActions>
+          </CardOverflow>
+        </Card>
+        {/* )}  */}
+      </Grid>
+      <Grid
+        item
+        xs={4}
+        sm={4}
+        md={4}
+        // className="imageBackground"
+        style={{
+          marginTop: "10vh",
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <PromoChatbotPane />
+        <div id="myModal" class="modal fade">
+          <div class="modal-dialog modal-confirm">
+            <div class="modal-content">
+              <div class="modal-header">
+                <div class="icon-box">
+                  <i class="material-icons">&#xE876;</i>
+                </div>
+                <h4 class="modal-title w-100">Awesome!</h4>
+              </div>
+              <div class="modal-body">
+                <p class="text-center">
+                  Your booking has been confirmed. Check your email for detials.
+                </p>
+              </div>
+              <div class="modal-footer">
+                <button
+                  class="btn btn-success btn-block"
+                  data-dismiss="modal"
+                  onClick={() => value.setModalVisible(false)}
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Grid>
+      {/* <Chatbot /> */}
+    </Grid>
+  );
+}
+
+export default PromoDetailsSide;

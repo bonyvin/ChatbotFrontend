@@ -3,8 +3,10 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import DoneIcon from "@mui/icons-material/Done";
 import "../styles/popupStyles.css";
 import success from "../images/success.gif";
+import failure from "../images/failure.gif";
 
-function PopUp({ visible, text }) {
+
+function PopUp({ visible, text,isSuccessful=true}) {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -29,9 +31,9 @@ function PopUp({ visible, text }) {
                     className="material-icons"
                     style={{ height: "3em", width: "3em" }}
                   /> */}
-                  <img src={success} style={{ width: "7rem" }}/>
+                  <img src={isSuccessful?success:failure} style={{ width:isSuccessful? "7rem":"12.5rem" }}/>
                 </div>
-                <h4 className="modal-title w-100">Success!</h4>
+                <h4 className="modal-title w-100">{isSuccessful?"Success!":"Failure"}</h4>
               </div>
               <div className="modal-body">
                 <p className="text-center">{text}</p>

@@ -11,7 +11,7 @@ export default function Header() {
   const defaultTheme = createTheme();
   return (
     <ThemeProvider theme={defaultTheme}>
-      <div style={{ position: "absolute" }}>
+      <div style={{ position: "fixed",zIndex:5 }}>
         <Grid
           item
           xs={4}

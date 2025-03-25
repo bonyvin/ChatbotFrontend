@@ -1,10 +1,38 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useReducer,
+} from "react";
 
 export const AuthContext = createContext();
 
 // export function useAuthContext() {
 //    return useContext(AuthContext);
 // }
+const poInitialState = {
+  poNumber: "",
+  supplierId: "",
+  leadTime: "",
+  estDeliveryDate: "",
+  totalQuantity: "",
+  totalCost: "",
+  totalTax: "",
+  comments: "",
+};
+
+// Define reducer function
+const poReducer = (state, action) => {
+  switch (action.type) {
+    case "UPDATE_FIELD":
+      return { ...state, [action.field]: action.value };
+    case "UPDATE_PO_DATA":
+      return { ...state, ...action.payload }; // Update the entire state with fetched data
+    default:
+      return state;
+  }
+};
 
 export default function AuthProvider({ children }) {
   //    const [user, setUser] = useState(null);
@@ -16,24 +44,51 @@ export default function AuthProvider({ children }) {
     const savedCounter = localStorage.getItem("counter");
     return savedCounter !== null ? JSON.parse(savedCounter) : 150;
   };
+  // const getInitialPoCounter = () => {
+  //   const savedCounter = localStorage.getItem("poCounter");
+  //   console.log("Saved po counter: ",savedCounter == null ? JSON.parse(savedCounter) : 150,JSON.parse(savedCounter))
+  //   return savedCounter !== null ? JSON.parse(savedCounter) : 335; // Default to "PO150" if not set
+  // };
+  const getInitialPoCounter = () => {
+    const savedCounter = localStorage.getItem("poCounter");
+    return savedCounter !== null ? JSON.parse(savedCounter) : 350;
+  };
+  const getInitialPromoCounter = () => {
+    const savedCounter = localStorage.getItem("promotionCounter");
+    return savedCounter !== null ? JSON.parse(savedCounter) : 352;
+  };
+
   const [invoiceCounter, setInvoiceCounter] = useState(getInitialCounter);
+  const [poCounter, setPoCounter] = useState(getInitialPoCounter);
+  const [promotionCounter, setPromotionCounter] = useState(
+    getInitialPromoCounter);  
+  const [promotionCounterId, setPromotionCounterId] = useState(
+    `PROMO${getInitialPromoCounter()}`
+  );
+  const [systemDocumentId, setSystemDocumentId] = useState(
+    `INV${getInitialCounter()}`
+  );
+  useEffect(() => {
+    localStorage.setItem("counter", JSON.stringify(invoiceCounter));
+    localStorage.setItem("poCounter", JSON.stringify(poCounter));
+    localStorage.setItem("promotionCounter", JSON.stringify(promotionCounter));
+  }, [invoiceCounter, poCounter, promotionCounter]);
+
+  const [poCounterId, setPoCounterId] = useState(`PO${getInitialPoCounter()}`);
+
   const [modalVisible, setModalVisible] = useState(false);
+  const [modalText, setModalText] = useState("");
+  const [modalDetails, setModalDetails] = useState({
+    visible: false,
+    text: "",
+    isSuccessful: false,
+  });
+  // const [modalText, setModalText] = useState("");
   const [formSave, setFormSave] = useState(false);
   const [formSubmit, setFormSubmit] = useState(false);
   const [input, setInput] = useState("");
-  //   const [invoiceType, setInvoiceType] = useState("");
-  //   const [invoiceDate, setInvoiceDate] = useState("");
-  //   const [poNumber, setPoNumber] = useState("");
-  //   const [totalAmount, setTotalAmount] = useState("");
-  //   const [totalTax, setTotalTax] = useState("");
-  //   const [items, setItems] = useState([""]);
-  //   const [quantity, setQuantity] = useState([""]);
   const [invoiceDatafromConversation, setinvoiceDatafromConversation] =
     useState({});
-
-  useEffect(() => {
-    localStorage.setItem("counter", JSON.stringify(invoiceCounter));
-  }, [invoiceCounter]);
 
   const [invoiceData, setInvoiceData] = useState({
     invoiceType: "",
@@ -44,6 +99,7 @@ export default function AuthProvider({ children }) {
     items: "",
     quantity: "",
     supplierId: "",
+    userInvNo: "",
   });
   const [extractedData, setExtractedData] = useState({
     invoiceType: "",
@@ -79,35 +135,68 @@ export default function AuthProvider({ children }) {
     debitNote: false,
     creditNote: false,
   });
+
   const [itemDetails, setItemDetails] = useState({
     items: "",
     quantity: "",
+    invoiceCost: "",
   });
-  const [itemDetailsInput,setItemDetailsInput] = useState({
+  const [supplierDetails, setSupplierDetails] = useState({
+    apiResponse: "",
+    supplierId: "",
+    leadTime: "",
+    supplierStatus: false,
+  });
+  const [itemDetailsInput, setItemDetailsInput] = useState({
     items: "",
     quantity: "",
+    invoiceCost: "",
+  });
+  const [itemListPo, setItemListPo] = useState([]);
+  const [uploadedFile, setUploadedFile] = useState({
+    status: false,
+    name: null,
+    file: null,
   });
 
+  //PO
+  const [state, dispatch] = useReducer(poReducer, poInitialState);
+  const [purchaseItemDetails, setPurchaseItemDetails] = useState([]);
+  const [purchaseOrderApiRes, setPurchaseOrderApiRes] = useState([]);
+  const [purchaseContext, setPurchaseContext] = useState(poInitialState);
+  //PROMO
+  const [promotionData, setPromotionData] = useState({
+    promotionType: "",
+    hierarchyType: "",
+    hierarchyValue: "",
+    brand: "",
+    itemList: [],
+    excludedItemList: [],
+    discountType: "",
+    discountValue: "",
+    startDate: "",
+    endDate: "",
+    locationList: [],
+    excludedLocationList: [],
+    totalItemsArray: [],
+  });
 
+  const [promoTotalItemsArray, setPromoTotalItemsArray] = useState([]);
+  const [itemUpload, setItemUpload] = useState({
+    eventItems: null,
+    eventExcludedItems: null,
+    items: false,
+    excludedItems: false,
+  });
+  const [typeOfPromotion, setTypeOfPromotion] = useState({
+    simple: false,
+    buyXGetY: false,
+    threshold: false,
+    giftWithPurchase: false,
+  });
   const value = {
-    //   user,
-    //   setUser,
     isActive,
     setIsActive,
-    // invoiceType,
-    // setInvoiceType,
-    // invoiceDate,
-    // setInvoiceDate,
-    // poNumber,
-    // setPoNumber,
-    // totalAmount,
-    // setTotalAmount,
-    // totalTax,
-    // setTotalTax,
-    // items,
-    // setItems,
-    // quantity,
-    // setQuantity,
     invoiceData,
     setInvoiceData,
     poHeaderData,
@@ -122,6 +211,8 @@ export default function AuthProvider({ children }) {
     setItemDetails,
     modalVisible,
     setModalVisible,
+    modalText,
+    setModalText,
     invoiceCounter,
     setInvoiceCounter,
     formSave,
@@ -131,7 +222,43 @@ export default function AuthProvider({ children }) {
     input,
     setInput,
     formSubmit,
-    setFormSubmit,itemDetailsInput,setItemDetailsInput
+    setFormSubmit,
+    itemDetailsInput,
+    setItemDetailsInput,
+    itemListPo,
+    setItemListPo,
+    uploadedFile,
+    setUploadedFile,
+    modalDetails,
+    setModalDetails,
+    purchaseOrderData: state,
+    dispatch,
+    systemDocumentId,
+    setSystemDocumentId,
+    purchaseItemDetails,
+    setPurchaseItemDetails,
+    purchaseOrderApiRes,
+    setPurchaseOrderApiRes,
+    poCounter,
+    setPoCounter,
+    poCounterId,
+    setPoCounterId,
+    supplierDetails,
+    setSupplierDetails,
+    purchaseContext,
+    setPurchaseContext,
+    promotionCounter,
+    setPromotionCounter,
+    promotionCounterId,
+    setPromotionCounterId,
+    promotionData,
+    setPromotionData,
+    typeOfPromotion,
+    setTypeOfPromotion,
+    itemUpload,
+    setItemUpload,
+    promoTotalItemsArray,
+    setPromoTotalItemsArray,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

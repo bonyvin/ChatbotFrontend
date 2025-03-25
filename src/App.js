@@ -11,8 +11,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import Header from "./components/Header";
-import Navigation from "./navigation/Navigation";
-import MyProfile from "./components/FormTest";
+ import MyProfile from "./components/FormTest";
 import MessageIn from "./components/MessageIn";
 import DetailsSide from "./components/DetailsSide";
 import DetailsTest from "./components/DetailTest";
@@ -23,6 +22,10 @@ import AuthProvider from "./context/ContextsMasterFile";
 import PopUp from "./components/PopUp";
 import BasicDocument from "./components/BasicDocument";
 import InvoiceTemplate from "./components/InvoiceTemplate";
+import PoDetailsSide from "./components/PoDetailsSide";
+import PurchaseOrder from "./components/PDF Generation/PurchaseOrder";
+import PromoDetailsSide from "./components/PromoDetailsSide";
+import Promotion from "./components/PDF Generation/Promotion";
 // function App() {
 //   const {pathname}=useLocation();
 //   const showHeader =  pathname !== "/";
@@ -89,7 +92,9 @@ const AppContent = () => {
         <Route path="/c" element={<ChatbotPane />} />
         <Route path="/basic" element={<BasicDocument />} />
         <Route path="/invform" element={<InvoiceTemplate />} />
-        <Route path="/test" element={<Test />} />
+        <Route path="/test" element={<Promotion promoId={"PROMO001"}/>} />
+        <Route path="/poChatbot" element={<PoDetailsSide/>} />
+        <Route path="/promoChatbot" element={<PromoDetailsSide/>}/>
 
       </Routes>
     </>

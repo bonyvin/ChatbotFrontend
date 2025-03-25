@@ -39,7 +39,7 @@ import VideocamRoundedIcon from "@mui/icons-material/VideocamRounded";
 import InsertDriveFileRoundedIcon from "@mui/icons-material/InsertDriveFileRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import "../styles/general.css";
-import { InputAdornment, InputBase, InputLabel } from "@mui/material";
+import { Dialog, InputAdornment, InputBase, InputLabel } from "@mui/material";
 import { Form } from "react-bootstrap";
 import { DynamicCutoutInput } from "./DynamicCutoutInput";
 import Chatb from "./Chatb";
@@ -56,91 +56,41 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ChatbotPane from "./ChatbotPane";
 import { AuthContext } from "../context/ContextsMasterFile";
 import PopUp from "./PopUp";
-import { BlobProvider, PDFDownloadLink } from "@react-pdf/renderer";
+import { BlobProvider, PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
 import Invoice from "./PDF Generation/Invoice";
+import ItemInfoPopup from "./ItemInfoPopup";
+import SupplierInfoPopUp from "./SupplierInfoPopUp";
+import { BsFillInfoCircleFill } from "react-icons/bs";
+import PreviewDocs from "./PDF Generation/PreviewDocs";
+import { Troubleshoot } from "@mui/icons-material";
 
 function DetailsSide() {
   const messagesEndRef = useRef(null);
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-
+  const [supplierPopupStatus, setSupplierPopupStatus] = useState(false);
+  const [itemPopupStatus, setItemPopupStatus] = useState(false);
   const [tableToggle, setTableToggle] = useState(false);
+  const [invoicePreview, setInvoicePreview] = useState(false);
+
   const handleTableExpand = () => {
     setTableToggle(!tableToggle);
   };
   useEffect(() => {
     scrollToBottom();
   }, [tableToggle]);
-  const rowData = [
-    {
-      a: "India",
-      b: "IN",
-      c: 1324171354,
-      d: 1324171354,
-      e: 1324171354,
-      f: 1324171354,
-      g: 1324171354,
-    },
-    {
-      a: "India",
-      b: "IN",
-      c: 1324171354,
-      d: 1324171354,
-      e: 1324171354,
-      f: 1324171354,
-      g: 1324171354,
-    },
-  ];
   const value = useContext(AuthContext);
   useEffect(() => {}, [value.poDetailsData.length]);
-  // console.log("Po details:",value.poDetailsData.length,value.poDetailsData)
   const showForm = value.isActive;
-  // value.setInvoiceDate("@22")
-  // const handleChange=(text)=>{
-  //   value.setInvoiceDate(text)
-  // }
-  // console.log("Value:",value.invoiceData.invoiceDataType)
+  function sumQuantities(input) {
+    if (!input) return input;
 
-  // Perform regex match on invoiceType
+    const quantitiesArray = Array.isArray(input)
+      ? input
+      : input.split(",").map((num) => parseInt(num.trim(), 10));
 
-  // if(value.invoiceData.invoiceType.match(regexPattern)){
-  //   console.log("Radio",value.invoiceData.invoiceType)
-  // }
-  // else{
-  //   console.log("Does not match")
-  //   console.log("",value.invoiceDatafromConversation,)
-
-  // }
-  // if (value.invoiceDatafromConversation) {
-  //   console.log("in1", value.invoiceDatafromConversation)
-  //   if (
-  //     value.invoiceDatafromConversation["Invoice type"].match(regexPattern)
-
-  //   ){
-  //     console.log("in2")
-  //   }
-  //     // return true
-  // } else {
-  //   console.log("dataconvofalse")
-  //   // return false
-  // }
-
-  // console.log("Quantity here",value.itemDetails.quantity);
-  const invoiceSuccessMsg = "Invoice Created Successfully";
-  function sumQuantities(str) {
-    if (str) {
-      const quantitiesArray = str
-        .split(",")
-        .map((num) => parseInt(num.trim(), 10));
-      const totalQuantity = quantitiesArray.reduce(
-        (sum, current) => sum + current,
-        0
-      );
-      str = totalQuantity;
-    }
-    return str;
+    return quantitiesArray.reduce((sum, current) => sum + current, 0);
   }
   const handleRadioChange = (type) => {
     value.setTypeOfInvoice({
@@ -150,85 +100,46 @@ function DetailsSide() {
       creditNote: type === "creditNote",
     });
     value.setInvoiceData({ ...value.invoiceData, invoiceType: type });
-    //   setValue({
-    //     value.typeOfInvoice: {
-    //       merchandise: type === 'merchandise',
-    //       nonMerchandise: type === 'nonMerchandise',
-    //       debitNote: type === 'debitNote',
-    //       creditNote: type === 'creditNote'
-    //     }
-    //   });
   };
 
-  const handleItemAndQuantity = (itemId, qty) => {
-    // console.log("Inside Handle Item and Quantity");
-
-    // Ensure that itemDetails object exists and has the right structure
-
-    if (value.poDetailsData.length == 1) {
-      value.setItemDetailsInput((prevState) => {
-        return {
-          items: [itemId],
-          quantity: [qty],
-        };
-      });
+  const handleItemAndQuantity = (itemId, qty, invCost) => {
+    if (value.poDetailsData.length === 1) {
+      value.setItemDetailsInput(() => ({
+        items: [itemId],
+        quantity: [qty],
+        invoiceCost: [invCost],
+      }));
     } else if (value.poDetailsData.length > 1) {
       value.setItemDetailsInput((prevState) => {
-        // value.setItemDetails((prevState) => {
-        // Find index of the item if it already exists
         const itemIndex = prevState.items.indexOf(itemId);
 
         if (itemIndex > -1) {
-          // Update quantity for existing item
+          // Update quantity and invoiceCost for existing item
           const updatedQuantities = [...prevState.quantity];
+          const updatedInvoiceCosts = [...prevState.invoiceCost];
           updatedQuantities[itemIndex] = qty;
+          updatedInvoiceCosts[itemIndex] = invCost;
 
           return {
             items: [...prevState.items],
             quantity: updatedQuantities,
+            invoiceCost: updatedInvoiceCosts,
           };
         } else {
-          // Add new item and quantity
+          // Add new item, quantity, and invoiceCost
           return {
             items: [...prevState.items, itemId],
             quantity: [...prevState.quantity, qty],
+            invoiceCost: [...prevState.invoiceCost, invCost],
           };
         }
       });
     } else {
-      console.log("po details length <=0, handleitemquantity");
+      console.log("poDetailsData length <= 0, handleItemAndQuantity");
     }
-
-    // console.log("Updated Details:", itemId, qty);
   };
-
-  //   // Function to aggregate quantities based on item ID
-  //   value.setItemDetails(prevState => {
-  //     const itemIndex = prevState.items.indexOf(item);
-
-  //     if (itemIndex >= 0) {
-  //       // Update existing item by aggregating quantities
-  //       const updatedQuantities = [...prevState.quantity];
-  //       updatedQuantities[itemIndex] = (parseInt(updatedQuantities[itemIndex]) + parseInt(qty)).toString();
-
-  //       return {
-  //         items: [...prevState.items],
-  //         quantity: updatedQuantities,
-  //       };
-  //     } else {
-  //       // Add new item and quantity
-  //       return {
-  //         items: [...prevState.items, item],
-  //         quantity: [...prevState.quantity, qty],
-  //       };
-  //     }
-  //   });
-
-  //   console.log("Updated Details:", item, qty);
-  // };
-
+  // console.log("pod:",value.poDetailsData)
   return (
-    // <DynamicCutoutInput label="Username" required={true} placeholder="Enter your username" />
     <Grid container component="main" style={{}}>
       <Grid
         item
@@ -242,7 +153,63 @@ function DetailsSide() {
         ref={messagesEndRef}
       >
         <div style={{ position: "absolute" }}>
-          <PopUp visible={value.modalVisible} text={invoiceSuccessMsg} />
+          <PopUp {...value.modalDetails} />
+          <ItemInfoPopup
+            visible={itemPopupStatus}
+            setVisible={setItemPopupStatus}
+          />
+          <SupplierInfoPopUp
+            visible={supplierPopupStatus}
+            setVisible={setSupplierPopupStatus}
+          />
+          <Dialog
+            open={invoicePreview}
+            onClose={() => setInvoicePreview(false)}
+            aria-labelledby="responsive-dialog-title"
+            style={{
+              width: "90%",
+              height: "90%",
+              margin: "auto",
+            }}
+            PaperProps={{
+              style: {
+                width: "100%",
+                height: "100%",
+                maxWidth: "unset",
+                maxHeight: "unset",
+                margin: 0,
+              },
+            }}
+          >
+            <div
+              className="dialog-container"
+              style={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                overflow: "hidden",
+              }}
+            >
+              {/* Use PDFViewer to allow for real-time updates */}
+              <PDFViewer
+                style={{
+                  flex: 1,
+                  width: "100%",
+                  height: "100%",
+                  border: "none",
+                  overflow: "hidden",
+                }}
+              >
+                <PreviewDocs
+                  invoicePreview={true}
+                  promoPreview={false}
+                  poPreview={false}
+                  value={value}
+                />
+              </PDFViewer>
+            </div>
+          </Dialog>
+          {/* <PopUp visible={value.modalVisible} text={value.modalText} /> */}
         </div>
 
         {/* {!showForm ? (
@@ -286,6 +253,7 @@ function DetailsSide() {
             </div>
           </Card>
         ) : ( */}
+
         <Card
           className="generalView"
           style={{ width: "100%" }}
@@ -312,71 +280,89 @@ function DetailsSide() {
                 Fields marked as * are mandatory
               </Typography>
             </div>
-            <Typography
-              style={{
-                fontSize: "0.85rem",
-                fontWeight: "700",
-                fontFamily: "Poppins,sans-sherif",
-                alignSelf: "flex-start",
-              }}
-            >
-              Invoice Details
-            </Typography>
+
             <Form className="generalRadio">
-              <div
-                className="mb-3"
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  justifyContent: "flex-start",
-                }}
-              >
-                <Form.Check
-                  inline
-                  label="Merchandise"
-                  name="group1"
-                  type={"radio"}
-                  id={`inline- -1`}
-                  className="labelText"
-                  checked={value.typeOfInvoice.merchandise}
-                  onChange={() => handleRadioChange("merchandise")}
-                  // checked={value.invoiceData.invoiceType.match(/merchandise/i) }
-                />
-                <Form.Check
-                  inline
-                  label="Non - Merchandise"
-                  name="group1"
-                  type={"radio"}
-                  id={`inline- -2`}
-                  className="labelText"
-                  checked={value.typeOfInvoice.nonMerchandise}
-                  onChange={() => handleRadioChange("nonMerchandise")}
-                  // checked={value.invoiceData.invoiceType === "Non - Merchandise"}
-                />
-                <Form.Check
-                  inline
-                  label="Debit Note"
-                  name="group1"
-                  type={"radio"}
-                  id={`inline- -3`}
-                  className="labelText"
-                  checked={value.typeOfInvoice.debitNote}
-                  onChange={() => handleRadioChange("debitNote")}
-                  // checked={value.invoiceData.invoiceType.match(/debit\s*-\s*\s*note\s*: ?(.*?)(?:,|$)/i) }
-                />
-                <Form.Check
-                  inline
-                  label="Credit Note"
-                  name="group1"
-                  type={"radio"}
-                  id={`inline- -4`}
-                  className="labelText"
-                  // checked={value.invoiceData.invoiceType === "Credit Note"}
-                  checked={value.typeOfInvoice.creditNote}
-                  onChange={() => handleRadioChange("creditNote")}
-                />
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <div
+                  className="mb-3"
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "flex-start",
+                    alignItems: "center",
+                  }}
+                >
+                  <Form.Check
+                    inline
+                    label="Merchandise"
+                    name="group1"
+                    type={"radio"}
+                    id={`inline- -1`}
+                    className="labelText"
+                    checked={value.typeOfInvoice.merchandise}
+                    onChange={() => handleRadioChange("merchandise")}
+                    // checked={value.invoiceData.invoiceType.match(/merchandise/i) }
+                  />
+                  <Form.Check
+                    inline
+                    label="Non - Merchandise"
+                    name="group1"
+                    type={"radio"}
+                    id={`inline- -2`}
+                    className="labelText"
+                    checked={value.typeOfInvoice.nonMerchandise}
+                    onChange={() => handleRadioChange("nonMerchandise")}
+                    // checked={value.invoiceData.invoiceType === "Non - Merchandise"}
+                  />
+                  <Form.Check
+                    inline
+                    label="Debit Note"
+                    name="group1"
+                    type={"radio"}
+                    id={`inline- -3`}
+                    className="labelText"
+                    checked={value.typeOfInvoice.debitNote}
+                    onChange={() => handleRadioChange("debitNote")}
+                    // checked={value.invoiceData.invoiceType.match(/debit\s*-\s*\s*note\s*: ?(.*?)(?:,|$)/i) }
+                  />
+                  <Form.Check
+                    inline
+                    label="Credit Note"
+                    name="group1"
+                    type={"radio"}
+                    id={`inline- -4`}
+                    className="labelText"
+                    // checked={value.invoiceData.invoiceType === "Credit Note"}
+                    checked={value.typeOfInvoice.creditNote}
+                    onChange={() => handleRadioChange("creditNote")}
+                  />
+                </div>
+                <div
+                  style={{
+                    fontSize: "0.75rem",
+                    fontFamily: "Poppins,sans-sherif",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <p>{`System Document ID:  `}</p>
+                  <p
+                    style={{
+                      backgroundColor: "#e8e8e8",
+                      marginLeft: "0.5rem",
+                      padding: "0.15rem",
+                      paddingLeft: "1rem",
+                      paddingRight: "1rem",
+                      borderRadius: "4rem",
+                      fontWeight: "600",
+                    }}
+                  >
+                    {value.systemDocumentId}
+                  </p>
+                </div>
               </div>
             </Form>
+
             <Stack
               direction="row"
               spacing={3}
@@ -390,13 +376,14 @@ function DetailsSide() {
                       required={true}
                       type="date"
                       placeholder="Enter your Invoice Date"
-                      value={value.invoiceData.invoiceDate}
-                      fun={(text) =>
+                      value={value.invoiceData.invoiceDate} // Use raw yyyy-mm-dd format
+                      fun={(text) => {
+                        console.log("Date selected:", text);
                         value.setInvoiceData({
                           ...value.invoiceData,
-                          invoiceDate: text,
-                        })
-                      } // onChangeText={(text)=>value.setInvoiceDate(text)}
+                          invoiceDate: text, // Save in yyyy-mm-dd format
+                        });
+                      }}
                     />
                   </FormControl>
                   <FormControl sx={{ flex: 1 }}>
@@ -404,14 +391,28 @@ function DetailsSide() {
                       label="Supplier ID"
                       required={true}
                       placeholder="Supplier ID"
-                      value={value.invoiceData.supplierId}
+                      value={value.poDetailsData[0]?.supplierId || ""}
+                      // fun={(text) =>
+                      //   value.setInvoiceData({
+                      //     ...value.invoiceData,
+                      //     supplierId: text,
+                      //   })
+                      // }
                       fun={(text) =>
-                        value.setInvoiceData({
-                          ...value.invoiceData,
+                        value.setPoDetailsData({
+                          ...value.poDetailsData,
                           supplierId: text,
                         })
                       }
-
+                      editable={true}
+                      style={{ backgroundColor: "#e8e8e8" }}
+                      EndComponent={
+                        value.poDetailsData[0]?.supplierId ? (
+                          <BsFillInfoCircleFill
+                            onClick={() => setSupplierPopupStatus(true)}
+                          />
+                        ) : null
+                      }
                       // value={value.invoiceData.invoiceDate}
                       // fun={(text) => value.setInvoiceData({ ...value.invoiceData, invoiceDate: text })}
                     />
@@ -437,15 +438,15 @@ function DetailsSide() {
                       label="Invoice No."
                       required={true}
                       placeholder="Enter your Invoice No."
-                      value={value.poHeaderData.invoiceNo}
+                      value={value.invoiceData.userInvNo}
                       fun={(text) =>
-                        value.setPoHeaderData({
-                          ...value.poHeaderData,
-                          invoiceNo: text,
+                        value.setInvoiceData({
+                          ...value.invoiceData,
+                          userInvNo: text,
                         })
                       }
-                      editable={true}
-                      style={{ backgroundColor: "#e8e8e8" }}
+                      // editable={true}
+                      // style={{ backgroundColor: "#e8e8e8" }}
                     />
                   </FormControl>
                 </Stack>
@@ -479,6 +480,7 @@ function DetailsSide() {
                           totalAmount: text,
                         })
                       }
+                      editable={true}
                     />
                   </FormControl>
                 </Stack>
@@ -496,6 +498,7 @@ function DetailsSide() {
                           totalTax: text,
                         })
                       }
+                      editable={true}
                     />
                   </FormControl>
                   <FormControl sx={{ flex: 1 }}>
@@ -503,7 +506,8 @@ function DetailsSide() {
                       label="Total Quantity"
                       required={true}
                       placeholder="Enter your Total Quantity"
-                      value={value.itemDetails.quantity}
+                      value={sumQuantities(value.itemDetails.quantity)}
+                      // value={value.itemDetails.quantity}
                       fun={(text) =>
                         value.setItemDetails({
                           ...value.itemDetails,
@@ -628,7 +632,7 @@ function DetailsSide() {
                             color: "#575F6E",
                           }}
                         >
-                          Inv. Cost
+                          Invoice Cost
                         </TableCell>
                         <TableCell
                           align="center"
@@ -678,6 +682,15 @@ function DetailsSide() {
                                 color: "#454B54",
                               }}
                             >
+                              <BsFillInfoCircleFill
+                                onClick={() => setItemPopupStatus(true)}
+                                style={{
+                                  position: "absolute",
+                                  left: "1.5rem",
+                                  fontSize: "0.6rem",
+                                  margin: "0.1rem",
+                                }}
+                              />
                               {item.itemId}
                             </TableCell>
                             <TableCell
@@ -712,17 +725,17 @@ function DetailsSide() {
                                 fontFamily: "Poppins, sans-serif",
                                 fontSize: "0.6rem",
                                 color: "#454B54",
-                                outline:"none"
+                                outline: "none",
 
                                 // border:'solid'
                               }}
                               contentEditable
                               suppressContentEditableWarning={true} // Suppress the warning
-                              
                               onInput={(e) =>
                                 handleItemAndQuantity(
                                   item.itemId,
-                                  e.target.innerText
+                                  e.target.innerText,
+                                  null
                                 )
                               }
                             >
@@ -731,11 +744,11 @@ function DetailsSide() {
                                   borderWidth: 1.5,
                                   // margin: 2,
                                   borderRadius: 12,
-                                  padding:5,
-                                  border:'1px solid black',
-
+                                  padding: 5,
+                                  border: "1px solid black",
                                 }}
-                              >{item.invQty}
+                              >
+                                {item.invQty}
                               </div>
                             </TableCell>
                             {/* <TableCell align="center" colSpan={0.5}>
@@ -774,12 +787,35 @@ function DetailsSide() {
                               align="center"
                               colSpan={0.5}
                               style={{
-                                fontFamily: "Poppins,sans-serif",
+                                fontFamily: "Poppins, sans-serif",
                                 fontSize: "0.6rem",
                                 color: "#454B54",
+                                outline: "none",
+
+                                // border:'solid'
                               }}
+                              contentEditable
+                              suppressContentEditableWarning={true} // Suppress the warning
+                              onInput={(e) =>
+                                handleItemAndQuantity(
+                                  item.itemId,
+                                  null,
+                                  e.target.innerText
+                                )
+                              }
                             >
-                              {item.itemCost}
+                              {" "}
+                              <div
+                                style={{
+                                  borderWidth: 1.5,
+                                  // margin: 2,
+                                  borderRadius: 12,
+                                  padding: 5,
+                                  border: "1px solid black",
+                                }}
+                              >
+                                {item.invCost}
+                              </div>
                             </TableCell>
                             <TableCell
                               align="center"
@@ -812,8 +848,10 @@ function DetailsSide() {
                                 color: "#454B54",
                               }}
                             >
-                              {parseFloat(item.itemCost) *
-                                parseFloat(item.itemQuantity)}
+                              {(
+                                parseFloat(item.itemCost) *
+                                parseFloat(item.itemQuantity)
+                              ).toFixed(2)}
                             </TableCell>
                           </TableRow>
                         ))
@@ -917,7 +955,14 @@ function DetailsSide() {
             )}
           </Card>
           <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
-            <CardActions sx={{ justifyContent: "space-evenly" }}>
+            <CardActions
+              sx={{
+                justifyContent: "space-between",
+                marginLeft: "1rem",
+                marginRight: "1rem",
+              }}
+            >
+              {/* <CardActions sx={{ justifyContent: "space-evenly" }}> */}
               <Button
                 size="md"
                 variant="solid"
@@ -929,25 +974,18 @@ function DetailsSide() {
               >
                 SAVE
               </Button>
-              <BlobProvider
-                document={<Invoice invoiceId={value.poHeaderData.invoiceNo} />}
+              <Button
+                size="md"
+                variant="solid"
+                style={{
+                  backgroundColor: "#283D76",
+                  fontFamily: "Poppins,sans-serif",
+                  color: "white",
+                }}
+                onClick={() => setInvoicePreview(true)}
               >
-                {({ url, blob }) => (
-                  <a href={url} target="_blank">
-                    {/* <VisibilityIcon size={14} className="buttons" /> */}
-                    <Button
-                      size="md"
-                      variant="solid"
-                      style={{
-                        backgroundColor: "#283D76",
-                        fontFamily: "Poppins,sans-serif",
-                      }}
-                    >
-                      PREVIEW
-                    </Button>
-                  </a>
-                )}
-              </BlobProvider>
+                PREVIEW
+              </Button>
 
               <Button
                 size="md"
@@ -963,8 +1001,7 @@ function DetailsSide() {
             </CardActions>
           </CardOverflow>
         </Card>
-        {/* )} */}
-        {/*  */}
+        {/* )}  */}
       </Grid>
       <Grid
         item
@@ -980,7 +1017,7 @@ function DetailsSide() {
         }}
       >
         <ChatbotPane />
-        <div id="myModal" class="modal fade">
+        {/* <div id="myModal" class="modal fade">
           <div class="modal-dialog modal-confirm">
             <div class="modal-content">
               <div class="modal-header">
@@ -1005,7 +1042,7 @@ function DetailsSide() {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </Grid>
       {/* <Chatbot /> */}
     </Grid>
