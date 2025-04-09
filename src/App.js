@@ -26,6 +26,7 @@ import PoDetailsSide from "./components/PoDetailsSide";
 import PurchaseOrder from "./components/PDF Generation/PurchaseOrder";
 import PromoDetailsSide from "./components/PromoDetailsSide";
 import Promotion from "./components/PDF Generation/Promotion";
+import LLMChatbotTest from "./components/LLMChatbotTest";
 // function App() {
 //   const {pathname}=useLocation();
 //   const showHeader =  pathname !== "/";
@@ -95,6 +96,7 @@ const AppContent = () => {
         <Route path="/test" element={<Promotion promoId={"PROMO001"}/>} />
         <Route path="/poChatbot" element={<PoDetailsSide/>} />
         <Route path="/promoChatbot" element={<PromoDetailsSide/>}/>
+        <Route path="/llmtest" element={<LLMChatbotTest/>}/>
 
       </Routes>
     </>

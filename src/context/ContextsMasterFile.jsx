@@ -55,13 +55,14 @@ export default function AuthProvider({ children }) {
   };
   const getInitialPromoCounter = () => {
     const savedCounter = localStorage.getItem("promotionCounter");
-    return savedCounter !== null ? JSON.parse(savedCounter) : 352;
+    return savedCounter !== null ? JSON.parse(savedCounter) : 430;
   };
 
   const [invoiceCounter, setInvoiceCounter] = useState(getInitialCounter);
   const [poCounter, setPoCounter] = useState(getInitialPoCounter);
   const [promotionCounter, setPromotionCounter] = useState(
-    getInitialPromoCounter);  
+    getInitialPromoCounter
+  );
   const [promotionCounterId, setPromotionCounterId] = useState(
     `PROMO${getInitialPromoCounter()}`
   );
@@ -194,6 +195,13 @@ export default function AuthProvider({ children }) {
     threshold: false,
     giftWithPurchase: false,
   });
+  const [promoStoreListArray, setPromoStoreListArray] = useState([]);
+  const [storeUpload, setStoreUpload] = useState({
+    eventStores: null,
+    eventExcludedStores: null,
+    stores: false,
+    excludedStores: false,
+  });
   const value = {
     isActive,
     setIsActive,
@@ -259,6 +267,10 @@ export default function AuthProvider({ children }) {
     setItemUpload,
     promoTotalItemsArray,
     setPromoTotalItemsArray,
+    promoStoreListArray,
+    setPromoStoreListArray,
+    storeUpload,
+    setStoreUpload,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

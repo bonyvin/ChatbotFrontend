@@ -32,6 +32,7 @@ import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import typingIndicator from "../images/typingIndicator1.gif";
 import TypingIndicatorComponent from "./TypingIndicatorComponent";
+import MicIcon from "@mui/icons-material/Mic";
 
 export default function ChatbotPane() {
   const [messages, setMessages] = useState([]);
@@ -494,7 +495,14 @@ export default function ChatbotPane() {
         setLoading(false);
       }
     },
-    [value.setPoDetailsData, value.setItemDetails, value.setItemDetailsInput, value.setPoHeaderData, value.setItemListPo, updateItemDetails]
+    [
+      value.setPoDetailsData,
+      value.setItemDetails,
+      value.setItemDetailsInput,
+      value.setPoHeaderData,
+      value.setItemListPo,
+      updateItemDetails,
+    ]
   );
   //EXTRACTING FIELD DATA FROM BACKEND
   const invoiceCheck2 = useCallback(
@@ -564,10 +572,10 @@ export default function ChatbotPane() {
     [
       getPoDetails,
       updateItemDetails,
-  //   value.poDetailsData, // Remove unstable dependency
+      //   value.poDetailsData, // Remove unstable dependency
       value.invoiceDatafromConversation,
-     value.setInvoiceData, // Add stable setters
-     value.setinvoiceDatafromConversation
+      value.setInvoiceData, // Add stable setters
+      value.setinvoiceDatafromConversation,
     ]
   );
   // useEffect(() => {
@@ -586,15 +594,16 @@ export default function ChatbotPane() {
   // }, [value.invoiceDatafromConversation?.Items?.length]);
   const prevInvoiceDataRef = useRef();
 
-useEffect(() => {
-  if (
-    value.invoiceDatafromConversation &&
-    JSON.stringify(prevInvoiceDataRef.current) !== JSON.stringify(value.invoiceDatafromConversation)
-  ) {
-    updateItemDetails(value.invoiceDatafromConversation);
-    prevInvoiceDataRef.current = value.invoiceDatafromConversation; // Update ref
-  }
-}, [value.invoiceDatafromConversation, updateItemDetails]);
+  useEffect(() => {
+    if (
+      value.invoiceDatafromConversation &&
+      JSON.stringify(prevInvoiceDataRef.current) !==
+        JSON.stringify(value.invoiceDatafromConversation)
+    ) {
+      updateItemDetails(value.invoiceDatafromConversation);
+      prevInvoiceDataRef.current = value.invoiceDatafromConversation; // Update ref
+    }
+  }, [value.invoiceDatafromConversation, updateItemDetails]);
   //API CALLS
   //user input
   const handleMessageSubmit = async (
@@ -671,7 +680,7 @@ useEffect(() => {
             response.data?.po_items?.length > 0
           ) {
             await handleMessageSubmit(
-              `Add these items with cost and quantities - 0 : ${JSON.stringify(
+              `Add these items with cost=0 and quantities=0 : ${JSON.stringify(
                 response.data?.po_items?.map((item) => item.itemId)
               )}`,
               inputFromUpload,
@@ -946,7 +955,7 @@ useEffect(() => {
       total_amount: value.invoiceData.totalAmount,
       invoicedate: formatDate(value.invoiceData.invoiceDate),
       total_qty: sumQuantities(value.itemDetails.quantity),
-      storeId:'STORE001'
+      storeId: "STORE001",
     };
     try {
       const response = await axios({
@@ -1189,6 +1198,75 @@ useEffect(() => {
           className="paneIcon"
           onClick={() => setPickerVisible(!isPickerVisible)} // Toggle emoji picker visibility
         />
+
+        {/* Wrapper div for the input and the mic icon */}
+        <div
+          style={{
+            position: "relative",
+            display: "inline-block",
+            width: "100%",
+          }}
+        >
+          <input
+            id="inputValue"
+            type="text"
+            placeholder="Type a message..."
+            value={input}
+            onChange={(e) => {
+              e.preventDefault();
+              setInput(e.target.value);
+            }}
+            style={{
+              margin: "0.5rem",
+              height: "2rem",
+              paddingRight: "3rem", // Ensure there's space for the mic icon
+              width: "90%", // Ensure the input fills the container
+            }}
+          />
+
+          {/* Mic icon inside the input field at the very end */}
+          <MicIcon
+            style={{
+              position: "absolute",
+              right: "2rem", // Position it at the very end
+              top: "50%",
+              transform: "translateY(-50%)", // Center the icon vertically
+              cursor: "pointer",
+            }}
+            onClick={() => {
+              // Handle microphone click event, like starting a recording
+              console.log("Mic icon clicked");
+            }}
+          />
+        </div>
+
+        <SendIcon
+          className="paneIcon"
+          onClick={() => handleMessageSubmit(input)}
+        />
+        <i className="fa fa-paper-plane-o" aria-hidden="true"></i>
+      </form>
+      {/* <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleMessageSubmit(input);
+        }}
+        id="form1"
+        className="chatbot-input-form"
+      >
+        <label className="paneIcon">
+          <input
+            type="file"
+            style={{ display: "none" }}
+            onChange={(e) => uploadInvoice(e)}
+            onClick={(event) => (event.target.value = "")}
+          />
+          <Add className="paneIcon" />
+        </label>
+        <Smiley
+          className="paneIcon"
+          onClick={() => setPickerVisible(!isPickerVisible)} // Toggle emoji picker visibility
+        />
         <input
           id="inputValue"
           type="text"
@@ -1205,7 +1283,7 @@ useEffect(() => {
           onClick={() => handleMessageSubmit(input)}
         />
         <i className="fa fa-paper-plane-o" aria-hidden="true"></i>
-      </form>
+      </form> */}
       {isPickerVisible && (
         <div
           style={{ position: "absolute", zIndex: 1000, bottom: "4rem" }}

@@ -31,7 +31,8 @@ import { Backdrop, CircularProgress, IconButton } from "@mui/material";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import TypingIndicatorComponent from "./TypingIndicatorComponent";
-
+import MicIcon from '@mui/icons-material/Mic';
+ 
 export default function PromoChatbotPane() {
   const [messages, setMessages] = useState([]);
   const value = useContext(AuthContext);
@@ -55,13 +56,9 @@ export default function PromoChatbotPane() {
     const getTrueValueKey = (obj) => {
       return Object.keys(obj).find((key) => obj[key] === true);
     };
-    let promotionType=getTrueValueKey(value.typeOfPromotion)
+    let promotionType = getTrueValueKey(value.typeOfPromotion);
     let savedData = `
-      ${
-        promotionType
-          ? `Promotion Type: ${promotionType},`
-          : ""
-      }
+      ${promotionType ? `Promotion Type: ${promotionType},` : ""}
 
       ${
         value.promotionData.hierarchyType
@@ -134,18 +131,18 @@ export default function PromoChatbotPane() {
     value.setPromotionCounterId(`PROMO${value.promotionCounter}`);
   }, [value.promotionCounter]);
   const submitFormData = async () => {
-    await handleMessageSubmit("Please submit the data provided");
-    // await promotionHeaderCreation();
+    // await handleMessageSubmit("Please submit the data provided");
+    await promotionHeaderCreation();
   };
   //clear
   const clearFormData = () => {
-    value.setPromoTotalItemsArray([])
+    value.setPromoTotalItemsArray([]);
     value.setTypeOfPromotion({
       simple: false,
       buyXGetY: false,
       threshold: false,
       giftWithPurchase: false,
-    })
+    });
     value.setPromotionData({
       promotionType: "",
       hierarchyType: "",
@@ -160,7 +157,7 @@ export default function PromoChatbotPane() {
       locationList: [],
       excludedLocationList: [],
       totalItemsArray: [],
-    })
+    });
     setTimeout(() => {
       value.setModalDetails({
         visible: false,
@@ -200,12 +197,17 @@ export default function PromoChatbotPane() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isPickerVisible]);
   const prevItemUpload = useRef(value.itemUpload);
+  const prevStoreUpload = useRef(value.storeUpload);
 
   useEffect(() => {
     const hasChanged =
       prevItemUpload.current.items !== value.itemUpload.items ||
       prevItemUpload.current.excludedItems !== value.itemUpload.excludedItems;
 
+    const hasChangedStore =
+      prevStoreUpload.current.stores != value.storeUpload.stores ||
+      prevStoreUpload.current.excludedStores !=
+        value.storeUpload.excludedStores;
     if (
       hasChanged &&
       (value.itemUpload.eventItems != null ||
@@ -215,16 +217,27 @@ export default function PromoChatbotPane() {
       if (value.itemUpload.items) {
         uploadInvoice(value.itemUpload.eventItems);
       } else if (value.itemUpload.excludedItems) {
-        uploadInvoice(
-          value.itemUpload.eventExcludedItems,
-        );
+        uploadInvoice(value.itemUpload.eventExcludedItems);
       }
 
       prevItemUpload.current = value.itemUpload; // Update the reference to the latest itemUpload
     } else {
       console.log("Not");
     }
-  }, [value.itemUpload]);
+    if (
+      hasChangedStore &&
+      (value.storeUpload.eventStores != null ||
+        value.storeUpload.eventExcludedStores != null)
+    ) {
+      console.log("Here", { ...value.storeUpload });
+      if (value.storeUpload.stores) {
+        uploadInvoice(value.storeUpload.eventStores);
+      } else if (value.storeUpload.excludedStores) {
+        uploadInvoice(value.storeUpload.eventExcludedStores);
+      }
+      prevStoreUpload.current = value.storeUpload;
+    }
+  }, [value.itemUpload, value.storeUpload]);
   //DATE FORMATTING
   function formatDate(date) {
     const regex = /^(\d{2})[\/-](\d{2})[\/-](\d{4})$/;
@@ -286,7 +299,8 @@ export default function PromoChatbotPane() {
                 ? invoiceObject[key]
                 : [invoiceObject[key]];
               break;
-            case "Excluded Item List":
+
+            case "Excluded Items":
               // Check if the value is an array, if not, convert it to one
               updatedPromotionData.excludedItemList = Array.isArray(
                 invoiceObject[key]
@@ -313,7 +327,7 @@ export default function PromoChatbotPane() {
                 ? invoiceObject[key]
                 : [invoiceObject[key]];
               break;
-            case "Excluded Location List":
+            case "Excluded Stores":
               updatedPromotionData.excludedLocationList = Array.isArray(
                 invoiceObject[key]
               )
@@ -347,6 +361,7 @@ export default function PromoChatbotPane() {
   );
   //API CALLS
   const handleMessageSubmit = async (input, inputFromUpload) => {
+    console.log("Input: ", input);
     if (!input.trim()) return;
     setMessages((prevMessages) => {
       const newMessages = inputFromUpload
@@ -442,10 +457,6 @@ export default function PromoChatbotPane() {
           "Access-Control-Allow-Origin": "*",
         },
       });
-      // value.setPromotionData({
-      //   ...value.promotionData,
-      //   totalItemsArray: response.data.map((item) => item.itemId),
-      // });
       let allItems = response.data.map((item) => item.itemId);
       value.setPromoTotalItemsArray(allItems);
       console.log("ITem details REsponse: ", response);
@@ -453,8 +464,27 @@ export default function PromoChatbotPane() {
       console.log("ITem details Error: ", error);
     }
   };
+  const getStoreDetails = async () => {
+    try {
+      const response = await axios({
+        method: "get",
+        url: `http://localhost:8000/storeList`,
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+      let storeList = response.data.map((item) => item.storeId);
+      value.setPromoStoreListArray(storeList);
+      console.log("Store details REsponse: ", response);
+    } catch (error) {
+      console.log("Store details Error: ", error);
+    }
+  };
   useEffect(() => {
     getItemDetails();
+    getStoreDetails();
   }, []);
   //create invoice details
   const promotionDetailsCreation = async () => {
@@ -509,7 +539,8 @@ export default function PromoChatbotPane() {
       startDate: formatDate(value.promotionData.startDate),
       endDate: formatDate(value.promotionData.endDate),
       promotionType: value.promotionData.promotionType,
-      storeId:value.promotionData.locationList.toString()
+      storeIds: value.promotionData.locationList,
+      // storeIds: value.promotionData.locationList.toString(),
     };
     console.log("PO data:", promoDataHeader);
     try {
@@ -526,7 +557,10 @@ export default function PromoChatbotPane() {
       // console.log("invoice Creation Response:", response.data);
       await promotionDetailsCreation();
       setPdfData(value);
-      let promoFileDetails = { status: true, promoId: value.promotionCounterId };
+      let promoFileDetails = {
+        status: true,
+        promoId: value.promotionCounterId,
+      };
       setMessages((prevMessages) => [
         ...prevMessages,
         {
@@ -650,9 +684,9 @@ export default function PromoChatbotPane() {
           setUploadLoading(false);
           value.setModalDetails({
             visible: true,
-            text: "Invoice uploaded successfully!",
+            text: "File uploaded successfully!",
             isSuccessful: true,
-          });
+          });  
 
           setMessages((prevMessages) => [
             ...prevMessages,
@@ -662,18 +696,18 @@ export default function PromoChatbotPane() {
               isFile: true,
             },
           ]);
-          await handleMessageSubmit(
-            value.itemUpload.items && value.itemUpload.items
-              ? `Items ${JSON.stringify(
-                  response.data.structured_data["Items"]
-                )}`
-              : value.itemUpload.excludedItems &&value.itemUpload.excludedItems
-              ? `Excluded Items ${JSON.stringify(
-                  response.data.structured_data["Items"]
-                )}`
-              : response.data.structured_data["Items"],
-            true
-          );
+          // await handleMessageSubmit(
+          //   value.itemUpload.items && value.itemUpload.items
+          //     ? `Items ${JSON.stringify(
+          //         response.data.structured_data["Items"]
+          //       )}`
+          //     : value.itemUpload.excludedItems && value.itemUpload.excludedItems
+          //     ? `Excluded Items ${JSON.stringify(
+          //         response.data.structured_data["Items"]
+          //       )}`
+          //     : response.data.structured_data["Items"],
+          //   true
+          // );
           // value.setItemUpload({
           //   items: items,
           //   excludedItems: excludedItems,
@@ -693,18 +727,56 @@ export default function PromoChatbotPane() {
             isSuccessful: true,
           });
           console.log("items", response.data.structured_data["Items"]);
-          await handleMessageSubmit(
-            value.itemUpload.items && value.itemUpload.items
-              ? `Items ${JSON.stringify(
-                  response.data.structured_data["Items"]
-                )}`
-              : value.itemUpload.excludedItems && value.itemUpload.excludedItems
-              ? `Excluded Items ${JSON.stringify(
-                  response.data.structured_data["Items"]
-                )}`
-              : response.data.structured_data["Items"],
-            true
-          );
+          console.log("stores", response.data.structured_data["Stores"]);
+          if (
+            value.itemUpload.items ||
+            value.itemUpload.excludedItems ||
+            value.storeUpload.stores ||
+            value.storeUpload.excludedStores
+          ) {
+            await handleMessageSubmit(
+              value.itemUpload.items &&
+                response.data.structured_data["Items"].length > 0
+                ? `Items ${JSON.stringify(
+                    response.data.structured_data["Items"]
+                  )}`
+                : value.itemUpload.excludedItems &&
+                  response.data.structured_data["Items"].length > 0
+                ? `Excluded Items ${JSON.stringify(
+                    response.data.structured_data["Items"]
+                  )}`
+                : value.storeUpload.stores &&
+                  response.data.structured_data["Stores"].length > 0
+                ? `Stores ${JSON.stringify(
+                    response.data.structured_data["Stores"]
+                  )}`
+                : value.storeUpload.excludedStores &&
+                  response.data.structured_data["Stores"].length > 0
+                ? `Excluded Stores ${JSON.stringify(
+                    response.data.structured_data["Stores"]
+                  )}`
+                : null,
+              true
+            );
+          }
+          //  else if (
+          //   value.storeUpload.stores ||
+          //   value.storeUpload.excludedStores
+          // ) {
+          //   await handleMessageSubmit(
+          //     value.storeUpload.stores
+          //       ? `Stores ${JSON.stringify(
+          //           response.data.structured_data["Stores"]
+          //         )}`
+          //       : value.storeUpload.excludedStores
+          //       ? `Excluded Stores ${JSON.stringify(
+          //           response.data.structured_data["Stores"]
+          //         )}`
+          //       : response.data.structured_data["Stores"],
+          //     true
+          //   );
+          // }
+
           // value.setItemUpload({
           //   items: items,
           //   excludedItems: excludedItems,
@@ -724,7 +796,7 @@ export default function PromoChatbotPane() {
       console.log("Upload Error:", error, error.data);
       value.setModalDetails({
         visible: true,
-        text: "An Error occured while creating Invoice",
+        text: "An error occured while uploading file",
         isSuccessful: false,
       });
     }
@@ -796,7 +868,7 @@ export default function PromoChatbotPane() {
         ))}
         {typing && <TypingIndicatorComponent scrollToBottom={scrollToBottom} />}
       </Box>
-      <form
+      {/* <form
         onSubmit={(e) => {
           e.preventDefault();
           handleMessageSubmit(input);
@@ -833,7 +905,76 @@ export default function PromoChatbotPane() {
           onClick={() => handleMessageSubmit(input)}
         />
         <i className="fa fa-paper-plane-o" aria-hidden="true"></i>
-      </form>
+      </form> */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleMessageSubmit(input);
+              }}
+              id="form1"
+              className="chatbot-input-form"
+            >
+              <label className="paneIcon">
+                <input
+                  type="file"
+                  style={{ display: "none" }}
+                  onChange={(e) => uploadInvoice(e)}
+                  onClick={(event) => (event.target.value = "")}
+                />
+                <Add className="paneIcon" />
+              </label>
+              <Smiley
+                className="paneIcon"
+                onClick={() => setPickerVisible(!isPickerVisible)} // Toggle emoji picker visibility
+              />
+      
+              {/* Wrapper div for the input and the mic icon */}
+              <div
+                style={{
+                  position: "relative",
+                  display: "inline-block",
+                  width: "100%",
+                }}
+              >
+                <input
+                  id="inputValue"
+                  type="text"
+                  placeholder="Type a message..."
+                  value={input}
+                  onChange={(e) => {
+                    e.preventDefault();
+                    setInput(e.target.value);
+                  }}
+                  style={{
+                    margin: "0.5rem",
+                    height: "2rem",
+                    paddingRight: "3rem", // Ensure there's space for the mic icon
+                    width: "90%", // Ensure the input fills the container
+                  }}
+                />
+      
+                {/* Mic icon inside the input field at the very end */}
+                <MicIcon
+                  style={{
+                    position: "absolute",
+                    right: "2rem", // Position it at the very end
+                    top: "50%",
+                    transform: "translateY(-50%)", // Center the icon vertically
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    // Handle microphone click event, like starting a recording
+                    console.log("Mic icon clicked");
+                  }}
+                />
+              </div>
+      
+              <SendIcon 
+                className="paneIcon"
+                onClick={() => handleMessageSubmit(input)}
+              />
+              <i className="fa fa-paper-plane-o" aria-hidden="true"></i>
+            </form> 
       {isPickerVisible && (
         <div
           style={{ position: "absolute", zIndex: 1000, bottom: "4rem" }}

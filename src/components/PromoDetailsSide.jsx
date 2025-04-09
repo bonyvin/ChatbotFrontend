@@ -105,47 +105,92 @@ import { PDFViewer } from "@react-pdf/renderer";
 
 function PromoDetailsSide() {
   const messagesEndRef = useRef(null);
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+
+  const value = useContext(AuthContext);
+
   const [supplierPopupStatus, setSupplierPopupStatus] = useState(false);
   const [itemPopupStatus, setItemPopupStatus] = useState(false);
   const [tableToggle, setTableToggle] = useState(false);
   const [promoPreview, setPromoPreview] = useState(false);
+  const initialItemsState =
+    value.promoTotalItemsArray?.reduce((acc, item) => {
+      acc[item] = false;
+      return acc;
+    }, {}) || {};
+  const initialStoresState =
+    value.promoStoreListArray?.reduce((acc, item) => {
+      acc[item] = false;
+      return acc;
+    }, {}) || {};
+
+  // Separate states for items and excluded items
+  const [selectedItems, setSelectedItems] = useState(initialItemsState);
+  const [excludedSelectedItems, setExcludedSelectedItems] =
+    useState(initialItemsState);
+  const [selectedStores, setSelectedStores] = useState(initialStoresState);
+  const [excludedSelectedStores, setExcludedSelectedStores] =
+    useState(initialStoresState);
+
+  // State to control modal visibility and type ("items" or "excluded")
+  const [itemModalVisible, setItemModalVisible] = useState(false);
+  const [storeModalVisible, setStoreModalVisible] = useState(false);
+  const [modalType, setModalType] = useState(null);
+  const hierarchyTypeOptions = ["Department", "Class", "Sub Class"];
+  const discountTypeOptions = ["Fixed Price", "% Off", "Buy One Get One Free"];
+  const showForm = value.isActive;
 
   const handleTableExpand = () => {
     setTableToggle(!tableToggle);
   };
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
   useEffect(() => {
     scrollToBottom();
   }, [tableToggle]);
-  const value = useContext(AuthContext);
   useEffect(() => {
     if (value.promotionData.itemList.length > 0) {
       setSelectedItems((prevSelectedItems) => {
         const updatedState = { ...prevSelectedItems };
-
         value.promotionData.itemList.forEach((item) => {
+          updatedState[item] = true;
+        });
+        return updatedState;
+      });
+    }
+    if (value.promotionData.excludedItemList.length > 0) {
+      setExcludedSelectedItems((prevSelectedItems) => {
+        const updatedState = { ...prevSelectedItems };
+        value.promotionData.excludedItemList.forEach((item) => {
           updatedState[item] = true;
         });
 
         return updatedState;
       });
-
-      value.promotionData.excludedItemList.map((item) =>
-        setExcludedSelectedItems({
-          ...excludedSelectedItems,
-          [item]: true,
-        })
-      );
+    }
+    if (value.promotionData.locationList.length > 0) {
+      setSelectedStores((prevSelectedItems) => {
+        const updatedState = { ...prevSelectedItems };
+        value.promotionData.locationList.forEach((item) => {
+          updatedState[item] = true;
+        });
+        return updatedState;
+      });
+    }
+    if (value.promotionData.excludedLocationList.length > 0) {
+      setExcludedSelectedStores((prevSelectedItems) => {
+        const updatedState = { ...prevSelectedItems };
+        value.promotionData.excludedLocationList.forEach((item) => {
+          updatedState[item] = true;
+        });
+        return updatedState;
+      });
     }
   }, [
     value.promotionData.itemList,
     value.promotionData.excludedItemList,
     value.promoTotalItemsArray,
   ]);
-  const showForm = value.isActive;
-
   const handleRadioChange = (type) => {
     value.setTypeOfPromotion({
       simple: type === "simple",
@@ -155,46 +200,6 @@ function PromoDetailsSide() {
     });
     value.setPromotionData({ ...value.promotionData, promotionType: type });
   };
-
-  const handleItemAndQuantity = (itemId, qty, invCost) => {
-    if (value.poDetailsData.length === 1) {
-      value.setItemDetailsInput(() => ({
-        items: [itemId],
-        quantity: [qty],
-        invoiceCost: [invCost],
-      }));
-    } else if (value.poDetailsData.length > 1) {
-      value.setItemDetailsInput((prevState) => {
-        const itemIndex = prevState.items.indexOf(itemId);
-
-        if (itemIndex > -1) {
-          // Update quantity and invoiceCost for existing item
-          const updatedQuantities = [...prevState.quantity];
-          const updatedInvoiceCosts = [...prevState.invoiceCost];
-          updatedQuantities[itemIndex] = qty;
-          updatedInvoiceCosts[itemIndex] = invCost;
-
-          return {
-            items: [...prevState.items],
-            quantity: updatedQuantities,
-            invoiceCost: updatedInvoiceCosts,
-          };
-        } else {
-          // Add new item, quantity, and invoiceCost
-          return {
-            items: [...prevState.items, itemId],
-            quantity: [...prevState.quantity, qty],
-            invoiceCost: [...prevState.invoiceCost, invCost],
-          };
-        }
-      });
-    } else {
-      console.log("poDetailsData length <= 0, handleItemAndQuantity");
-    }
-  };
-
-  const hierarchyTypeOptions = ["Department", "Class", "Sub Class"];
-  const discountTypeOptions = ["Fixed Price", "% Off", "Buy One Get One Free"];
   const handleChangeHierarchy = (event, newValue) => {
     // console.log("Hei",newValue)
     value.setPromotionData({
@@ -208,35 +213,56 @@ function PromoDetailsSide() {
       discountType: newValue,
     });
   };
-  const initialItemsState =
-    value.promoTotalItemsArray?.reduce((acc, item) => {
-      acc[item] = false;
-      return acc;
-    }, {}) || {};
-
-  // Separate states for items and excluded items
-  const [selectedItems, setSelectedItems] = useState(initialItemsState);
-  const [excludedSelectedItems, setExcludedSelectedItems] =
-    useState(initialItemsState);
-
-  // State to control modal visibility and type ("items" or "excluded")
-  const [itemModalVisible, setItemModalVisible] = useState(false);
-  const [modalType, setModalType] = useState(null);
-
   // Generic change handler that updates the proper state based on modalType
   const handleCheckboxChange = (event) => {
     const { name, checked } = event.target;
     if (modalType === "items") {
       setSelectedItems((prev) => ({ ...prev, [name]: checked }));
+      console.log("name,checked,event", name, checked);
+      value.setPromotionData({
+        ...value.promotionData,
+        itemList: checked
+          ? [...value.promotionData.itemList, name] // Add the item if checked
+          : value.promotionData.itemList.filter((item) => item !== name), // Remove the item if unchecked
+      });
     } else if (modalType === "excluded") {
       setExcludedSelectedItems((prev) => ({ ...prev, [name]: checked }));
+      value.setPromotionData({
+        ...value.promotionData,
+        itemList: checked
+          ? [...value.promotionData.excludedItemList, name] // Add the item if checked
+          : value.promotionData.excludedItemList.filter(
+              (item) => item !== name
+            ), // Remove the item if unchecked
+      });
+    } else if (modalType === "stores") {
+      setSelectedStores((prev) => ({ ...prev, [name]: checked }));
+      value.setPromotionData({
+        ...value.promotionData,
+        locationList: checked
+          ? [...value.promotionData.locationList, name] // Add the item if checked
+          : value.promotionData.locationList.filter((item) => item !== name),
+      });
+    } else if (modalType === "storesExcluded") {
+      setExcludedSelectedStores((prev) => ({ ...prev, [name]: checked }));
+      value.setPromotionData({
+        ...value.promotionData,
+        excludedLocationList: checked
+          ? [...value.promotionData.excludedLocationList, name] // Add the item if checked
+          : value.promotionData.excludedLocationList.filter(
+              (item) => item !== name
+            ),
+      });
     }
   };
-
   // Function to open modal and set the type
   const handleItemModal = (type) => {
     setModalType(type); // type should be "items" or "excluded"
     setItemModalVisible(true);
+  };
+  const handleStoreModal = (type) => {
+    setModalType(type); // type should be "items" or "excluded"
+    setStoreModalVisible(true);
   };
 
   return (
@@ -284,9 +310,20 @@ function PromoDetailsSide() {
                           name={item}
                           checked={
                             modalType === "items"
-                              ? selectedItems[item]
-                              : excludedSelectedItems[item]
+                              ? value.promotionData.itemList.includes(item)
+                              : modalType === "excluded"
+                              ? value.promotionData.excludedItemList.includes(
+                                  item
+                                )
+                              : null
                           }
+                          // checked={
+                          //   modalType === "items"
+                          //     ? selectedItems[item]
+                          //     : modalType === "excluded"
+                          //     ? excludedSelectedItems[item]
+                          //     : null
+                          // }
                         />
                       }
                       label={item}
@@ -304,6 +341,64 @@ function PromoDetailsSide() {
               <Button
                 variant="contained"
                 onClick={() => setItemModalVisible(false)}
+              >
+                Cancel
+              </Button>
+            </DialogActions>
+          </Dialog>
+          <Dialog
+            open={storeModalVisible}
+            onClose={() => setStoreModalVisible(false)}
+            aria-labelledby="responsive-dialog-title"
+          >
+            <DialogTitle id="responsive-dialog-title">
+              {"Select from list of stores"}
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText
+                style={{ display: "flex", flexDirection: "column" }}
+              >
+                {value.promoStoreListArray &&
+                  value.promoStoreListArray.map((item) => (
+                    <FormControlLabel
+                      key={item}
+                      control={
+                        <Checkbox
+                          onChange={handleCheckboxChange}
+                          name={item}
+                          checked={
+                            modalType === "stores"
+                              ? value.promotionData.locationList.includes(item)
+                              : modalType === "storesExcluded"
+                              ? value.promotionData.excludedLocationList.includes(
+                                  item
+                                )
+                              : null
+                          }
+                          // checked={
+                          //   modalType === "stores"
+                          //     ? selectedStores[item]
+                          //     : modalType === "storesExcluded"
+                          //     ? excludedSelectedStores[item]
+                          //     : null
+                          // }
+                        />
+                      }
+                      label={item}
+                    />
+                  ))}
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions style={{ justifyContent: "space-between" }}>
+              <Button
+                variant="contained"
+                onClick={() => setStoreModalVisible(false)}
+              >
+                OK
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => setStoreModalVisible(false)}
               >
                 Cancel
               </Button>
@@ -615,10 +710,10 @@ function PromoDetailsSide() {
                       label="Item Type"
                       required={true}
                       placeholder="Add Item IDs"
-                      value={Object.keys(selectedItems).filter(
-                        (key) => selectedItems[key] === true
-                      )}
-                      // value={Object.values(selectedItems).filter((item)=>item==true).key}
+                      // value={Object.keys(selectedItems).filter(
+                      //   (key) => selectedItems[key] === true
+                      // )}
+                      value={value.promotionData.itemList}
                       fun={(text) =>
                         value.setPromotionData({
                           ...value.promotionData,
@@ -658,6 +753,7 @@ function PromoDetailsSide() {
                         {/* Hidden file input */}
                         <input
                           type="file"
+                          accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
                           style={{
                             position: "absolute",
                             top: 0,
@@ -745,9 +841,10 @@ function PromoDetailsSide() {
                       label="Exclusions"
                       required={false}
                       placeholder="Add Item IDs to exclude"
-                      value={Object.keys(excludedSelectedItems).filter(
-                        (key) => excludedSelectedItems[key] === true
-                      )}
+                      // value={Object.keys(excludedSelectedItems).filter(
+                      //   (key) => excludedSelectedItems[key] === true
+                      // )}
+                      value={value.promotionData.excludedItemList}
                       fun={(text) =>
                         value.setPromotionData({
                           ...value.promotionData,
@@ -787,6 +884,7 @@ function PromoDetailsSide() {
                         {/* Hidden file input */}
                         <input
                           type="file"
+                          accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
                           style={{
                             position: "absolute",
                             top: 0,
@@ -1019,6 +1117,9 @@ function PromoDetailsSide() {
                         label="Location"
                         required={true}
                         placeholder="Add Store IDs"
+                        // value={Object.keys(selectedStores).filter(
+                        //   (key) => selectedStores[key] === true
+                        // )}
                         value={value.promotionData.locationList}
                         fun={(text) =>
                           value.setPromotionData({
@@ -1026,22 +1127,87 @@ function PromoDetailsSide() {
                             locationList: text,
                           })
                         }
+                        EndComponent={
+                          <Visibility
+                            style={{
+                              backgroundColor: "white",
+                              cursor: "pointer",
+                            }}
+                            onClick={() => handleStoreModal("stores")}
+                            id="stores"
+                          ></Visibility>
+                        }
                       />
                     </FormControl>
                     <FormControl
                       sx={{ flex: 1, display: "flex", flexDirection: "row" }}
                     >
-                      <Button
-                        variant="outlined"
-                        endIcon={<FiUpload style={{ fontSize: "1rem" }} />}
-                        style={{
-                          fontFamily: "Poppins,sans-serif",
-                          width: "50%",
-                          fontSize: "0.8rem",
-                        }}
-                      >
-                        Upload
-                      </Button>
+                      {!value.storeUpload.stores && (
+                        <Button
+                          variant="outlined"
+                          endIcon={<FiUpload style={{ fontSize: "1rem" }} />}
+                          style={{
+                            fontFamily: "Poppins,sans-serif",
+                            width: "50%",
+                            fontSize: "0.8rem",
+                            position: "relative", // Make the button the container for the file input
+                            overflow: "hidden",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Upload
+                          <input
+                            type="file"
+                            accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                            style={{
+                              position: "absolute",
+                              top: 0,
+                              left: 0,
+                              width: "100%",
+                              height: "100%",
+                              opacity: 0,
+                              cursor: "pointer", // Ensures the input behaves like a button
+                            }}
+                            onChange={(e) =>
+                              value.setStoreUpload({
+                                ...value.storeUpload,
+                                stores: true,
+                                eventStores: e,
+                              })
+                            }
+                            onClick={(event) => (event.target.value = "")} // To allow uploading the same file again
+                          />
+                        </Button>
+                      )}
+                      {value.storeUpload.stores && (
+                        <div style={{ display: "flex" }}>
+                          <a
+                            href={URL.createObjectURL(
+                              value.storeUpload.eventStores.target.files[0]
+                            )}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {value.storeUpload.eventStores.target.files[0].name
+                              .length < 12
+                              ? value.storeUpload.eventStores.target.files[0]
+                                  .name
+                              : value.storeUpload.eventStores.target.files[0].name.substring(
+                                  0,
+                                  10
+                                ) + "..."}
+                          </a>
+                          <Cancel
+                            onClick={() =>
+                              value.setStoreUpload({
+                                ...value.storeUpload,
+                                stores: false,
+                                eventStores: null,
+                              })
+                            }
+                          />
+                        </div>
+                      )}
                       <div
                         style={{
                           fontFamily: "Poppins,sans-serif",
@@ -1080,6 +1246,9 @@ function PromoDetailsSide() {
                         label="Exclusions"
                         required={false}
                         placeholder="Add Exclusions"
+                        // value={Object.keys(excludedSelectedStores).filter(
+                        //   (key) => excludedSelectedStores[key] === true
+                        // )}
                         value={value.promotionData.excludedLocationList}
                         fun={(text) =>
                           value.setPromotionData({
@@ -1087,23 +1256,89 @@ function PromoDetailsSide() {
                             excludedLocationList: text,
                           })
                         }
+                        EndComponent={
+                          <Visibility
+                            style={{
+                              backgroundColor: "white",
+                              cursor: "pointer",
+                            }}
+                            onClick={() => handleStoreModal("storesExcluded")}
+                            id="storesExcluded"
+                          ></Visibility>
+                        }
                         style={{}}
                       />
                     </FormControl>
                     <FormControl
                       sx={{ flex: 1, display: "flex", flexDirection: "row" }}
                     >
-                      <Button
-                        variant="outlined"
-                        endIcon={<FiUpload style={{ fontSize: "1rem" }} />}
-                        style={{
-                          fontFamily: "Poppins,sans-serif",
-                          width: "50%",
-                          fontSize: "0.8rem",
-                        }}
-                      >
-                        Upload
-                      </Button>
+                      {!value.storeUpload.excludedStores && (
+                        <Button
+                          variant="outlined"
+                          endIcon={<FiUpload style={{ fontSize: "1rem" }} />}
+                          style={{
+                            fontFamily: "Poppins,sans-serif",
+                            width: "50%",
+                            fontSize: "0.8rem",
+                            position: "relative", // Make the button the container for the file input
+                            overflow: "hidden",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Upload
+                          <input
+                            type="file"
+                            accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                            style={{
+                              position: "absolute",
+                              top: 0,
+                              left: 0,
+                              width: "100%",
+                              height: "100%",
+                              opacity: 0,
+                              cursor: "pointer", // Ensures the input behaves like a button
+                            }}
+                            onChange={(e) =>
+                              value.setStoreUpload({
+                                ...value.storeUpload,
+                                excludedStores: true,
+                                eventExcludedStores: e,
+                              })
+                            }
+                            onClick={(event) => (event.target.value = "")} // To allow uploading the same file again
+                          />
+                        </Button>
+                      )}
+                      {value.storeUpload.excludedStores && (
+                        <div style={{ display: "flex" }}>
+                          <a
+                            href={URL.createObjectURL(
+                              value.storeUpload.eventExcludedStores.target
+                                .files[0]
+                            )}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {value.storeUpload.eventExcludedStores.target
+                              .files[0].name.length < 12
+                              ? value.storeUpload.eventExcludedStores.target
+                                  .files[0].name
+                              : value.storeUpload.eventExcludedStores.target.files[0].name.substring(
+                                  0,
+                                  10
+                                ) + "..."}
+                          </a>
+                          <Cancel
+                            onClick={() =>
+                              value.setStoreUpload({
+                                ...value.storeUpload,
+                                excludedStores: false,
+                                eventExcludedStores: null,
+                              })
+                            }
+                          />
+                        </div>
+                      )}
                       <div
                         style={{
                           fontFamily: "Poppins,sans-serif",
