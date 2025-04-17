@@ -55,3 +55,61 @@
       border-radius: 50%;
   }
     */
+
+  /* :root {
+    --primary: #1C244B;
+  } */
+  .fixedContainer {
+    position: fixed;
+    z-index: 5;
+  }
+  
+  .headerGrid {
+    height: 10vh;
+    background-color: var(--primary);
+    width: 100vw;
+    justify-content: space-between;
+    display: flex;
+    flex-direction: row;
+    color: white;
+  }
+  
+  .logoContainer {
+    align-items: center;
+    display: flex;
+    width: 8%;
+    justify-content: center;
+  }
+  
+  .logoImage {
+    display: flex;
+    width: 90%;
+  }
+  
+  .expContainer {
+    align-items: center;
+    display: flex;
+  }
+  
+  .textContainer .textStyle {
+    color: white;
+  }
+  
+  .X {
+    /* Add styling for X if needed */
+  }
+  
+  .iconContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 8%;
+    justify-content: space-evenly;
+  }
+  
+  .sideSpacer {
+    display: flex;
+    flex-grow: 1;
+    background-color: #1C244B;
+    width: 2%;
+  }

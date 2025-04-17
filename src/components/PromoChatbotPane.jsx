@@ -31,8 +31,9 @@ import { Backdrop, CircularProgress, IconButton } from "@mui/material";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import TypingIndicatorComponent from "./TypingIndicatorComponent";
-import MicIcon from '@mui/icons-material/Mic';
- 
+import MicIcon from "@mui/icons-material/Mic";
+import ChatbotInputForm from "./ChatbotInputForm";
+
 export default function PromoChatbotPane() {
   const [messages, setMessages] = useState([]);
   const value = useContext(AuthContext);
@@ -686,7 +687,7 @@ export default function PromoChatbotPane() {
             visible: true,
             text: "File uploaded successfully!",
             isSuccessful: true,
-          });  
+          });
 
           setMessages((prevMessages) => [
             ...prevMessages,
@@ -868,45 +869,8 @@ export default function PromoChatbotPane() {
         ))}
         {typing && <TypingIndicatorComponent scrollToBottom={scrollToBottom} />}
       </Box>
+
       {/* <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleMessageSubmit(input);
-        }}
-        id="form1"
-        className="chatbot-input-form"
-      >
-        <label className="paneIcon">
-          <input
-            type="file"
-            style={{ display: "none" }}
-            onChange={(e) => uploadInvoice(e)}
-            onClick={(event) => (event.target.value = "")}
-          />
-          <Add className="paneIcon" />
-        </label>
-        <Smiley
-          className="paneIcon"
-          onClick={() => setPickerVisible(!isPickerVisible)} // Toggle emoji picker visibility
-        />
-        <input
-          id="inputValue"
-          type="text"
-          placeholder="Type a message..."
-          value={input}
-          onChange={(e) => {
-            e.preventDefault();
-            setInput(e.target.value);
-          }}
-          style={{ margin: "0.5rem", height: "2rem" }}
-        />
-        <SendIcon
-          className="paneIcon"
-          onClick={() => handleMessageSubmit(input)}
-        />
-        <i className="fa fa-paper-plane-o" aria-hidden="true"></i>
-      </form> */}
-            <form
               onSubmit={(e) => {
                 e.preventDefault();
                 handleMessageSubmit(input);
@@ -927,9 +891,7 @@ export default function PromoChatbotPane() {
                 className="paneIcon"
                 onClick={() => setPickerVisible(!isPickerVisible)} // Toggle emoji picker visibility
               />
-      
-              {/* Wrapper div for the input and the mic icon */}
-              <div
+                    <div
                 style={{
                   position: "relative",
                   display: "inline-block",
@@ -952,9 +914,7 @@ export default function PromoChatbotPane() {
                     width: "90%", // Ensure the input fills the container
                   }}
                 />
-      
-                {/* Mic icon inside the input field at the very end */}
-                <MicIcon
+                      <MicIcon
                   style={{
                     position: "absolute",
                     right: "2rem", // Position it at the very end
@@ -974,7 +934,15 @@ export default function PromoChatbotPane() {
                 onClick={() => handleMessageSubmit(input)}
               />
               <i className="fa fa-paper-plane-o" aria-hidden="true"></i>
-            </form> 
+            </form>  */}
+      <ChatbotInputForm
+        input={input}
+        setInput={setInput}
+        handleMessageSubmit={handleMessageSubmit}
+        uploadInvoice={uploadInvoice}
+        isPickerVisible={isPickerVisible}
+        setPickerVisible={setPickerVisible}
+      />
       {isPickerVisible && (
         <div
           style={{ position: "absolute", zIndex: 1000, bottom: "4rem" }}

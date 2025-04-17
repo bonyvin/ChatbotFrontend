@@ -168,8 +168,8 @@ export default function AuthProvider({ children }) {
   //PROMO
   const [promotionData, setPromotionData] = useState({
     promotionType: "",
-    hierarchyType: "",
-    hierarchyValue: "",
+    hierarchyType: [],
+    hierarchyValue: [],
     brand: "",
     itemList: [],
     excludedItemList: [],
@@ -181,6 +181,21 @@ export default function AuthProvider({ children }) {
     excludedLocationList: [],
     totalItemsArray: [],
   });
+  // const [promotionData, setPromotionData] = useState({
+  //   promotionType: "",
+  //   hierarchyType: "",
+  //   hierarchyValue: "",
+  //   brand: "",
+  //   itemList: [],
+  //   excludedItemList: [],
+  //   discountType: "",
+  //   discountValue: "",
+  //   startDate: "",
+  //   endDate: "",
+  //   locationList: [],
+  //   excludedLocationList: [],
+  //   totalItemsArray: [],
+  // });
 
   const [promoTotalItemsArray, setPromoTotalItemsArray] = useState([]);
   const [itemUpload, setItemUpload] = useState({

@@ -33,6 +33,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogContentText,
+  ListItemText,
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import {
@@ -200,13 +201,18 @@ function PromoDetailsSide() {
     });
     value.setPromotionData({ ...value.promotionData, promotionType: type });
   };
-  const handleChangeHierarchy = (event, newValue) => {
-    // console.log("Hei",newValue)
-    value.setPromotionData({
+  const handleChangeHierarchy = (event) => {
+    console.log("Hierarchy: ", event);
+     value.setPromotionData({
       ...value.promotionData,
-      hierarchyType: newValue,
+      hierarchyType: event.target.checked
+        ? [...value.promotionData.hierarchyType, event.target.value]
+        : value.promotionData.hierarchyType.filter(
+            (item) => item !== event.target.value
+          ),
     });
   };
+
   const handleChangeDiscount = (event, newValue) => {
     value.setPromotionData({
       ...value.promotionData,
@@ -658,18 +664,27 @@ function PromoDetailsSide() {
                     <Select
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
-                      value={value.promotionData.hierarchyType}
+                      value={value?.promotionData?.hierarchyType}
                       placeholder="Select Hierarchy Type"
                       onChange={handleChangeHierarchy}
+                      // renderValue={(selected) => selected.join(", ")}
+                      // multiple
                       sx={{
                         zIndex: 1,
                         "& .MuiSelect-button": { color: "#212529" }, // Ensures black color for placeholder
                       }}
                     >
                       {hierarchyTypeOptions.map((item) => (
-                        <Option key={item} value={item}>
-                          {item}
-                        </Option>
+                        <MenuItem key={item} value={item}>
+                          <Checkbox
+                            value={item}
+                            checked={value.promotionData.hierarchyType.includes(
+                              item
+                            )}
+                            onChange={handleChangeHierarchy}
+                          />
+                          <ListItemText primary={item} />
+                        </MenuItem>
                       ))}
                     </Select>
                   </FormControl>
