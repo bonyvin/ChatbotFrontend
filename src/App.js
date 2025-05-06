@@ -19,51 +19,14 @@ import Chatb from "./components/Chatb";
 import CollapsibleTable from "./components/Table";
 import ChatbotPane from "./components/ChatbotPane";
 import AuthProvider from "./context/ContextsMasterFile";
-import PopUp from "./components/PopUp";
+import PopUp from "./components/PopupMessage/FormSubmissionStatusPopUp";
 import BasicDocument from "./components/BasicDocument";
 import InvoiceTemplate from "./components/InvoiceTemplate";
 import PoDetailsSide from "./components/PoDetailsSide";
 import PurchaseOrder from "./components/PDF Generation/PurchaseOrder";
 import PromoDetailsSide from "./components/PromoDetailsSide";
 import Promotion from "./components/PDF Generation/Promotion";
-import LLMChatbotTest from "./components/LLMChatbotTest";
-// function App() {
-//   const {pathname}=useLocation();
-//   const showHeader =  pathname !== "/";
-//   return (
-//     // <div className="App">
-//     //   <Router>
-//     //     {showHeader ? (
-//     //       <Routes>
-//     //         <Route path="/" element={<SignInSide />} />
-//     //       </Routes>
-//     //     ) : (
-//     //       <Routes>
-//     //         <Route path="/chatbot" element={<DetailsSide />} />
-//     //         <Route path="/det" element={<Chatb />} />
-//     //         <Route path="/form" element={<MyProfile />} />
-//     //         <Route path="/table" element={<CollapsibleTable />} />
-//     //       </Routes>
-//     //     )}
-//     //   </Router>
-//     // </div>
-//     <div className="App">
-//       <Router>
-//         <>
-//       {showHeader && <Header/>}
-//         <div>
-//           <Routes>
-//             <Route path="/" element={<SignInSide />} />
-//             <Route path="/chatbot" element={<DetailsSide />} />
-//             <Route path="/det" element={<Chatb />} />
-//             <Route path="/form" element={<MyProfile />} />
-//             <Route path="/table" element={<CollapsibleTable/>} />
-//           </Routes>
-//         </div></>
-//       </Router>
-//       </div>
-//   );
-// }
+import LLMChatbotTest from "./components/LLMTest/LLMChatbotTest";
 
 // export default App;
 const App = () => {
@@ -86,14 +49,7 @@ const AppContent = () => {
       <Routes>
         <Route path="/" element={<SignInSide />} />
         <Route path="/chatbot" element={<DetailsSide />} />
-        <Route path="/det" element={<Chatbot />} />
-        <Route path="/form" element={<MyProfile />} />
-        {/* <Route path="/popup" element={<PopUp/>} /> */}
-        <Route path="/table" element={<CollapsibleTable />} />
         <Route path="/c" element={<ChatbotPane />} />
-        <Route path="/basic" element={<BasicDocument />} />
-        <Route path="/invform" element={<InvoiceTemplate />} />
-        <Route path="/test" element={<Test/>}/>
         <Route path="/poChatbot" element={<PoDetailsSide/>} />
         <Route path="/promoChatbot" element={<PromoDetailsSide/>}/>
         <Route path="/llmtest" element={<LLMChatbotTest/>}/>
