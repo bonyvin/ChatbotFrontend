@@ -33,7 +33,9 @@ import Picker from "@emoji-mart/react";
 import TypingIndicatorComponent from "./TypingIndicatorComponent";
 import MicIcon from "@mui/icons-material/Mic";
 import ChatbotInputForm from "./ChatbotInputForm";
-
+import { Card } from "@mui/joy";
+import EmailPdf from "./PDF Generation/EmailPdf";
+ 
 export default function PromoChatbotPane() {
   const [messages, setMessages] = useState([]);
   const value = useContext(AuthContext);
@@ -51,6 +53,7 @@ export default function PromoChatbotPane() {
   const pickerRef = useRef(null);
   const [typing, setTyping] = useState(false);
   const typingTimeoutRef = useRef(null);
+ 
   //FORM ACTIONS
   //save
   const saveFormData = async () => {
@@ -133,7 +136,14 @@ export default function PromoChatbotPane() {
   }, [value.promotionCounter]);
   const submitFormData = async () => {
     // await handleMessageSubmit("Please submit the data provided");
-    await promotionHeaderCreation();
+    // await promotionHeaderCreation();
+    console.log("Submit called")      
+    await EmailPdf({
+      emailUsed: "bonyvincent11@gmail.com",
+      bodyUsed: { title: "Hello World", name: "John Doe" },
+      promotion: true,
+      documentId: "PROMO123"
+    });
   };
   //clear
   const clearFormData = () => {
@@ -423,6 +433,11 @@ export default function PromoChatbotPane() {
           } else {
             value.setModalVisible(false);
           }
+          if(response.data.promo_json["Email"]!=""){
+            console.log("Inside Email: ",response.data.promo_json["Email"],value.promotionCounter-1)
+            await sendEmail({emailUsed:response.data.promo_json["Email"],documentId:`PROMO${value.promotionCounter-1}`})
+            
+          }
         }
         if (typingTimeoutRef.current) {
           clearTimeout(typingTimeoutRef.current);
@@ -484,9 +499,17 @@ export default function PromoChatbotPane() {
     }
   };
   useEffect(() => {
-    getItemDetails();
-    getStoreDetails();
+    // getItemDetails();
+    // getStoreDetails();
   }, []);
+  const sendEmail=async({emailUsed,documentId})=>{
+    await EmailPdf({
+      emailUsed: emailUsed,
+      bodyUsed: { title: "Hello World", name: "John Doe" },
+      promotion: true,
+      documentId: documentId
+    });
+  }
   //create invoice details
   const promotionDetailsCreation = async () => {
     try {
@@ -826,16 +849,18 @@ export default function PromoChatbotPane() {
   };
   console.log("checkConsole  ", value);
   return (
+    <Card className="chatbot-card">
     <Sheet
-      className="imageBackground"
-      sx={{
-        height: "90vh",
-        display: "flex",
-        flexDirection: "column",
-        backgroundColor: "#FFFAF3",
-        overflowY: "auto",
-        flexGrow: 1,
-      }}
+      // className="imageBackground"
+      // sx={{
+      //   height: "92.75vh",
+      //   display: "flex",
+      //   flexDirection: "column",
+      //   backgroundColor: "#FFFAF3",
+      //   overflowY: "auto",
+      //   flexGrow: 1,
+      // }}
+      className="chatbot-area imageBackground"
       ref={messageEl}
     >
       <Backdrop
@@ -951,6 +976,6 @@ export default function PromoChatbotPane() {
           <Picker data={data} onEmojiSelect={handleEmojiSelect} />
         </div>
       )}
-    </Sheet>
+    </Sheet></Card>
   );
 }

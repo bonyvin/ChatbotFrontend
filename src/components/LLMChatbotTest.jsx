@@ -31,6 +31,7 @@ import { Backdrop, CircularProgress, IconButton } from "@mui/material";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import TypingIndicatorComponent from "./TypingIndicatorComponent";
+import ChatbotInputForm from "./ChatbotInputForm";
 
 export default function LLMChatbotTest() {
   const [messages, setMessages] = useState([]);
@@ -363,7 +364,7 @@ export default function LLMChatbotTest() {
     console.log("Input: ", input);
     const textToSend = input.trim();
     if (!textToSend && !inputFromUpload) return;
-  
+
     // Add User Message (if applicable)
     if (!inputFromUpload) {
       setMessages((prevMessages) => [
@@ -372,56 +373,59 @@ export default function LLMChatbotTest() {
       ]);
       setInput("");
     }
-  
+
     // Start Typing Indicator
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => setTyping(true), 1000);
-  
+
     try {
       const response = await fetch("http://localhost:8000/chat/", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Accept": "text/plain" },
+        headers: { "Content-Type": "application/json", Accept: "text/plain" },
         body: JSON.stringify({
           thread_id: "admin",
           message: textToSend || inputFromUpload,
         }),
       });
-  
+
       // Stop Typing Indicator
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = null;
       setTyping(false);
-  
+
       if (!response.ok) {
         const errorBody = await response.text();
         console.error("Server Error Body:", errorBody);
-        throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Failed to fetch data: ${response.status} ${response.statusText}`
+        );
       }
-  
+
       // Add Initial Bot Message Placeholder
       const botMessageKey = `bot-${Date.now()}`;
       setMessages((prevMessages) => [
         ...prevMessages,
         { text: "", fromUser: false, key: botMessageKey },
       ]);
-  
+
       // --- Process Stream ---
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let done = false;
       console.log("Starting stream reading loop..."); // Log loop start
-  
+
       while (!done) {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
         // !!! ADD LOGS HERE !!!
         console.log("Reader Read:", { value, done }); // Log raw reader output
-  
-        if (value) { // Check if value (Uint8Array) exists
+
+        if (value) {
+          // Check if value (Uint8Array) exists
           const chunkStr = decoder.decode(value, { stream: !done });
           // !!! ADD LOG HERE !!!
           console.log("Decoded Chunk:", chunkStr); // Log the decoded string
-  
+
           if (chunkStr) {
             // !!! ADD LOG HERE !!!
             console.log("Attempting to update state with chunk:", chunkStr);
@@ -433,14 +437,13 @@ export default function LLMChatbotTest() {
               )
             );
           } else {
-              console.log("Decoded chunk is empty, not updating state.");
+            console.log("Decoded chunk is empty, not updating state.");
           }
         } else if (done) {
           console.log("Stream finished (done is true, no more values).");
         }
       }
       console.log("Finished stream reading loop."); // Log loop end
-  
     } catch (error) {
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = null;
@@ -448,11 +451,16 @@ export default function LLMChatbotTest() {
       console.error("Error fetching or processing stream:", error);
       setMessages((prevMessages) => [
         ...prevMessages,
-        { text: `Error: ${error.message}`, fromUser: false, isError: true, key: `error-${Date.now()}` },
+        {
+          text: `Error: ${error.message}`,
+          fromUser: false,
+          isError: true,
+          key: `error-${Date.now()}`,
+        },
       ]);
     }
   };
-  
+
   const getItemDetails = async () => {
     try {
       const response = await axios({
@@ -835,7 +843,7 @@ export default function LLMChatbotTest() {
     <Sheet
       className="imageBackground"
       sx={{
-        height: "90vh",
+        height: "100vh",
         display: "flex",
         flexDirection: "column",
         backgroundColor: "#FFFAF3",
@@ -875,7 +883,7 @@ export default function LLMChatbotTest() {
         ))}
         {typing && <TypingIndicatorComponent scrollToBottom={scrollToBottom} />}
       </Box>
-      <form
+      {/* <form
         onSubmit={(e) => {
           e.preventDefault();
           handleMessageSubmit(input);
@@ -912,7 +920,15 @@ export default function LLMChatbotTest() {
           onClick={() => handleMessageSubmit(input)}
         />
         <i className="fa fa-paper-plane-o" aria-hidden="true"></i>
-      </form>
+      </form> */}
+      <ChatbotInputForm
+        input={input}
+        setInput={setInput}
+        handleMessageSubmit={handleMessageSubmit}
+        uploadInvoice={uploadInvoice}
+        isPickerVisible={isPickerVisible}
+        setPickerVisible={setPickerVisible}
+      />
       {isPickerVisible && (
         <div
           style={{ position: "absolute", zIndex: 1000, bottom: "4rem" }}

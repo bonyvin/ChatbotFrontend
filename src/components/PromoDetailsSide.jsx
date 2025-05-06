@@ -34,6 +34,7 @@ import {
   DialogContent,
   DialogContentText,
   ListItemText,
+  Chip,
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import {
@@ -139,7 +140,10 @@ function PromoDetailsSide() {
   const hierarchyTypeOptions = ["Department", "Class", "Sub Class"];
   const discountTypeOptions = ["Fixed Price", "% Off", "Buy One Get One Free"];
   const showForm = value.isActive;
-
+  const initialHierarchyTypes = hierarchyTypeOptions.filter((type) =>
+    value.promotionData.hierarchyType.includes(type)
+  ); 
+console.log("Initial Hierarchy Types:",initialHierarchyTypes);
   const handleTableExpand = () => {
     setTableToggle(!tableToggle);
   };
@@ -191,6 +195,7 @@ function PromoDetailsSide() {
     value.promotionData.itemList,
     value.promotionData.excludedItemList,
     value.promoTotalItemsArray,
+    value.promotionData.hierarchyType,
   ]);
   const handleRadioChange = (type) => {
     value.setTypeOfPromotion({
@@ -201,18 +206,55 @@ function PromoDetailsSide() {
     });
     value.setPromotionData({ ...value.promotionData, promotionType: type });
   };
-  const handleChangeHierarchy = (event) => {
-    console.log("Hierarchy: ", event);
-     value.setPromotionData({
+  // const handleChangeHierarchy = (event) => {
+  //   console.log("handleChangeHierarchy  ", event
+  //   );
+  //   console.log("Current target: ",event.currentTarget)
+  //   value.setPromotionData({
+  //     ...value.promotionData,
+  //     hierarchyType: event.target.checked
+  //       ? [...value.promotionData.hierarchyType, event.target.value]
+  //       : value.promotionData.hierarchyType.filter(
+  //           (item) => item !== event.target.value
+  //         ),
+  //   });
+  // };
+  const handleChangeHierarchy = (event, newValue) => {
+    // alert(`You chose "${newValue}"`);
+    console.log("handleChangeHierarchy  ", newValue);
+    let hierarchyValue = [...newValue];
+    let hierarchyArray = [...value.promotionData.hierarchyType];
+    let updatedValue = newValue.filter(
+      (item) => item != [...value.promotionData.hierarchyType]
+    );
+    console.log(
+      "hierarchy value:",
+      ...newValue,
+      "Hierarch array: ",
+      hierarchyArray,
+      "Hierarchy Filter: ",
+      value.promotionData.hierarchyType.filter(
+        (item) => !hierarchyValue.includes(item)
+      ),
+      "Updated",
+      updatedValue
+    );
+    value.setPromotionData({
       ...value.promotionData,
-      hierarchyType: event.target.checked
-        ? [...value.promotionData.hierarchyType, event.target.value]
-        : value.promotionData.hierarchyType.filter(
-            (item) => item !== event.target.value
-          ),
+      hierarchyType: [...value.promotionData.hierarchyType, ...updatedValue],
     });
   };
-
+  // const handleChangeHierarchy = (event) => {
+  //   const { value: clickedValue, checked } = event.target;
+  //   value.setPromotionData({
+  //     ...value.promotionData,
+  //     hierarchyType: checked
+  //       ? [...value.promotionData.hierarchyType, clickedValue]
+  //       : value.promotionData.hierarchyType.filter(
+  //           (item) => item !== clickedValue
+  //         ),
+  //   });
+  // };
   const handleChangeDiscount = (event, newValue) => {
     value.setPromotionData({
       ...value.promotionData,
@@ -272,7 +314,7 @@ function PromoDetailsSide() {
   };
 
   return (
-    <Grid container component="main" style={{}}>
+    <Grid container component="main" style={{ backgroundColor: "#e9ecef" }}>
       <Grid
         item
         xs={8}
@@ -280,8 +322,9 @@ function PromoDetailsSide() {
         md={8}
         container
         component="main"
-        style={{ padding: "1rem" }}
-        className="imageBackground"
+        // style={{ padding: "0.5rem" }}//padding-all
+        style={{ padding: "1rem", paddingLeft: "0.25rem" }}
+        // className="imageBackground"
         ref={messagesEndRef}
       >
         <div style={{ position: "absolute" }}>
@@ -651,40 +694,40 @@ function PromoDetailsSide() {
                     <Form.Label
                       id="custom"
                       className="position-absolute top-0 translate-middle custom"
-                      style={{
-                        zIndex: 2,
-                        padding: "0 4px", // Optional: Add some padding to the label to prevent overlap
-                      }}
+                      style={{ zIndex: 2, padding: "0 4px" }}
                     >
                       <span style={{ backgroundColor: "#FBFCFE", zIndex: 2 }}>
                         Hierarchy Type
                       </span>
-                      <div style={{ color: "red", zIndex: 2 }}>{"*"}</div>
+                      <div style={{ color: "red", zIndex: 2 }}>*</div>
                     </Form.Label>
                     <Select
-                      labelId="demo-simple-select-label"
-                      id="demo-simple-select"
-                      value={value?.promotionData?.hierarchyType}
+                      multiple
+                      value={initialHierarchyTypes}
                       placeholder="Select Hierarchy Type"
-                      onChange={handleChangeHierarchy}
-                      // renderValue={(selected) => selected.join(", ")}
-                      // multiple
                       sx={{
                         zIndex: 1,
-                        "& .MuiSelect-button": { color: "#212529" }, // Ensures black color for placeholder
+                        "& .MuiSelect-button": { color: "#212529" },
+                      }}
+                      // onChange={(e, newValue) =>
+                      //   value.setPromotionData((prev) => ({
+                      //     ...prev,
+                      //     hierarchyType: newValue,
+                      //   }))
+                      // }
+                      renderValue={(selected ) => {
+                        console.log("All selected:", selected);
+                        return selected.map(option => {
+                          // this will print each individual option string
+                          console.log("Option:", option);
+                          return <div key={option.value}>{option.value}</div>;
+                        });
                       }}
                     >
                       {hierarchyTypeOptions.map((item) => (
-                        <MenuItem key={item} value={item}>
-                          <Checkbox
-                            value={item}
-                            checked={value.promotionData.hierarchyType.includes(
-                              item
-                            )}
-                            onChange={handleChangeHierarchy}
-                          />
-                          <ListItemText primary={item} />
-                        </MenuItem>
+                        <Option key={item} value={item}>
+                          {item}
+                        </Option>
                       ))}
                     </Select>
                   </FormControl>
@@ -1374,20 +1417,27 @@ function PromoDetailsSide() {
               </Stack>
             )}
           </Card>
-          <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
+          <CardOverflow
+            sx={{ borderTop: "1px solid", borderColor: "divider" }}
+            style={{
+              flexGrow: 1,
+              display: "flex",
+              justifyContent: "flex-end",
+              paddingBottom: "0.75rem",
+            }}
+          >
             <CardActions
-              sx={{
+              style={{
                 justifyContent: "space-between",
                 marginLeft: "1rem",
                 marginRight: "1rem",
               }}
             >
-              {/* <CardActions sx={{ justifyContent: "space-evenly" }}> */}
               <Button
                 size="md"
                 variant="solid"
                 style={{
-                  backgroundColor: "#283D76",
+                  backgroundColor: "#1C244B",
                   fontFamily: "Poppins,sans-serif",
                   color: "white",
                 }}
@@ -1395,20 +1445,12 @@ function PromoDetailsSide() {
               >
                 SAVE
               </Button>
-              {/* <BlobProvider
-                document={<Invoice invoiceId={value.poHeaderData.invoiceNo} />}
-              >
-                {({ url, blob }) => (
-                  <a href={url} target="_blank">
 
-                  </a>
-                )}
-              </BlobProvider> */}
               <Button
                 size="md"
                 variant="solid"
                 style={{
-                  backgroundColor: "#283D76",
+                  backgroundColor: "#1C244B",
                   fontFamily: "Poppins,sans-serif",
                   color: "white",
                 }}
@@ -1421,7 +1463,7 @@ function PromoDetailsSide() {
                 size="md"
                 variant="solid"
                 style={{
-                  backgroundColor: "#283D76",
+                  backgroundColor: "#1C244B",
                   fontFamily: "Poppins,sans-serif",
                   color: "white",
                 }}
@@ -1441,13 +1483,19 @@ function PromoDetailsSide() {
         md={4}
         // className="imageBackground"
         style={{
-          marginTop: "10vh",
+          marginTop: "7.25vh",
           width: "100%",
           display: "flex",
           flexDirection: "column",
         }}
       >
+        {/* <Card
+      className="generalView"
+      style={{ width: "100%" }}
+      ref={messagesEndRef}
+    > */}
         <PromoChatbotPane />
+        {/* </Card> */}
         <div id="myModal" class="modal fade">
           <div class="modal-dialog modal-confirm">
             <div class="modal-content">

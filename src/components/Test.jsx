@@ -1,4 +1,4 @@
-import React,{useContext} from "react";
+import React, { useContext } from "react";
 import loginImage from "../images/loginBackground.png";
 import kpmgWhite from "../images/kpmgWhite.png";
 import symbol from "../images/symbol.png";
@@ -49,13 +49,98 @@ import success from "../images/success.gif";
 import failure from "../images/failure.gif";
 import PurchaseOrder from "./PDF Generation/PurchaseOrder";
 import Promotion from "./PDF Generation/Promotion";
+import axios from "axios";
+import { BlobProvider } from "@react-pdf/renderer";
 
 function Test() {
   const defaultTheme = createTheme();
-    const value = useContext(AuthContext);
-    console.log("Inside Test: ",value)
+  const value = useContext(AuthContext);
+  console.log("Inside Test: ", value);
+
+  const sendFile = async (file, email, body) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("email", email);
+    formData.append("body", JSON.stringify(body)); // Convert the body to a JSON string
+    console.log("Inside send file");
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/filenew",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data", // Required for file uploads
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        console.log("Email has been sent");
+      }
+    } catch (error) {
+      if (error.response) {
+        // Server returned an error response
+        console.error("Error sending file:", error.response.data.message);
+      } else if (error.request) {
+        // No response received from the server
+        console.error("No response received from server:", error.request);
+      } else {
+        // Something else went wrong
+        console.error("Error:", error.message);
+      }
+    }
+  };
+
+  const emailUsed = "bonyvincent11@gmail.com";
+  const bodyUsed = { title: "Hello World", name: "John Doe" };
+
+  const handleSubmit = async () => {
+    console.log("Submit called...");
+    // Here we don't directly call the BlobProvider; we render it in the JSX instead
+  };
 
   return (
+    <div
+      style={{
+        height: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      {/* <BlobProvider document={<Promotion promoId={"PROMO422"} />}>
+        {({ blob, url }) => {
+          // We can pass the blob to sendFile here
+          return (
+            <Button
+              size="large"
+              onClick={() => sendFile(blob, emailUsed, bodyUsed)} // Trigger the sendFile function when clicked
+            >
+              SUBMIT
+            </Button>
+          );
+        }}
+      </BlobProvider> */}
+      <BlobProvider document={<Promotion promoId={"PROMO422"} />}>
+        {({ blob, url }) => {
+          // Create a File object with the desired name
+          const file = new File([blob], "Promotion.pdf", {
+            type: "application/pdf",
+          });
+
+          return (
+            <Button
+              size="large"
+              onClick={() => sendFile(file, emailUsed, bodyUsed)}
+            >
+              SUBMIT
+            </Button>
+          );
+        }}
+      </BlobProvider>
+    </div>
+
     // <div>
     //   <h2 style={{textAlign:'center'}}>List of invoices</h2>
     //   <div >
@@ -65,39 +150,38 @@ function Test() {
     //     <PdfCard title="Cardic ltd Invoice"/> */}
     //   </div>
     // </div>
-  //   <div><svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" viewBox="0 0 500 500" width="401" height="401" preserveAspectRatio="xMidYMid meet" style={{ width: '100%', height: '100%', transform: 'translate3d(0px, 0px, 0px)', contentVisibility: 'visible' }}>
-  //   <defs>
-  //     <clipPath id="__lottie_element_16">
-  //       <rect width="500" height="500" x="0" y="0" />
-  //     </clipPath>
-  //   </defs>
-  //   <g clipPath="url(#__lottie_element_16)">
-  //     <g transform="matrix(1,0,0,1,0,0)" opacity="1" style={{ display: 'block' }}>
-  //       <rect width="500" height="500" fill="#ffffff" />
-  //     </g>
-  //     <g transform="matrix(1,0,0,1,250,250)" opacity="1" style={{ display: 'block' }}>
-  //       <g opacity="1" transform="matrix(1,0,0,1,0,0)">
-  //         <path fill="rgb(208,2,27)" fillOpacity="1" d="M115,0 C115,63.51300048828125 63.51300048828125,115 0,115 C-63.51300048828125,115 -115,63.51300048828125 -115,0 C-115,-63.51300048828125 -63.51300048828125,-115 0,-115 C63.51300048828125,-115 115,-63.51300048828125 115,0z" />
-  //       </g>
-  //     </g>
-  //     <g transform="matrix(1,0,0,1,249.25,254)" opacity="1" style={{ display: 'block' }}>
-  //       <g opacity="1" transform="matrix(1,0,0,1,0,59)">
-  //         <path fill="rgb(255,255,255)" fillOpacity="1" d="M14,0 C14,7.73199987411499 7.73199987411499,14 0,14 C-7.73199987411499,14 -14,7.73199987411499 -14,0 C-14,-7.73199987411499 -7.73199987411499,-14 0,-14 C7.73199987411499,-14 14,-7.73199987411499 14,0z" />
-  //       </g>
-  //     </g>
-  //     <g transform="matrix(1,0,0,1,250,250)" opacity="1" style={{ display: 'block' }}>
-  //       <g opacity="1" transform="matrix(1,0,0,1,0,0)">
-  //         <path strokeLinecap="round" strokeLinejoin="miter" fillOpacity="0" stroke="rgb(255,255,255)" strokeOpacity="1" strokeWidth="28" d="M-1,12.401000022888184 C-1,-22.820999145507812 -1,-63.5 -1,-63.5" />
-  //       </g>
-  //     </g>
-  //   </g>
-  // </svg></div>
-//   <div style={{padding:"20rem"}}>
-// <img src={success} style={{ width: "7rem" }}/>
-// <img src={failure} style={{ width: "12.5rem" }}/>
-// </div> 
-<div><Promotion promoId={"PROMO001"}/></div>
-  
+    //   <div><svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" viewBox="0 0 500 500" width="401" height="401" preserveAspectRatio="xMidYMid meet" style={{ width: '100%', height: '100%', transform: 'translate3d(0px, 0px, 0px)', contentVisibility: 'visible' }}>
+    //   <defs>
+    //     <clipPath id="__lottie_element_16">
+    //       <rect width="500" height="500" x="0" y="0" />
+    //     </clipPath>
+    //   </defs>
+    //   <g clipPath="url(#__lottie_element_16)">
+    //     <g transform="matrix(1,0,0,1,0,0)" opacity="1" style={{ display: 'block' }}>
+    //       <rect width="500" height="500" fill="#ffffff" />
+    //     </g>
+    //     <g transform="matrix(1,0,0,1,250,250)" opacity="1" style={{ display: 'block' }}>
+    //       <g opacity="1" transform="matrix(1,0,0,1,0,0)">
+    //         <path fill="rgb(208,2,27)" fillOpacity="1" d="M115,0 C115,63.51300048828125 63.51300048828125,115 0,115 C-63.51300048828125,115 -115,63.51300048828125 -115,0 C-115,-63.51300048828125 -63.51300048828125,-115 0,-115 C63.51300048828125,-115 115,-63.51300048828125 115,0z" />
+    //       </g>
+    //     </g>
+    //     <g transform="matrix(1,0,0,1,249.25,254)" opacity="1" style={{ display: 'block' }}>
+    //       <g opacity="1" transform="matrix(1,0,0,1,0,59)">
+    //         <path fill="rgb(255,255,255)" fillOpacity="1" d="M14,0 C14,7.73199987411499 7.73199987411499,14 0,14 C-7.73199987411499,14 -14,7.73199987411499 -14,0 C-14,-7.73199987411499 -7.73199987411499,-14 0,-14 C7.73199987411499,-14 14,-7.73199987411499 14,0z" />
+    //       </g>
+    //     </g>
+    //     <g transform="matrix(1,0,0,1,250,250)" opacity="1" style={{ display: 'block' }}>
+    //       <g opacity="1" transform="matrix(1,0,0,1,0,0)">
+    //         <path strokeLinecap="round" strokeLinejoin="miter" fillOpacity="0" stroke="rgb(255,255,255)" strokeOpacity="1" strokeWidth="28" d="M-1,12.401000022888184 C-1,-22.820999145507812 -1,-63.5 -1,-63.5" />
+    //       </g>
+    //     </g>
+    //   </g>
+    // </svg></div>
+    //   <div style={{padding:"20rem"}}>
+    // <img src={success} style={{ width: "7rem" }}/>
+    // <img src={failure} style={{ width: "12.5rem" }}/>
+    // </div>
+
     // <ThemeProvider theme={defaultTheme}>
     // <Grid container component="main" style={{ display: "flex" }}>
     //   <Grid
@@ -445,5 +529,3 @@ function Test() {
 }
 
 export default Test;
-
-

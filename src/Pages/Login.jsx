@@ -30,24 +30,6 @@ import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
 import { useNavigate } from "react-router-dom";
 
-function Copyright(props) {
-  return (
-    <Typography
-      variant="body2"
-      color="text.secondary"
-      align="center"
-      {...props}
-    >
-      {"Copyright © "}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{" "}
-      {new Date().getFullYear()}
-      {"."}
-    </Typography>
-  );
-}
-
 // TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
 
@@ -108,7 +90,7 @@ export default function SignInSide() {
     fontWeight: "700",
     fontFamily: ["OpenSans", "sans-serif"],
   }));
-  const navigate=useNavigate();
+  const navigate = useNavigate();
   return (
     <ThemeProvider theme={theme}>
       <Grid container component="main" style={{ height: "100vh" }}>
@@ -158,9 +140,9 @@ export default function SignInSide() {
           >
             <div className="textContainer">
               <div className="textStyle">Welcome to KPMG's </div>
-              <div className="textStyle">
-                Exp.
-                <div className="X">X</div>
+              <div className="expContainerHeader">
+                <div className="textStyleHeader">{"Experience"}</div>
+                <div className="xHeader">{"X"}</div>
               </div>
             </div>
 
@@ -361,7 +343,7 @@ export default function SignInSide() {
                     display: "flex",
                     alignItems: "center",
                     marginBottom: "4%",
-                    marginTop:'2%'
+                    marginTop: "2%",
                   }}
                 >
                   <div
@@ -452,7 +434,7 @@ export default function SignInSide() {
                     backgroundColor: "",
                   },
                 }}
-                onClick={()=>navigate("/chatbot")}
+                onClick={() => navigate("/chatbot")}
               >
                 <div
                   className="openSans"

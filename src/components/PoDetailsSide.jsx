@@ -63,9 +63,11 @@ import { BsFillInfoCircleFill } from "react-icons/bs";
 import SupplierInfoPopUp from "./SupplierInfoPopUp";
 import ItemInfoPopup from "./ItemInfoPopup";
 import PreviewDocs from "./PDF Generation/PreviewDocs";
+import axios from "axios";
 
 function PoDetailsSide() {
   const messagesEndRef = useRef(null);
+  const [supplierInsights,setSupplierInsights]=useState('')
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -175,9 +177,27 @@ function PoDetailsSide() {
     //   value: `PO${value.poCounter}`,
     // });
   }, [value.poCounter]);
+
+    const supplierRiskApi=async(supplierId)=>{
+      try {
+        // console.log("clearDataApi");
+        const response = await axios({
+          method: "get",
+          url: `http://localhost:8000/supplier-risk-insights?supplierId=${supplierId}`,
+          headers: {
+            "Content-Type": "application/json",
+            accept: "application/json",
+            "Access-Control-Allow-Origin": "*",
+          },
+        });
+        setSupplierInsights(response.data)
+        // console.log("invoice Clear Response:", response.data);
+      } catch (error) {
+        console.log("Supplier Risk Error:", error, error.data);
+      }
+    };
   return (
-    // <DynamicCutoutInput label="Username" required={true} placeholder="Enter your username" />
-    <Grid container component="main" style={{}}>
+    <Grid container component="main" style={{ backgroundColor: "#e9ecef" }}>
       <Grid
         item
         xs={8}
@@ -185,8 +205,8 @@ function PoDetailsSide() {
         md={8}
         container
         component="main"
-        style={{ padding: "1rem" }}
-        className="imageBackground"
+        style={{ padding: "1rem", paddingLeft: "0.25rem" }}
+        // className="imageBackground"
         ref={messagesEndRef}
       >
         <div style={{ position: "absolute" }}>
@@ -198,6 +218,7 @@ function PoDetailsSide() {
           <SupplierInfoPopUp
             visible={supplierPopupStatus}
             setVisible={setSupplierPopupStatus}
+            data={supplierInsights}
           />
           <Dialog
             open={poPreview}
@@ -274,253 +295,159 @@ function PoDetailsSide() {
                 Fields marked as * are mandatory
               </Typography>
             </div>
-            {/* <Typography
-              style={{
-                fontSize: "0.85rem",
-                fontWeight: "700",
-                fontFamily: "Poppins,sans-sherif",
-                alignSelf: "flex-start",
-              }}
-            >
-              PO Details
-            </Typography> */}
-            {/* <Form className="generalRadio">
-              <div
-                className="mb-3"
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  justifyContent: "flex-start",
-                }}
+            <CardOverflow sx={{ p: 0 }} style={{ backgroundColor: "#F5F6F8" }}>
+              <Stack
+                direction="row"
+                spacing={3}
+                style={{ margin: "1rem", display: "flex" }}
               >
-                <Form.Check
-                  inline
-                  label="Merchandise"
-                  name="group1"
-                  type={"radio"}
-                  id={`inline- -1`}
-                  className="labelText"
-                  checked={value.typeOfInvoice.merchandise}
-                  onChange={() => handleRadioChange("merchandise")}
-                  // checked={value.invoiceData.invoiceType.match(/merchandise/i) }
-                />
-                <Form.Check
-                  inline
-                  label="Non - Merchandise"
-                  name="group1"
-                  type={"radio"}
-                  id={`inline- -2`}
-                  className="labelText"
-                  checked={value.typeOfInvoice.nonMerchandise}
-                  onChange={() => handleRadioChange("nonMerchandise")}
-                  // checked={value.invoiceData.invoiceType === "Non - Merchandise"}
-                />
-                <Form.Check
-                  inline
-                  label="Debit Note"
-                  name="group1"
-                  type={"radio"}
-                  id={`inline- -3`}
-                  className="labelText"
-                  checked={value.typeOfInvoice.debitNote}
-                  onChange={() => handleRadioChange("debitNote")}
-                  // checked={value.invoiceData.invoiceType.match(/debit\s*-\s*\s*note\s*: ?(.*?)(?:,|$)/i) }
-                />
-                <Form.Check
-                  inline
-                  label="Credit Note"
-                  name="group1"
-                  type={"radio"}
-                  id={`inline- -4`}
-                  className="labelText"
-                  // checked={value.invoiceData.invoiceType === "Credit Note"}
-                  checked={value.typeOfInvoice.creditNote}
-                  onChange={() => handleRadioChange("creditNote")}
-                />
-              </div>
-            </Form> */}
-            <Stack
-              direction="row"
-              spacing={3}
-              sx={{ display: { xs: "none", md: "flex" }, my: 1 }}
-            >
-              <Stack spacing={2} sx={{ flexGrow: 1 }}>
-                <Stack direction="row" spacing={2}>
-                  <FormControl sx={{ flex: 1 }}>
-                    <DynamicCutoutInput
-                      label="PO Number"
-                      required={true}
-                      //   type="date"
-                      placeholder="Enter Purchase Order No."
-                      value={`PO${value.poCounter}`}
-                      // fun={(text) => {
-                      //   // console.log("Date selected:", text);
-                      //   dispatch({
-                      //     type: "UPDATE_FIELD",
-                      //     field: "poNumber",
-                      //     value: text,
-                      //   });
-                      // }}
-                      editable={true}
-                      style={{ backgroundColor: "#e8e8e8" }}
-                    />
-                  </FormControl>
-                  <FormControl sx={{ flex: 1 }}>
-                    <DynamicCutoutInput
-                      label="Supplier ID"
-                      required={true}
-                      //   type="date"
-                      placeholder="Enter Supplier ID"
-                      value={value.supplierDetails.supplierId}
-                      fun={(text) =>
-                        value.setSupplierDetails({
-                          ...value.supplierDetails,
-                          supplierId: text,
-                        })
-                      }
-                      EndComponent={
-                        value.supplierDetails.supplierStatus == true ? (
-                          <BsFillInfoCircleFill
-                            onClick={() => setSupplierPopupStatus(true)}
-                          />
-                        ) : null
-                      }
-                      // fun={(text) => {
-                      //   // console.log("Date selected:", text);
-                      //   dispatch({
-                      //     type: "UPDATE_FIELD",
-                      //     field: "supplierId",
-                      //     value: text,
-                      //   });
-                      // }}
-                    />
-                  </FormControl>
-                </Stack>
-                <Stack direction="row" spacing={2}>
-                  <FormControl sx={{ flex: 1 }}>
-                    <DynamicCutoutInput
-                      label="Lead Time"
-                      required={true}
-                      //   type="date"
-                      placeholder="Enter Lead Time"
-                      value={value.supplierDetails.leadTime}
-                      fun={(text) =>
-                        value.setSupplierDetails({
-                          ...value.supplierDetails,
-                          leadTime: text,
-                        })
-                      }
-                      // inputValue={purchaseOrderData.leadTime}
-                      // fun={(text) => {
-                      //   // console.log("Date selected:", text);
-                      //   dispatch({
-                      //     type: "UPDATE_FIELD",
-                      //     field: "leadTime",
-                      //     value: text,
-                      //   });
-                      // }}
-                      editable={true}
-                      style={{ backgroundColor: "#e8e8e8" }}
-                    />
-                  </FormControl>
-                  <FormControl sx={{ flex: 1 }}>
-                    <DynamicCutoutInput
-                      label="Est. Delivery Date"
-                      required={true}
-                      type="date"
-                      placeholder="Estimated Delivery Date"
-                      inputValue={purchaseOrderData.estDeliveryDate}
-                      fun={(text) => {
-                        // console.log("Date selected:", text);
-                        dispatch({
-                          type: "UPDATE_FIELD",
-                          field: "estDeliveryDate",
-                          value: text,
-                        });
-                      }}
-                    />
-                  </FormControl>
-                </Stack>
-                <Stack direction="row" spacing={2}>
-                  <FormControl sx={{ flex: 1 }}>
-                    <DynamicCutoutInput
-                      label="Total Quantity"
-                      required={true}
-                      type="number"
-                      placeholder="Enter Total Quantity"
-                      inputValue={purchaseOrderData.totalQuantity}
-                      fun={(text) => {
-                        // console.log("Date selected:", text);
-                        dispatch({
-                          type: "UPDATE_FIELD",
-                          field: "totalQuantity",
-                          value: text,
-                        });
-                      }}
-                      editable={true}
-                      style={{ backgroundColor: "#e8e8e8" }}
-                    />
-                  </FormControl>
-                  <FormControl sx={{ flex: 1 }}>
-                    <DynamicCutoutInput
-                      label="Total Cost"
-                      required={true}
-                      type="number"
-                      placeholder="Enter Total Cost"
-                      inputValue={purchaseOrderData.totalCost}
-                      fun={(text) => {
-                        // console.log("Date selected:", text);
-                        dispatch({
-                          type: "UPDATE_FIELD",
-                          field: "totalCost",
-                          value: text,
-                        });
-                      }}
-                      editable={true}
-                      style={{ backgroundColor: "#e8e8e8" }}
-                    />
-                  </FormControl>
-                </Stack>
-                <Stack direction="row" spacing={2}>
-                  <FormControl sx={{ flex: 1 }}>
-                    <DynamicCutoutInput
-                      label="Total Tax"
-                      required={true}
-                      type="number"
-                      placeholder="Enter Total Tax"
-                      inputValue={purchaseOrderData.totalTax}
-                      fun={(text) => {
-                        // console.log("Date selected:", text);
-                        dispatch({
-                          type: "UPDATE_FIELD",
-                          field: "totalTax",
-                          value: text,
-                        });
-                      }}
-                      editable={true}
-                      style={{ backgroundColor: "#e8e8e8" }}
-                    />
-                  </FormControl>
-                  <FormControl sx={{ flex: 1 }}>
-                    <DynamicCutoutInput
-                      label="Comments(if any)"
-                      //   required={true}
-                      //   type="date"
-                      placeholder="Enter Comments(if any)"
-                      inputValue={purchaseOrderData.comments}
-                      fun={(text) => {
-                        // console.log("Date selected:", text);
-                        dispatch({
-                          type: "UPDATE_FIELD",
-                          field: "comments",
-                          value: text,
-                        });
-                      }}
-                    />
-                  </FormControl>
+                <Stack spacing={2} sx={{ flexGrow: 1 }}>
+                  <Stack direction="row" spacing={2}>
+                    <FormControl sx={{ flex: 1 }}>
+                      <DynamicCutoutInput
+                        label="PO Number"
+                        required={true}
+                        //   type="date"
+                        placeholder="Enter Purchase Order No."
+                        value={`PO${value.poCounter}`}
+                        editable={true}
+                      />
+                    </FormControl>
+                    <FormControl sx={{ flex: 1 }}>
+                      <DynamicCutoutInput
+                        label="Supplier ID"
+                        required={true}
+                        //   type="date"
+                        placeholder="Enter Supplier ID"
+                        value={value.supplierDetails.supplierId}
+                        fun={(text) =>
+                          value.setSupplierDetails({
+                            ...value.supplierDetails,
+                            supplierId: text,
+                          })
+                        }
+                        EndComponent={
+                          value.supplierDetails.supplierStatus == true ? (
+                            <BsFillInfoCircleFill
+                              onClick={() => setSupplierPopupStatus(true)}
+                            />
+                          ) : null
+                        }
+                      />
+                    </FormControl>
+                  </Stack>
+                  <Stack direction="row" spacing={2}>
+                    <FormControl sx={{ flex: 1 }}>
+                      <DynamicCutoutInput
+                        label="Lead Time"
+                        required={true}
+                        //   type="date"
+                        placeholder="Enter Lead Time"
+                        value={value.supplierDetails.leadTime}
+                        fun={(text) =>
+                          value.setSupplierDetails({
+                            ...value.supplierDetails,
+                            leadTime: text,
+                          })
+                        }
+                        editable={true}
+                      />
+                    </FormControl>
+                    <FormControl sx={{ flex: 1 }}>
+                      <DynamicCutoutInput
+                        label="Est. Delivery Date"
+                        required={true}
+                        type="date"
+                        placeholder="Estimated Delivery Date"
+                        inputValue={purchaseOrderData.estDeliveryDate}
+                        fun={(text) => {
+                          // console.log("Date selected:", text);
+                          dispatch({
+                            type: "UPDATE_FIELD",
+                            field: "estDeliveryDate",
+                            value: text,
+                          });
+                        }}
+                      />
+                    </FormControl>
+                  </Stack>
+                  <Stack direction="row" spacing={2}>
+                    <FormControl sx={{ flex: 1 }}>
+                      <DynamicCutoutInput
+                        label="Total Quantity"
+                        required={true}
+                        type="number"
+                        placeholder="Enter Total Quantity"
+                        inputValue={purchaseOrderData.totalQuantity}
+                        fun={(text) => {
+                          dispatch({
+                            type: "UPDATE_FIELD",
+                            field: "totalQuantity",
+                            value: text,
+                          });
+                        }}
+                        editable={true}
+                      />
+                    </FormControl>
+                    <FormControl sx={{ flex: 1 }}>
+                      <DynamicCutoutInput
+                        label="Total Cost"
+                        required={true}
+                        type="number"
+                        placeholder="Enter Total Cost"
+                        inputValue={purchaseOrderData.totalCost}
+                        fun={(text) => {
+                          // console.log("Date selected:", text);
+                          dispatch({
+                            type: "UPDATE_FIELD",
+                            field: "totalCost",
+                            value: text,
+                          });
+                        }}
+                        editable={true}
+                      />
+                    </FormControl>
+                  </Stack>
+                  <Stack direction="row" spacing={2}>
+                    <FormControl sx={{ flex: 1 }}>
+                      <DynamicCutoutInput
+                        label="Total Tax"
+                        required={true}
+                        type="number"
+                        placeholder="Enter Total Tax"
+                        inputValue={purchaseOrderData.totalTax}
+                        fun={(text) => {
+                          // console.log("Date selected:", text);
+                          dispatch({
+                            type: "UPDATE_FIELD",
+                            field: "totalTax",
+                            value: text,
+                          });
+                        }}
+                        editable={true}
+                      />
+                    </FormControl>
+                    <FormControl sx={{ flex: 1 }}>
+                      <DynamicCutoutInput
+                        label="Comments(if any)"
+                        //   required={true}
+                        //   type="date"
+                        placeholder="Enter Comments(if any)"
+                        inputValue={purchaseOrderData.comments}
+                        fun={(text) => {
+                          // console.log("Date selected:", text);
+                          dispatch({
+                            type: "UPDATE_FIELD",
+                            field: "comments",
+                            value: text,
+                          });
+                        }}
+                      />
+                    </FormControl>
+                  </Stack>
                 </Stack>
               </Stack>
-            </Stack>
+            </CardOverflow>
           </Card>
           <Card>
             <div
@@ -532,7 +459,11 @@ function PoDetailsSide() {
             >
               <Typography
                 className="poppins"
-                style={{ fontFamily: "Poppins,sans-serif", fontSize: "1rem" }}
+                style={{
+                  fontSize: "1rem",
+                  fontWeight: "700",
+                  fontFamily: "Poppins,sans-sherif",
+                }}
               >
                 Item Details
               </Typography>
@@ -553,6 +484,7 @@ function PoDetailsSide() {
                             fontFamily: "Poppins,sans-serif",
                             fontSize: "0.6rem",
                             color: "#575F6E",
+                            backgroundColor: "#F5F6F8",
                           }}
                         >
                           Item ID
@@ -564,6 +496,7 @@ function PoDetailsSide() {
                             fontFamily: "Poppins,sans-serif",
                             fontSize: "0.6rem",
                             color: "#575F6E",
+                            backgroundColor: "#F5F6F8",
                           }}
                         >
                           Item Description
@@ -575,6 +508,7 @@ function PoDetailsSide() {
                             fontFamily: "Poppins,sans-serif",
                             fontSize: "0.6rem",
                             color: "#575F6E",
+                            backgroundColor: "#F5F6F8",
                           }}
                         >
                           Item Quantity
@@ -586,6 +520,7 @@ function PoDetailsSide() {
                             fontFamily: "Poppins,sans-serif",
                             fontSize: "0.6rem",
                             color: "#575F6E",
+                            backgroundColor: "#F5F6F8",
                           }}
                         >
                           Item Cost
@@ -597,6 +532,7 @@ function PoDetailsSide() {
                             fontFamily: "Poppins,sans-serif",
                             fontSize: "0.6rem",
                             color: "#575F6E",
+                            backgroundColor: "#F5F6F8",
                           }}
                         >
                           Total Amount
@@ -810,7 +746,15 @@ function PoDetailsSide() {
               </Paper>
             )}
           </Card>
-          <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
+          <CardOverflow
+            sx={{ borderTop: "1px solid", borderColor: "divider" }}
+            style={{
+              flexGrow: 1,
+              display: "flex",
+              justifyContent: "flex-end",
+              paddingBottom: "0.75rem",
+            }}
+          >
             <CardActions
               sx={{
                 justifyContent: "space-between",
@@ -822,7 +766,7 @@ function PoDetailsSide() {
                 size="md"
                 variant="solid"
                 style={{
-                  backgroundColor: "#283D76",
+                  backgroundColor: "#1C244B",
                   fontFamily: "Poppins,sans-serif",
                 }}
                 onClick={() => value.setFormSave((prevState) => !prevState)}
@@ -833,7 +777,7 @@ function PoDetailsSide() {
                 size="md"
                 variant="solid"
                 style={{
-                  backgroundColor: "#283D76",
+                  backgroundColor: "#1C244B",
                   fontFamily: "Poppins,sans-serif",
                   color: "white",
                 }}
@@ -845,10 +789,11 @@ function PoDetailsSide() {
                 size="md"
                 variant="solid"
                 style={{
-                  backgroundColor: "#283D76",
+                  backgroundColor: "#1C244B",
                   fontFamily: "Poppins,sans-serif",
                 }}
-                onClick={() => value.setFormSubmit((prevState) => !prevState)}
+                onClick={() =>(supplierRiskApi('SUP130'),setSupplierPopupStatus(true))}
+                // onClick={() => value.setFormSubmit((prevState) => !prevState)}
               >
                 SUBMIT
               </Button>
@@ -863,7 +808,7 @@ function PoDetailsSide() {
         md={4}
         // className="imageBackground"
         style={{
-          marginTop: "10vh",
+          marginTop: "7.25vh", //margin-all
           width: "100%",
           display: "flex",
           flexDirection: "column",

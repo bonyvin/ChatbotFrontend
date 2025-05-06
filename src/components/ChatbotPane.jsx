@@ -34,6 +34,7 @@ import typingIndicator from "../images/typingIndicator1.gif";
 import TypingIndicatorComponent from "./TypingIndicatorComponent";
 import MicIcon from "@mui/icons-material/Mic";
 import ChatbotInputForm from "./ChatbotInputForm";
+import { Card } from "@mui/joy";
 
 export default function ChatbotPane() {
   const [messages, setMessages] = useState([]);
@@ -509,6 +510,7 @@ export default function ChatbotPane() {
   const invoiceCheck2 = useCallback(
     async (invoiceObject, invoiceDatafromConversation) => {
       let updatedInvoiceData = { ...value.invoiceData };
+      console.log("invoiceObject: ", invoiceObject);
       let poStatus = false;
       for (const key of Object.keys(invoiceObject)) {
         if (invoiceObject[key] !== null) {
@@ -577,22 +579,9 @@ export default function ChatbotPane() {
       value.invoiceDatafromConversation,
       value.setInvoiceData, // Add stable setters
       value.setinvoiceDatafromConversation,
+      value.invoiceData,
     ]
   );
-  // useEffect(() => {
-  //   if (value.invoiceDatafromConversation) {
-  //     updateItemDetails(value.invoiceDatafromConversation);
-  //   }
-  // }, [value.poDetailsData, value.invoiceDatafromConversation, updateItemDetails]);
-  // useEffect(() => {
-  //   if (
-  //     value.invoiceDatafromConversation &&
-  //     Array.isArray(value.invoiceDatafromConversation.Items) &&
-  //     value.invoiceDatafromConversation.Items.length > 0
-  //   ) {
-  //     updateItemDetails(value.invoiceDatafromConversation);
-  //   }
-  // }, [value.invoiceDatafromConversation?.Items?.length]);
   const prevInvoiceDataRef = useRef();
 
   useEffect(() => {
@@ -607,148 +596,163 @@ export default function ChatbotPane() {
   }, [value.invoiceDatafromConversation, updateItemDetails]);
   //API CALLS
   //user input
-  const handleMessageSubmit = async (
-    inputText,
-    inputFromUpload,
-    isPoTriggered = false
-  ) => {
-    if (!inputText.trim()) return;
+  // const handleMessageSubmit = async (
+  //   inputText,
+  //   inputFromUpload,
+  //   isPoTriggered = false
+  // ) => {
+  //   if (!inputText.trim()) return;
 
-    // Update messages and clear input field
-    setMessages((prevMessages) => {
-      const newMessages =
-        inputFromUpload || isPoTriggered
-          ? [...prevMessages]
-          : [...prevMessages, { text: inputText, fromUser: true }];
-      if (!inputFromUpload) setInput("");
-      return newMessages;
-    });
-    setInput("");
-    setLoading(true);
+  //   // Update messages and clear input field
+  //   setMessages((prevMessages) => {
+  //     const newMessages =
+  //       inputFromUpload || isPoTriggered
+  //         ? [...prevMessages]
+  //         : [...prevMessages, { text: inputText, fromUser: true }];
+  //     if (!inputFromUpload) setInput("");
+  //     return newMessages;
+  //   });
+  //   setInput("");
+  //   setLoading(true);
 
-    // Start a typing indicator
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    typingTimeoutRef.current = setTimeout(() => setTyping(true), 1500);
+  //   // Start a typing indicator
+  //   if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+  //   typingTimeoutRef.current = setTimeout(() => setTyping(true), 1500);
 
-    try {
-      const response = await axios.post(
-        `http://localhost:8000/creation/response`,
-        {
-          user_id: "admin",
-          message: inputText,
-        },
-        { headers: { "Content-Type": "application/json" } }
-      );
-      console.log("Data response", response.data);
+  //   try {
+  //     const response = await axios.post(
+  //       `http://localhost:8000/creation/response`,
+  //       {
+  //         user_id: "admin",
+  //         message: inputText,
+  //       },
+  //       { headers: { "Content-Type": "application/json" } }
+  //     );
+  //     console.log("Data response", response.data);
 
-      if (response.status === 200 || response.status === 201) {
-        const invoice_json = response.data.invoice_json;
-        // Convert numeric fields if necessary
-        let updatedInvoiceJson = {
-          ...invoice_json,
-          ...(invoice_json["total amount"] && {
-            "total amount": parseFloat(
-              invoice_json["total amount"].replace(/,/g, "")
-            ),
-          }),
-          ...(invoice_json["total tax"] && {
-            "total tax": parseFloat(
-              invoice_json["total tax"].replace(/,/g, "")
-            ),
-          }),
-        };
+  //     if (response.status === 200 || response.status === 201) {
+  //       const invoice_json = response.data.invoice_json;
+  //       // Convert numeric fields if necessary
+  //       console.log("Invoice_json: ",invoice_json)
+  //       // normalize strings → numbers
+  //       const totalAmount = parseFloat(
+  //         String(invoice_json["Total Amount"]).replace(/,/g, "")
+  //       );
+  //       const totalTax = parseFloat(
+  //         String(invoice_json["Total Tax"]).replace(/,/g, "")
+  //       );
+  //       console.log("Total amount,total tax:",totalAmount,totalTax)
+  //       const updatedInvoiceJson = {
+  //         ...invoice_json,
+  //         "Total Amount": totalAmount,
+  //         "Total Tax":    totalTax,
+  //       };
 
-        value.setinvoiceDatafromConversation(
-          response.data.invoiceDatafromConversation
-        );
-        // Only run the invoice check (which triggers PO lookup) on a normal user query.
-        if (
-          !isPoTriggered &&
-          prevIdRef.current !== updatedInvoiceJson["PO Number"]
-        ) {
-          prevIdRef.current = updatedInvoiceJson["PO Number"];
-          const invoiceCheckStatus = await invoiceCheck2(
-            updatedInvoiceJson,
-            response.data.invoiceDatafromConversation
-          );
-          // updateItemDetails(response.data?.invoiceDatafromConversation);
+  //       // let updatedInvoiceJson = {
+  //       //   ...invoice_json,
+  //       //   ...(invoice_json["Total Amount"] && {
+  //       //     "Total Amount": parseFloat(
+  //       //       invoice_json["Total Amount"].replace(/,/g, "")
+  //       //     ),
+  //       //   }),
+  //       //   ...(invoice_json["Total Tax"] && {
+  //       //     "Total Tax": parseFloat(
+  //       //       invoice_json["Total Tax"].replace(/,/g, "")
+  //       //     ),
+  //       //   }),
+  //       // };
+  //       console.log("Updated Invoice json: ",updatedInvoiceJson)
+  //       value.setinvoiceDatafromConversation(
+  //         response.data.invoiceDatafromConversation
+  //       );
+  //       // Only run the invoice check (which triggers PO lookup) on a normal user query.
+  //       if (
+  //         !isPoTriggered &&
+  //         prevIdRef.current !== updatedInvoiceJson["PO Number"]
+  //       ) {
+  //         prevIdRef.current = updatedInvoiceJson["PO Number"];
+  //         const invoiceCheckStatus = await invoiceCheck2(
+  //           updatedInvoiceJson,
+  //           response.data.invoiceDatafromConversation
+  //         );
+  //         // updateItemDetails(response.data?.invoiceDatafromConversation);
 
-          // If a PO number is found and details were fetched successfully,
-          // call handleMessageSubmit a second time with the PO items.
-          if (
-            updatedInvoiceJson["PO Number"] &&
-            invoiceCheckStatus &&
-            response.data?.po_items?.length > 0
-          ) {
-            await handleMessageSubmit(
-              `Add these items with cost=0 and quantities=0 : ${JSON.stringify(
-                response.data?.po_items?.map((item) => item.itemId)
-              )}`,
-              inputFromUpload,
-              true
-            );
-          } else {
-            // Process a normal non-PO response
-            const botReply = response.data.chat_history.slice(-1);
-            const formattedConversation = response.data.chat_history
-              .slice(-1)
-              .map((text, index) => (
-                <ReactMarkdown key={index} className="botText">
-                  {inputFromUpload
-                    ? "Here is what I could extract from the uploaded document:\n" +
-                      text.slice(5)
-                    : text.slice(5)}
-                </ReactMarkdown>
-              ));
-            setMessages((prevMessages) => [
-              ...prevMessages,
-              { text: formattedConversation, fromUser: false },
-            ]);
-            if (response.data.submissionStatus === "submitted") {
-              value.setInvoiceCounter((prevCounter) => prevCounter + 1);
-              await invoiceHeaderCreation();
-            }
-          }
-        } else {
-          // For a PO-triggered submission, handle the response as needed.
-          const botReply = response.data.chat_history.slice(-1);
-          const formattedConversation = response.data.chat_history
-            .slice(-1)
-            .map((text, index) => (
-              <ReactMarkdown key={index} className="botText">
-                {inputFromUpload
-                  ? "Here are the PO Items details:\n" + text.slice(5)
-                  : text.slice(5)}
-              </ReactMarkdown>
-            ));
-          setMessages((prevMessages) => [
-            ...prevMessages,
-            { text: formattedConversation, fromUser: false },
-          ]);
-          if (response.data.submissionStatus === "submitted") {
-            value.setInvoiceCounter((prevCounter) => prevCounter + 1);
-            await invoiceHeaderCreation();
-          }
-        }
+  //         // If a PO number is found and details were fetched successfully,
+  //         // call handleMessageSubmit a second time with the PO items.
+  //         if (
+  //           updatedInvoiceJson["PO Number"] &&
+  //           invoiceCheckStatus &&
+  //           response.data?.po_items?.length > 0
+  //         ) {
+  //           await handleMessageSubmit(
+  //             `Add these items with cost=0 and quantities=0 : ${JSON.stringify(
+  //               response.data?.po_items?.map((item) => item.itemId)
+  //             )}`,
+  //             inputFromUpload,
+  //             true
+  //           );
+  //         } else {
+  //           // Process a normal non-PO response
+  //           const botReply = response.data.chat_history.slice(-1);
+  //           const formattedConversation = response.data.chat_history
+  //             .slice(-1)
+  //             .map((text, index) => (
+  //               <ReactMarkdown key={index} className="botText">
+  //                 {inputFromUpload
+  //                   ? "Here is what I could extract from the uploaded document:\n" +
+  //                     text.slice(5)
+  //                   : text.slice(5)}
+  //               </ReactMarkdown>
+  //             ));
+  //           setMessages((prevMessages) => [
+  //             ...prevMessages,
+  //             { text: formattedConversation, fromUser: false },
+  //           ]);
+  //           if (response.data.submissionStatus === "submitted") {
+  //             value.setInvoiceCounter((prevCounter) => prevCounter + 1);
+  //             await invoiceHeaderCreation();
+  //           }
+  //         }
+  //       } else {
+  //         // For a PO-triggered submission, handle the response as needed.
+  //         const botReply = response.data.chat_history.slice(-1);
+  //         const formattedConversation = response.data.chat_history
+  //           .slice(-1)
+  //           .map((text, index) => (
+  //             <ReactMarkdown key={index} className="botText">
+  //               {inputFromUpload
+  //                 ? "Here are the PO Items details:\n" + text.slice(5)
+  //                 : text.slice(5)}
+  //             </ReactMarkdown>
+  //           ));
+  //         setMessages((prevMessages) => [
+  //           ...prevMessages,
+  //           { text: formattedConversation, fromUser: false },
+  //         ]);
+  //         if (response.data.submissionStatus === "submitted") {
+  //           value.setInvoiceCounter((prevCounter) => prevCounter + 1);
+  //           await invoiceHeaderCreation();
+  //         }
+  //       }
 
-        if (typingTimeoutRef.current) {
-          clearTimeout(typingTimeoutRef.current);
-          typingTimeoutRef.current = null;
-        }
-        setTyping(false);
-      }
-    } catch (error) {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-        typingTimeoutRef.current = null;
-      }
-      setTyping(false);
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  const handleMessageSubmit1 = async (input, inputFromUpload) => {
+  //       if (typingTimeoutRef.current) {
+  //         clearTimeout(typingTimeoutRef.current);
+  //         typingTimeoutRef.current = null;
+  //       }
+  //       setTyping(false);
+  //     }
+  //   } catch (error) {
+  //     if (typingTimeoutRef.current) {
+  //       clearTimeout(typingTimeoutRef.current);
+  //       typingTimeoutRef.current = null;
+  //     }
+  //     setTyping(false);
+  //     console.error("Error fetching data:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  const handleMessageSubmit = async (input, inputFromUpload) => {
     if (!input.trim()) return;
     setMessages((prevMessages) => {
       const newMessages = inputFromUpload
@@ -772,7 +776,7 @@ export default function ChatbotPane() {
     try {
       const response = await axios.post(
         // `http://localhost:8000/creation/response?query=${input}`,
-        `http://localhost:8000/creation/response`, // API endpoint
+        `http://localhost:8000/creation/response_new`, // API endpoint
         {
           user_id: "admin", // The user_id value
           message: input, // The message value
@@ -792,18 +796,17 @@ export default function ChatbotPane() {
       if (response.status === 200 || response.status === 201) {
         const invoice_json = response.data.invoice_json;
         // const invoice_json = JSON.parse(response.data.invoice_json);
-        let updatedInvoiceJson = {
-          ...invoice_json,
-          ...(invoice_json["total amount"] && {
-            "total amount": parseFloat(
-              invoice_json["total amount"].replace(/,/g, "")
-            ),
-          }),
-          ...(invoice_json["total tax"] && {
-            "total tax": parseFloat(
-              invoice_json["total tax"].replace(/,/g, "")
-            ),
-          }),
+        const totalAmount =
+          invoice_json["Total Amount"] &&
+          parseFloat(String(invoice_json["Total Amount"]).replace(/,/g, ""));
+        const totalTax =
+          invoice_json["Total Tax"] &&
+          parseFloat(String(invoice_json["Total Tax"]).replace(/,/g, ""));
+        console.log("Total amount,total tax:", totalAmount, totalTax);
+        const updatedInvoiceJson = {
+          ...invoice_json,  
+          "Total Amount": totalAmount?totalAmount:null,
+          "Total Tax": totalTax?totalTax:null,
         };
         // console.log(
         //   "invoice_json: ",
@@ -826,6 +829,9 @@ export default function ChatbotPane() {
           response.data.invoice_json["PO Number"] === undefined ||
           response.data.invoice_json["PO Number"] === "" ||
           response.data.invoice_json["PO Number"] === null
+          // updatedInvoiceJson["PO Number"] &&
+          // invoiceCheckStatus &&
+          // response.data?.po_items?.length > 0
         ) {
           const botReply = response.data.chat_history.slice(-1);
           const reply = botReply[0].slice(5);
@@ -852,7 +858,8 @@ export default function ChatbotPane() {
             value.setModalVisible(false);
           }
         } else {
-          if (invoiceCheckStatus) {
+          if (
+            invoiceCheckStatus) {
             const botReply = response.data.chat_history.slice(-1);
             const reply = botReply[0].slice(5);
             const formattedConversation = response.data.chat_history
@@ -1134,51 +1141,57 @@ export default function ChatbotPane() {
   console.log("checkConsole", value);
 
   return (
-    <Sheet
-      className="imageBackground"
-      sx={{
-        height: "90vh",
-        display: "flex",
-        flexDirection: "column",
-        backgroundColor: "#FFFAF3",
-        overflowY: "auto",
-        flexGrow: 1,
-      }}
-      ref={messageEl}
-    >
-      <Backdrop
-        sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
-        open={uploadLoading}
-        onClick={() => setUploadLoading(false)}
+    <Card className="chatbot-card">
+      <Sheet
+        // className="imageBackground"
+        // style={{
+        //   height: "83.75vh", //height-all
+        //   display: "flex",
+        //   flexDirection: "column",
+        //   // backgroundColor: "#FFFAF3",
+        //   overflowY: "auto",
+        //   flexGrow: 1,
+        //   borderTopLeftRadius:'1rem',
+        //   borderTopRightRadius:'1rem',
+        // }}
+        className="chatbot-area imageBackground"
+        ref={messageEl}
       >
-        <CircularProgress color="inherit" />
-      </Backdrop>
-      <Box
-        style={{
-          display: "flex",
-          flex: 1,
-          flexDirection: "column ",
-          padding: 2,
-          justifyContent: "flex-end",
-        }}
-      >
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={message.fromUser ? "user-message" : "bot-message"}
-          >
-            <ChatMessage
+        <Backdrop
+          sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
+          open={uploadLoading}
+          onClick={() => setUploadLoading(false)}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
+        <Box
+          style={{
+            display: "flex",
+            flex: 1,
+            flexDirection: "column ",
+            padding: 2,
+            justifyContent: "flex-end",
+          }}
+        >
+          {messages.map((message, index) => (
+            <div
               key={index}
-              text={message.text ? message.text : message.component}
-              fromUser={message.fromUser}
-              // isFile={pdfCardVisible}
-              isFile={message.isFile}
-            />
-          </div>
-        ))}{" "}
-        {typing && <TypingIndicatorComponent scrollToBottom={scrollToBottom} />}
-      </Box>
-      {/* <form
+              className={message.fromUser ? "user-message" : "bot-message"}
+            >
+              <ChatMessage
+                key={index}
+                text={message.text ? message.text : message.component}
+                fromUser={message.fromUser}
+                // isFile={pdfCardVisible}
+                isFile={message.isFile}
+              />
+            </div>
+          ))}{" "}
+          {typing && (
+            <TypingIndicatorComponent scrollToBottom={scrollToBottom} />
+          )}
+        </Box>
+        {/* <form
         onSubmit={(e) => {
           e.preventDefault();
           handleMessageSubmit(input);
@@ -1243,22 +1256,23 @@ export default function ChatbotPane() {
         />
         <i className="fa fa-paper-plane-o" aria-hidden="true"></i>
       </form> */}
-      <ChatbotInputForm
-        input={input}
-        setInput={setInput}
-        handleMessageSubmit={handleMessageSubmit}
-        uploadInvoice={uploadInvoice}
-        isPickerVisible={isPickerVisible}
-        setPickerVisible={setPickerVisible}
-      />
-      {isPickerVisible && (
-        <div
-          style={{ position: "absolute", zIndex: 1000, bottom: "4rem" }}
-          ref={pickerRef}
-        >
-          <Picker data={data} onEmojiSelect={handleEmojiSelect} />
-        </div>
-      )}
-    </Sheet>
+        <ChatbotInputForm
+          input={input}
+          setInput={setInput}
+          handleMessageSubmit={handleMessageSubmit}
+          uploadInvoice={uploadInvoice}
+          isPickerVisible={isPickerVisible}
+          setPickerVisible={setPickerVisible}
+        />
+        {isPickerVisible && (
+          <div
+            style={{ position: "absolute", zIndex: 1000, bottom: "4rem" }}
+            ref={pickerRef}
+          >
+            <Picker data={data} onEmojiSelect={handleEmojiSelect} />
+          </div>
+        )}
+      </Sheet>
+    </Card>
   );
 }

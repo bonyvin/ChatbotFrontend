@@ -34,6 +34,7 @@ import Picker from "@emoji-mart/react";
 import TypingIndicatorComponent from "./TypingIndicatorComponent";
 import MicIcon from "@mui/icons-material/Mic";
 import ChatbotInputForm from "./ChatbotInputForm";
+import { Card } from "@mui/joy";
 
 export default function POChatbotPane() {
   const [messages, setMessages] = useState([]);
@@ -112,7 +113,7 @@ export default function POChatbotPane() {
     value.setPoCounterId(`PO${value.poCounter}`);
   }, [value.poCounter]);
   const submitFormData = async () => {
-    await handleMessageSubmit("Please submit the data provided");
+    // await handleMessageSubmit("Please submit the data provided");
   };
   //clear
   const clearFormData = () => {
@@ -770,53 +771,60 @@ export default function POChatbotPane() {
       // console.log("Invoice Clear Error:", error, error.data);
     }
   };
+
+
+
   console.log("checkConsole", value);
   return (
-    <Sheet
-      className="imageBackground"
-      sx={{
-        height: "90vh",
-        display: "flex",
-        flexDirection: "column",
-        backgroundColor: "#FFFAF3",
-        overflowY: "auto",
-        flexGrow: 1,
-      }}
-      ref={messageEl}
-    >
-      {" "}
-      <Backdrop
-        sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
-        open={uploadLoading}
-        onClick={() => setUploadLoading(false)}
+    <Card className="chatbot-card">
+      <Sheet
+        // className="imageBackground"
+        // sx={{
+        //   height: "92.75vh", //height-all
+        //   display: "flex",
+        //   flexDirection: "column",
+        //   backgroundColor: "#FFFAF3",
+        //   overflowY: "auto",
+        //   flexGrow: 1,
+        // }}
+        className="chatbot-area imageBackground"
+        ref={messageEl}
       >
-        <CircularProgress color="inherit" />
-      </Backdrop>
-      <Box
-        style={{
-          display: "flex",
-          flex: 1,
-          flexDirection: "column ",
-          padding: 2,
-          justifyContent: "flex-end",
-        }}
-      >
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={message.fromUser ? "user-message" : "bot-message"}
-          >
-            <ChatMessage
+        {" "}
+        <Backdrop
+          sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
+          open={uploadLoading}
+          onClick={() => setUploadLoading(false)}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
+        <Box
+          style={{
+            display: "flex",
+            flex: 1,
+            flexDirection: "column ",
+            padding: 2,
+            justifyContent: "flex-end",
+          }}
+        >
+          {messages.map((message, index) => (
+            <div
               key={index}
-              text={message.text ? message.text : message.component}
-              fromUser={message.fromUser}
-              // isFile={pdfCardVisible}
-              isFile={message.isFile}
-            />
-          </div>
-        ))}{" "}
-        {typing && <TypingIndicatorComponent scrollToBottom={scrollToBottom} />}
-        {/* {typing && (
+              className={message.fromUser ? "user-message" : "bot-message"}
+            >
+              <ChatMessage
+                key={index}
+                text={message.text ? message.text : message.component}
+                fromUser={message.fromUser}
+                // isFile={pdfCardVisible}
+                isFile={message.isFile}
+              />
+            </div>
+          ))}{" "}
+          {typing && (
+            <TypingIndicatorComponent scrollToBottom={scrollToBottom} />
+          )}
+          {/* {typing && (
           <div className="bot-message">
             <ChatMessage
               // key={index}
@@ -835,8 +843,8 @@ export default function POChatbotPane() {
             />
           </div>
         )} */}
-      </Box>
-      {/* <form
+        </Box>
+        {/* <form
         onSubmit={(e) => {
           e.preventDefault();
           handleMessageSubmit(input);
@@ -874,7 +882,7 @@ export default function POChatbotPane() {
         />
         <i className="fa fa-paper-plane-o" aria-hidden="true"></i>
       </form> */}
-      {/* <form
+        {/* <form
         onSubmit={(e) => {
           e.preventDefault();
           handleMessageSubmit(input);
@@ -939,22 +947,23 @@ export default function POChatbotPane() {
         />
         <i className="fa fa-paper-plane-o" aria-hidden="true"></i>
       </form> */}
-      <ChatbotInputForm
-        input={input}
-        setInput={setInput}
-        handleMessageSubmit={handleMessageSubmit}
-        uploadInvoice={uploadInvoice}
-        isPickerVisible={isPickerVisible}
-        setPickerVisible={setPickerVisible}
-      />
-      {isPickerVisible && (
-        <div
-          style={{ position: "absolute", zIndex: 1000, bottom: "4rem" }}
-          ref={pickerRef}
-        >
-          <Picker data={data} onEmojiSelect={handleEmojiSelect} />
-        </div>
-      )}
-    </Sheet>
+        <ChatbotInputForm
+          input={input}
+          setInput={setInput}
+          handleMessageSubmit={handleMessageSubmit}
+          uploadInvoice={uploadInvoice}
+          isPickerVisible={isPickerVisible}
+          setPickerVisible={setPickerVisible}
+        />
+        {isPickerVisible && (
+          <div
+            style={{ position: "absolute", zIndex: 1000, bottom: "4rem" }}
+            ref={pickerRef}
+          >
+            <Picker data={data} onEmojiSelect={handleEmojiSelect} />
+          </div>
+        )}
+      </Sheet>
+    </Card>
   );
 }

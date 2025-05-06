@@ -93,7 +93,7 @@ const AppContent = () => {
         <Route path="/c" element={<ChatbotPane />} />
         <Route path="/basic" element={<BasicDocument />} />
         <Route path="/invform" element={<InvoiceTemplate />} />
-        <Route path="/test" element={<Promotion promoId={"PROMO001"}/>} />
+        <Route path="/test" element={<Test/>}/>
         <Route path="/poChatbot" element={<PoDetailsSide/>} />
         <Route path="/promoChatbot" element={<PromoDetailsSide/>}/>
         <Route path="/llmtest" element={<LLMChatbotTest/>}/>

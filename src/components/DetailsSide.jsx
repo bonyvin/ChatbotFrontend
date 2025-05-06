@@ -140,7 +140,7 @@ function DetailsSide() {
   };
   // console.log("pod:",value.poDetailsData)
   return (
-    <Grid container component="main" style={{}}>
+    <Grid container component="main" style={{ backgroundColor: "#e9ecef" }}>
       <Grid
         item
         xs={8}
@@ -148,8 +148,8 @@ function DetailsSide() {
         md={8}
         container
         component="main"
-        style={{ padding: "1rem" }}
-        className="imageBackground"
+        style={{ padding: "1rem", paddingLeft: "0.25rem" }}
+        // className="imageBackground"
         ref={messagesEndRef}
       >
         <div style={{ position: "absolute" }}>
@@ -276,15 +276,16 @@ function DetailsSide() {
               >
                 Invoice Details
               </Typography>
-              <Typography style={{ fontSize: "0.6rem" }}>
-                Fields marked as * are mandatory
+              <Typography style={{ fontSize: "0.6rem", color: "#7C7C7C" }}>
+                Fields marked as <span style={{ color: "red" }}>*</span> are
+                mandatory
               </Typography>
             </div>
 
             <Form className="generalRadio">
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <div
-                  className="mb-3"
+                  // className="mb-3"
                   style={{
                     display: "flex",
                     flexDirection: "row",
@@ -345,12 +346,12 @@ function DetailsSide() {
                     alignItems: "center",
                   }}
                 >
-                  <p>{`System Document ID:  `}</p>
-                  <p
+                  <span>{`System Document ID:  `}</span>
+                  <span
                     style={{
                       backgroundColor: "#e8e8e8",
                       marginLeft: "0.5rem",
-                      padding: "0.15rem",
+                      // padding: "0.15rem",
                       paddingLeft: "1rem",
                       paddingRight: "1rem",
                       borderRadius: "4rem",
@@ -358,202 +359,204 @@ function DetailsSide() {
                     }}
                   >
                     {value.systemDocumentId}
-                  </p>
+                  </span>
                 </div>
               </div>
             </Form>
-
-            <Stack
-              direction="row"
-              spacing={3}
-              sx={{ display: { xs: "none", md: "flex" }, my: 1 }}
-            >
-              <Stack spacing={2} sx={{ flexGrow: 1 }}>
-                <Stack direction="row" spacing={2}>
-                  <FormControl sx={{ flex: 1 }}>
-                    <DynamicCutoutInput
-                      label="Invoice Date"
-                      required={true}
-                      type="date"
-                      placeholder="Enter your Invoice Date"
-                      value={value.invoiceData.invoiceDate} // Use raw yyyy-mm-dd format
-                      fun={(text) => {
-                        console.log("Date selected:", text);
-                        value.setInvoiceData({
-                          ...value.invoiceData,
-                          invoiceDate: text, // Save in yyyy-mm-dd format
-                        });
-                      }}
-                    />
-                  </FormControl>
-                  <FormControl sx={{ flex: 1 }}>
-                    <DynamicCutoutInput
-                      label="Supplier ID"
-                      required={true}
-                      placeholder="Supplier ID"
-                      value={value.poDetailsData[0]?.supplierId || ""}
-                      // fun={(text) =>
-                      //   value.setInvoiceData({
-                      //     ...value.invoiceData,
-                      //     supplierId: text,
-                      //   })
-                      // }
-                      fun={(text) =>
-                        value.setPoDetailsData({
-                          ...value.poDetailsData,
-                          supplierId: text,
-                        })
-                      }
-                      editable={true}
-                      style={{ backgroundColor: "#e8e8e8" }}
-                      EndComponent={
-                        value.poDetailsData[0]?.supplierId ? (
-                          <BsFillInfoCircleFill
-                            onClick={() => setSupplierPopupStatus(true)}
-                          />
-                        ) : null
-                      }
-                      // value={value.invoiceData.invoiceDate}
-                      // fun={(text) => value.setInvoiceData({ ...value.invoiceData, invoiceDate: text })}
-                    />
-                  </FormControl>
-                </Stack>
-                <Stack direction="row" spacing={2}>
-                  <FormControl sx={{ flex: 1 }}>
-                    <DynamicCutoutInput
-                      label="PO No."
-                      required={true}
-                      placeholder="Enter your PO No."
-                      value={value.invoiceData.poNumber}
-                      fun={(text) =>
-                        value.setInvoiceData({
-                          ...value.invoiceData,
-                          poNumber: text,
-                        })
-                      }
-                    />
-                  </FormControl>
-                  <FormControl sx={{ flex: 1 }}>
-                    <DynamicCutoutInput
-                      label="Invoice No."
-                      required={true}
-                      placeholder="Enter your Invoice No."
-                      value={value.invoiceData.userInvNo}
-                      fun={(text) =>
-                        value.setInvoiceData({
-                          ...value.invoiceData,
-                          userInvNo: text,
-                        })
-                      }
-                      // editable={true}
-                      // style={{ backgroundColor: "#e8e8e8" }}
-                    />
-                  </FormControl>
-                </Stack>
-                <Stack direction="row" spacing={2}>
-                  <FormControl sx={{ flex: 1 }}>
-                    <DynamicCutoutInput
-                      label="Payment Terms"
-                      required={true}
-                      placeholder="Enter your Payment Terms"
-                      value={value.poHeaderData.paymentTerm}
-                      fun={(text) =>
-                        value.setPoHeaderData({
-                          ...value.poHeaderData,
-                          paymentTerm: text,
-                        })
-                      }
-                      editable={true}
-                      style={{ backgroundColor: "#e8e8e8" }}
-                    />
-                  </FormControl>
-                  <FormControl sx={{ flex: 1 }}>
-                    <DynamicCutoutInput
-                      label="Total Amount"
-                      required={true}
-                      type="number"
-                      placeholder="Enter your Total Amount"
-                      value={value.invoiceData.totalAmount}
-                      fun={(text) =>
-                        value.setInvoiceData({
-                          ...value.invoiceData,
-                          totalAmount: text,
-                        })
-                      }
-                      editable={true}
-                    />
-                  </FormControl>
-                </Stack>
-                <Stack direction="row" spacing={2}>
-                  <FormControl sx={{ flex: 1 }}>
-                    <DynamicCutoutInput
-                      label="Total Tax"
-                      required={true}
-                      type="number"
-                      placeholder="Enter your Total Tax"
-                      value={value.invoiceData.totalTax}
-                      fun={(text) =>
-                        value.setInvoiceData({
-                          ...value.invoiceData,
-                          totalTax: text,
-                        })
-                      }
-                      editable={true}
-                    />
-                  </FormControl>
-                  <FormControl sx={{ flex: 1 }}>
-                    <DynamicCutoutInput
-                      label="Total Quantity"
-                      required={true}
-                      placeholder="Enter your Total Quantity"
-                      value={sumQuantities(value.itemDetails.quantity)}
-                      // value={value.itemDetails.quantity}
-                      fun={(text) =>
-                        value.setItemDetails({
-                          ...value.itemDetails,
-                          quantity: text,
-                        })
-                      }
-                      editable={true}
-                    />
-                  </FormControl>
-                </Stack>
-                <Stack direction="row" spacing={2}>
-                  <FormControl sx={{ flex: 1 }}>
-                    <DynamicCutoutInput
-                      label="Currency"
-                      required={true}
-                      placeholder="Enter your Currency"
-                      value={value.poHeaderData.currency}
-                      fun={(text) =>
-                        value.setPoHeaderData({
-                          ...value.poHeaderData,
-                          currency: text,
-                        })
-                      }
-                      editable={true}
-                      style={{ backgroundColor: "#e8e8e8" }}
-                    />
-                  </FormControl>
-                  <FormControl sx={{ flex: 1 }}>
-                    <DynamicCutoutInput
-                      label="Currency Exchange Rate"
-                      required={false}
-                      placeholder="Enter your Currency Exchange Rate"
-                      value={value.poHeaderData.exchangeRate}
-                      fun={(text) =>
-                        value.setPoHeaderData({
-                          ...value.poHeaderData,
-                          exchangeRate: text,
-                        })
-                      }
-                      editable={true}
-                      style={{ backgroundColor: "#e8e8e8" }}
-                    />
-                  </FormControl>
+            <CardOverflow sx={{ p: 0 }} style={{ backgroundColor: "#F5F6F8" }}>
+              <Stack
+                direction="row"
+                spacing={3}
+                // sx={{ display: { xs: "none", md: "flex" }, my: 1 }}
+                style={{ margin: "1rem", display: "flex" }}
+              >
+                <Stack spacing={2} sx={{ flexGrow: 1 }}>
+                  <Stack direction="row" spacing={2}>
+                    <FormControl sx={{ flex: 1 }}>
+                      <DynamicCutoutInput
+                        label="Invoice Date"
+                        required={true}
+                        type="date"
+                        placeholder="Enter your Invoice Date"
+                        value={value.invoiceData?.invoiceDate} // Use raw yyyy-mm-dd format
+                        fun={(text) => {
+                          console.log("Date selected:", text);
+                          value.setInvoiceData({
+                            ...value.invoiceData,
+                            invoiceDate: text, // Save in yyyy-mm-dd format
+                          });
+                        }}
+                      />
+                    </FormControl>
+                    <FormControl sx={{ flex: 1 }}>
+                      <DynamicCutoutInput
+                        label="Supplier ID"
+                        required={true}
+                        placeholder="Supplier ID"
+                        value={value.poDetailsData[0]?.supplierId || ""}
+                        // fun={(text) =>
+                        //   value.setInvoiceData({
+                        //     ...value.invoiceData,
+                        //     supplierId: text,
+                        //   })
+                        // }
+                        fun={(text) =>
+                          value.setPoDetailsData({
+                            ...value.poDetailsData,
+                            supplierId: text,
+                          })
+                        }
+                        editable={true}
+                        // style={{ backgroundColor: "#e8e8e8" }}
+                        EndComponent={
+                          value.poDetailsData[0]?.supplierId ? (
+                            <BsFillInfoCircleFill
+                              onClick={() => setSupplierPopupStatus(true)}
+                            />
+                          ) : null
+                        }
+                        // value={value.invoiceData.invoiceDate}
+                        // fun={(text) => value.setInvoiceData({ ...value.invoiceData, invoiceDate: text })}
+                      />
+                    </FormControl>
+                  </Stack>
+                  <Stack direction="row" spacing={2}>
+                    <FormControl sx={{ flex: 1 }}>
+                      <DynamicCutoutInput
+                        label="PO No."
+                        required={true}
+                        placeholder="Enter your PO No."
+                        value={value.invoiceData?.poNumber}
+                        fun={(text) =>
+                          value.setInvoiceData({
+                            ...value.invoiceData,
+                            poNumber: text,
+                          })
+                        }
+                      />
+                    </FormControl>
+                    <FormControl sx={{ flex: 1 }}>
+                      <DynamicCutoutInput
+                        label="Invoice No."
+                        required={true}
+                        placeholder="Enter your Invoice No."
+                        value={value.invoiceData?.userInvNo}
+                        fun={(text) =>
+                          value.setInvoiceData({
+                            ...value.invoiceData,
+                            userInvNo: text,
+                          })
+                        }
+                        // editable={true}
+                        // style={{ backgroundColor: "#e8e8e8" }}
+                      />
+                    </FormControl>
+                  </Stack>
+                  <Stack direction="row" spacing={2}>
+                    <FormControl sx={{ flex: 1 }}>
+                      <DynamicCutoutInput
+                        label="Payment Terms"
+                        required={true}
+                        placeholder="Enter your Payment Terms"
+                        value={value?.poHeaderData?.paymentTerm}
+                        fun={(text) =>
+                          value.setPoHeaderData({
+                            ...value.poHeaderData,
+                            paymentTerm: text,
+                          })
+                        }
+                        editable={true}
+                        // style={{ backgroundColor: "#e8e8e8" }}
+                      />
+                    </FormControl>
+                    <FormControl sx={{ flex: 1 }}>
+                      <DynamicCutoutInput
+                        label="Total Amount"
+                        required={true}
+                        type="number"
+                        placeholder="Enter your Total Amount"
+                        value={value.invoiceData?.totalAmount}
+                        fun={(text) =>
+                          value.setInvoiceData({
+                            ...value.invoiceData,
+                            totalAmount: text,
+                          })
+                        }
+                        editable={true}
+                      />
+                    </FormControl>
+                  </Stack>
+                  <Stack direction="row" spacing={2}>
+                    <FormControl sx={{ flex: 1 }}>
+                      <DynamicCutoutInput
+                        label="Total Tax"
+                        required={true}
+                        type="number"
+                        placeholder="Enter your Total Tax"
+                        value={value.invoiceData?.totalTax}
+                        fun={(text) =>
+                          value.setInvoiceData({
+                            ...value.invoiceData,
+                            totalTax: text,
+                          })
+                        }
+                        editable={true}
+                      />
+                    </FormControl>
+                    <FormControl sx={{ flex: 1 }}>
+                      <DynamicCutoutInput
+                        label="Total Quantity"
+                        required={true}
+                        placeholder="Enter your Total Quantity"
+                        value={sumQuantities(value.itemDetails?.quantity)}
+                        // value={value.itemDetails.quantity}
+                        fun={(text) =>
+                          value.setItemDetails({
+                            ...value.itemDetails,
+                            quantity: text,
+                          })
+                        }
+                        editable={true}
+                      />
+                    </FormControl>
+                  </Stack>
+                  <Stack direction="row" spacing={2}>
+                    <FormControl sx={{ flex: 1 }}>
+                      <DynamicCutoutInput
+                        label="Currency"
+                        required={true}
+                        placeholder="Enter your Currency"
+                        value={value.poHeaderData?.currency}
+                        fun={(text) =>
+                          value.setPoHeaderData({
+                            ...value.poHeaderData,
+                            currency: text,
+                          })
+                        }
+                        editable={true}
+                        // style={{ backgroundColor: "#e8e8e8" }}
+                      />
+                    </FormControl>
+                    <FormControl sx={{ flex: 1 }}>
+                      <DynamicCutoutInput
+                        label="Currency Exchange Rate"
+                        required={false}
+                        placeholder="Enter your Currency Exchange Rate"
+                        value={value.poHeaderData?.exchangeRate}
+                        fun={(text) =>
+                          value.setPoHeaderData({
+                            ...value.poHeaderData,
+                            exchangeRate: text,
+                          })
+                        }
+                        editable={true}
+                        // style={{ backgroundColor: "#e8e8e8" }}
+                      />
+                    </FormControl>
+                  </Stack>
                 </Stack>
               </Stack>
-            </Stack>
+            </CardOverflow>
           </Card>
           <Card>
             <div
@@ -565,7 +568,11 @@ function DetailsSide() {
             >
               <Typography
                 className="poppins"
-                style={{ fontFamily: "Poppins,sans-serif", fontSize: "1rem" }}
+                style={{
+                  fontSize: "1rem",
+                  fontWeight: "700",
+                  fontFamily: "Poppins,sans-sherif",
+                }}
               >
                 Item Details
               </Typography>
@@ -586,6 +593,7 @@ function DetailsSide() {
                             fontFamily: "Poppins,sans-serif",
                             fontSize: "0.6rem",
                             color: "#575F6E",
+                            backgroundColor: "#F5F6F8",
                           }}
                         >
                           Item ID
@@ -597,6 +605,7 @@ function DetailsSide() {
                             fontFamily: "Poppins,sans-serif",
                             fontSize: "0.6rem",
                             color: "#575F6E",
+                            backgroundColor: "#F5F6F8",
                           }}
                         >
                           Item Description
@@ -608,6 +617,7 @@ function DetailsSide() {
                             fontFamily: "Poppins,sans-serif",
                             fontSize: "0.6rem",
                             color: "#575F6E",
+                            backgroundColor: "#F5F6F8",
                           }}
                         >
                           Invoice Quantity
@@ -619,6 +629,7 @@ function DetailsSide() {
                             fontFamily: "Poppins,sans-serif",
                             fontSize: "0.6rem",
                             color: "#575F6E",
+                            backgroundColor: "#F5F6F8",
                           }}
                         >
                           PO Quantity
@@ -630,6 +641,7 @@ function DetailsSide() {
                             fontFamily: "Poppins,sans-serif",
                             fontSize: "0.6rem",
                             color: "#575F6E",
+                            backgroundColor: "#F5F6F8",
                           }}
                         >
                           Invoice Cost
@@ -641,6 +653,7 @@ function DetailsSide() {
                             fontFamily: "Poppins,sans-serif",
                             fontSize: "0.6rem",
                             color: "#575F6E",
+                            backgroundColor: "#F5F6F8",
                           }}
                         >
                           PO Cost
@@ -652,6 +665,7 @@ function DetailsSide() {
                             fontFamily: "Poppins,sans-serif",
                             fontSize: "0.6rem",
                             color: "#575F6E",
+                            backgroundColor: "#F5F6F8",
                           }}
                         >
                           Inv. Amount
@@ -663,6 +677,7 @@ function DetailsSide() {
                             fontFamily: "Poppins,sans-serif",
                             fontSize: "0.6rem",
                             color: "#575F6E",
+                            backgroundColor: "#F5F6F8",
                           }}
                         >
                           PO Amount
@@ -954,9 +969,17 @@ function DetailsSide() {
               </Paper>
             )}
           </Card>
-          <CardOverflow sx={{ borderTop: "1px solid", borderColor: "divider" }}>
+          <CardOverflow
+            sx={{ borderTop: "1px solid", borderColor: "divider" }}
+            style={{
+              flexGrow: 1,
+              display: "flex",
+              justifyContent: "flex-end",
+              paddingBottom: "0.75rem",
+            }}
+          >
             <CardActions
-              sx={{
+              style={{
                 justifyContent: "space-between",
                 marginLeft: "1rem",
                 marginRight: "1rem",
@@ -967,7 +990,7 @@ function DetailsSide() {
                 size="md"
                 variant="solid"
                 style={{
-                  backgroundColor: "#283D76",
+                  backgroundColor: "#1C244B",
                   fontFamily: "Poppins,sans-serif",
                 }}
                 onClick={() => value.setFormSave((prevState) => !prevState)}
@@ -978,7 +1001,7 @@ function DetailsSide() {
                 size="md"
                 variant="solid"
                 style={{
-                  backgroundColor: "#283D76",
+                  backgroundColor: "#1C244B",
                   fontFamily: "Poppins,sans-serif",
                   color: "white",
                 }}
@@ -991,7 +1014,7 @@ function DetailsSide() {
                 size="md"
                 variant="solid"
                 style={{
-                  backgroundColor: "#283D76",
+                  backgroundColor: "#1C244B",
                   fontFamily: "Poppins,sans-serif",
                 }}
                 onClick={() => value.setFormSubmit((prevState) => !prevState)}
@@ -1010,41 +1033,14 @@ function DetailsSide() {
         md={4}
         // className="imageBackground"
         style={{
-          marginTop: "10vh",
+          marginTop: "7.25vh", //margin-all
           width: "100%",
           display: "flex",
           flexDirection: "column",
         }}
       >
         <ChatbotPane />
-        {/* <div id="myModal" class="modal fade">
-          <div class="modal-dialog modal-confirm">
-            <div class="modal-content">
-              <div class="modal-header">
-                <div class="icon-box">
-                  <i class="material-icons">&#xE876;</i>
-                </div>
-                <h4 class="modal-title w-100">Awesome!</h4>
-              </div>
-              <div class="modal-body">
-                <p class="text-center">
-                  Your booking has been confirmed. Check your email for detials.
-                </p>
-              </div>
-              <div class="modal-footer">
-                <button
-                  class="btn btn-success btn-block"
-                  data-dismiss="modal"
-                  onClick={() => value.setModalVisible(false)}
-                >
-                  OK
-                </button>
-              </div>
-            </div>
-          </div>
-        </div> */}
       </Grid>
-      {/* <Chatbot /> */}
     </Grid>
   );
 }

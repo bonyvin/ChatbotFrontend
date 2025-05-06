@@ -12,8 +12,10 @@ import graph5 from "../images/supplier-graph5.png";
 import infographic from "../images/supplier-infographic.png";
 import { BsFillInfoCircleFill } from "react-icons/bs";
 import { FaWindowClose } from "react-icons/fa";
+import ReactMarkdown from "react-markdown";
 
-function SupplierInfoPopUp({ visible, setVisible }) {
+
+function SupplierInfoPopUp({ visible, setVisible, data }) {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -73,7 +75,7 @@ function SupplierInfoPopUp({ visible, setVisible }) {
                   </div>
                   <div
                     style={{
-                      marginTop: "10%",
+                      // marginTop: "10%",
                       fontWeight: "600",
                       color: "black",
                     }}
@@ -81,12 +83,17 @@ function SupplierInfoPopUp({ visible, setVisible }) {
                     Fill Rate
                   </div>
                   <img
-                    src={graph1}
+                    src={`${data?.insights?.graph_data?.bar_chart}`}
                     className="tileImg"
-                    style={{ width: "8.5rem" }}
                   />
-                  <div className="tile-legends">
-                    <div className="tile-legend">
+                  <div
+                    className="graph-sub-heading"
+                  >
+                    <span>{data?.insights?.fill_rate_dict.fill_rate}</span>
+                    <span>{data?.insights?.fill_rate_dict.pending_rate}</span>
+                  </div>
+                  {/*<div className="tile-legends">
+                     <div className="tile-legend">
                       <div
                         className="legend-circle"
                         style={{ backgroundColor: "#165BA9" }}
@@ -99,8 +106,8 @@ function SupplierInfoPopUp({ visible, setVisible }) {
                         style={{ backgroundColor: "#2D9CDB" }}
                       ></div>
                       <span>Items to be delivered</span>
-                    </div>
-                  </div>
+                    </div> 
+                  </div>*/}
                 </div>
                 <div className="tiles">
                   <div className="tile-content">
@@ -108,33 +115,29 @@ function SupplierInfoPopUp({ visible, setVisible }) {
                   </div>
                   <div
                     style={{
-                      marginTop: "10%",
+                      // marginTop: "10%",
                       fontWeight: "600",
                       color: "black",
                     }}
                   >
-                    Frequent Delays
+                    Delays
                   </div>
                   <img
-                    src={graph4}
+                    // src={graph1}
+                    src={`${data?.insights?.graph_data?.delay_chart}`}
                     className="tileImg"
-                    style={{ width: "8.5rem" }}
                   />
                   <div className="tile-legends">
-                    <div className="tile-legend">
+                    {/* <div className="tile-legend">
                       <div
                         className="legend-circle"
                         style={{ backgroundColor: "#0000CD" }}
                       ></div>
                       <span>Number of Delayed Items</span>
-                    </div>
-                    {/* <div className="tile-legend">
-                      <div
-                        className="legend-circle"
-                        style={{ backgroundColor: "#F44336" }}
-                      ></div>
-                      <span>Failure</span>
                     </div> */}
+                    <div className="tile-legend">
+                      <span>{data?.insights?.delays}</span>
+                    </div>
                   </div>
                 </div>
                 <div className="tiles">
@@ -143,7 +146,7 @@ function SupplierInfoPopUp({ visible, setVisible }) {
                   </div>
                   <div
                     style={{
-                      marginTop: "10%",
+                      // marginTop: "10%",
                       fontWeight: "600",
                       color: "black",
                     }}
@@ -151,12 +154,11 @@ function SupplierInfoPopUp({ visible, setVisible }) {
                     Quality Issues
                   </div>
                   <img
-                    src={graph2}
+                    src={`${data?.insights?.graph_data?.pie_chart}`}
                     className="tileImg"
-                    style={{ width: "8.5rem" }}
                   />
                   <div className="tile-legends">
-                    <div className="tile-legend">
+                    {/* <div className="tile-legend">
                       <div
                         className="legend-circle"
                         style={{ backgroundColor: "#F765A3" }}
@@ -169,6 +171,12 @@ function SupplierInfoPopUp({ visible, setVisible }) {
                         style={{ backgroundColor: "#A155B9" }}
                       ></div>
                       <span>Non-Defective Items</span>
+                    </div> */}
+                    <div className="graph-sub-heading">
+                      <span>{data?.insights?.quality_dict.defective_rate}</span>
+                      <span>
+                        {data?.insights?.quality_dict.non_defective_rate}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -178,33 +186,28 @@ function SupplierInfoPopUp({ visible, setVisible }) {
                   </div>
                   <div
                     style={{
-                      marginTop: "10%",
+                      // marginTop: "10%",
                       fontWeight: "600",
                       color: "black",
                     }}
                   >
-                    High Risk Rate
+                    Risk Score
                   </div>
                   <img
-                    src={graph5}
+                    src={`${data?.insights?.graph_data?.gauge_chart}`}
                     className="tileImg"
-                    style={{ width: "8.5rem" }}
                   />
                   <div className="tile-legends">
                     <div className="tile-legend">
-                      <div
+                      {/* <div
                         className="legend-circle"
                         style={{ backgroundColor: "#004C78" }}
                       ></div>
-                      <span>Supplier Risk Rate</span>
+                      <span>Supplier Risk Rate</span> */}
+                      <div className="tile-legend">
+                        <span>{data?.insights?.supplier_risk_score}</span>
+                      </div>
                     </div>
-                    {/* <div className="tile-legend">
-                      <div
-                        className="legend-circle"
-                        style={{ backgroundColor: "#F44336" }}
-                      ></div>
-                      <span>Not Returned</span>
-                    </div> */}
                   </div>
                 </div>
               </div>
@@ -226,9 +229,10 @@ function SupplierInfoPopUp({ visible, setVisible }) {
                     }}
                   >
                     Key Insights
-                  </div>
-                  <ol>
-                    <li>
+                  </div>              <ReactMarkdown>{data?.insights?.key_insights}
+                                </ReactMarkdown>
+                  {/*<ol>
+                     <li>
                       15% likelihood that all items in your order will not be
                       fulfilled.
                     </li>
@@ -239,17 +243,8 @@ function SupplierInfoPopUp({ visible, setVisible }) {
                     <li>
                       Frequent quality issues- 15% of the items do not meet
                       quality standards.
-                    </li>
-                    {/* <li>
-                      Regularly collect feedback on defects to ensure they
-                      maintain quality standard.
-                    </li>
-                    <li>
-                      Ensure that customers know what they are buying to
-                      minimize return and providing post-sales support for
-                      reducing unnecessary returns.
-                    </li> */}
-                  </ol>
+                    </li> 
+                  </ol>*/}
                 </div>
                 <div
                   style={{
@@ -261,8 +256,8 @@ function SupplierInfoPopUp({ visible, setVisible }) {
                     padding: "0.5rem",
                     flex: 1,
                     // paddingRight: "1rem",
-                    margin:'1rem',
-                    marginRight:0
+                    margin: "1rem",
+                    marginRight: 0,
                   }}
                 >
                   <div
@@ -285,13 +280,13 @@ function SupplierInfoPopUp({ visible, setVisible }) {
                         paddingRight: "1rem",
                         fontWeight: "600",
                         color: "black",
-                        textDecoration:'underline'
+                        textDecoration: "underline",
                       }}
                     >
                       Medium Risk Supplier
                     </div>
                   </div>{" "}
-                  <div style={{ color: "black",fontSize:'0.75rem' }}>
+                  <div style={{ color: "black", fontSize: "0.75rem" }}>
                     Alert: Supplier not meeting environmental and safety
                     standards
                   </div>
@@ -311,3 +306,251 @@ function SupplierInfoPopUp({ visible, setVisible }) {
 }
 
 export default SupplierInfoPopUp;
+{
+  /* <div
+id="myModal"
+className="modal fade show d-block"
+style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+>
+<div
+  className="modal-dialog modal-confirm"
+  style={{ display: "flex", justifyContent: "center" }}
+>
+  <div
+    className="modal-content"
+    style={{ padding: "8%", width: "fit-content" }}
+  >
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "space-between",
+      }}
+    >
+      <div
+        style={{
+          fontSize: "1.5rem",
+          fontWeight: "600",
+          color: "#00338D",
+        }}
+      >
+        Supplier Risk Assessment
+      </div>
+      <div>
+        <FaWindowClose
+          style={{
+            fontSize: "1.5rem",
+          }}
+          onClick={handleClose}
+        />
+      </div>
+    </div>
+    <div style={{ display: "flex", flexDirection: "row" }}>
+      <div className="tiles">
+        <div className="tile-content">
+          <BsFillInfoCircleFill className="tile-icon" />
+        </div>
+        <div
+          style={{
+            marginTop: "10%",
+            fontWeight: "600",
+            color: "black",
+          }}
+        >
+          Fill Rate
+        </div>
+        <img
+          src={graph1}
+          className="tileImg"
+          style={{ width: "8.5rem" }}
+        />
+        <div className="tile-legends">
+          <div className="tile-legend">
+            <div
+              className="legend-circle"
+              style={{ backgroundColor: "#165BA9" }}
+            ></div>
+            <span>Total Items Delivered</span>
+          </div>
+          <div className="tile-legend">
+            <div
+              className="legend-circle"
+              style={{ backgroundColor: "#2D9CDB" }}
+            ></div>
+            <span>Items to be delivered</span>
+          </div>
+        </div>
+      </div>
+      <div className="tiles">
+        <div className="tile-content">
+          <BsFillInfoCircleFill className="tile-icon" />
+        </div>
+        <div
+          style={{
+            marginTop: "10%",
+            fontWeight: "600",
+            color: "black",
+          }}
+        >
+          Frequent Delays
+        </div>
+        <img
+          src={graph4}
+          className="tileImg"
+          style={{ width: "8.5rem" }}
+        />
+        <div className="tile-legends">
+          <div className="tile-legend">
+            <div
+              className="legend-circle"
+              style={{ backgroundColor: "#0000CD" }}
+            ></div>
+            <span>Number of Delayed Items</span>
+          </div>
+
+        </div>
+      </div>
+      <div className="tiles">
+        <div className="tile-content">
+          <BsFillInfoCircleFill className="tile-icon" />
+        </div>
+        <div
+          style={{
+            marginTop: "10%",
+            fontWeight: "600",
+            color: "black",
+          }}
+        >
+          Quality Issues
+        </div>
+        <img
+          src={graph2}
+          className="tileImg"
+          style={{ width: "8.5rem" }}
+        />
+        <div className="tile-legends">
+          <div className="tile-legend">
+            <div
+              className="legend-circle"
+              style={{ backgroundColor: "#F765A3" }}
+            ></div>
+            <span>Defective Items</span>
+          </div>
+          <div className="tile-legend">
+            <div
+              className="legend-circle"
+              style={{ backgroundColor: "#A155B9" }}
+            ></div>
+            <span>Non-Defective Items</span>
+          </div>
+        </div>
+      </div>
+      <div className="tiles">
+        <div className="tile-content">
+          <BsFillInfoCircleFill className="tile-icon" />
+        </div>
+        <div
+          style={{
+            marginTop: "10%",
+            fontWeight: "600",
+            color: "black",
+          }}
+        >
+          High Risk Rate
+        </div>
+        <img
+          src={graph5}
+          className="tileImg"
+          style={{ width: "8.5rem" }}
+        />
+        <div className="tile-legends">
+          <div className="tile-legend">
+            <div
+              className="legend-circle"
+              style={{ backgroundColor: "#004C78" }}
+            ></div>
+            <span>Supplier Risk Rate</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "row",
+      }}
+    >
+      <div className="insights-box" style={{}}>
+        <div
+          style={{
+            fontSize: "1rem",
+            fontWeight: "600",
+            textDecoration: "underline",
+            marginBottom: "1rem",
+          }}
+        >
+          Key Insights
+        </div>
+        <ol>
+          <li>
+            15% likelihood that all items in your order will not be
+            fulfilled.
+          </li>
+          <li>
+            The history suggests that the orders from this supplier
+            are delayed by an average of 15 days
+          </li>
+          <li>
+            Frequent quality issues- 15% of the items do not meet
+            quality standards.
+          </li>
+        </ol>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          flexDirection: "column",
+          backgroundColor: "pink",
+          borderRadius: "1rem",
+          padding: "0.5rem",
+          flex: 1,
+          // paddingRight: "1rem",
+          margin:'1rem',
+          marginRight:0
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <img
+            src={failure}
+            className="tileImg"
+            style={{ width: "3rem" }}
+          />
+          <div
+            style={{
+              paddingRight: "1rem",
+              fontWeight: "600",
+              color: "black",
+              textDecoration:'underline'
+            }}
+          >
+            Medium Risk Supplier
+          </div>
+        </div>
+        <div style={{ color: "black",fontSize:'0.75rem' }}>
+          Alert: Supplier not meeting environmental and safety
+          standards
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+</div> */
+}
