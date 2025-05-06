@@ -1,18 +1,10 @@
-import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import DoneIcon from "@mui/icons-material/Done";
-import "../styles/popupStyles.css";
-import success from "../images/success.gif";
-import failure from "../images/failure.gif";
-import graph1 from "../images/supplier-graph1.png";
-import graph2 from "../images/supplier-graph2.png";
-import graph3 from "../images/supplier-graph3.png";
-import graph4 from "../images/supplier-graph4.png";
-import graph5 from "../images/supplier-graph5.png";
-import infographic from "../images/supplier-infographic.png";
+import React, { useEffect, useState } from "react";
 import { BsFillInfoCircleFill } from "react-icons/bs";
 import { FaWindowClose } from "react-icons/fa";
 import ReactMarkdown from "react-markdown";
+import "../../styles/popupStyles.css";
+import failure from "../../images/failure.gif";
 
 
 function SupplierInfoPopUp({ visible, setVisible, data }) {

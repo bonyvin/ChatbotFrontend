@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import DoneIcon from "@mui/icons-material/Done";
-import "../styles/popupStyles.css";
-import success from "../images/success.gif";
-import failure from "../images/failure.gif";
+import React, { useEffect, useState } from "react";
+import failure from "../../images/failure.gif";
+import success from "../../images/success.gif";
+import "../../styles/popupStyles.css";
 
 
-function PopUp({ visible, text,isSuccessful=true}) {
+function FormSubmissionStatusPopUp({ visible, text,isSuccessful=true}) {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -54,4 +53,4 @@ function PopUp({ visible, text,isSuccessful=true}) {
   );
 }
 
-export default PopUp;
+export default FormSubmissionStatusPopUp;

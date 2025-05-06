@@ -1,9 +1,8 @@
 import React from "react";
-import user from "../images/user.png";
-import symbol from "../images/symbol.png";
-import symbolBlue from "../images/symbolBlue.png";
+import user from "../../images/user.png";
+import symbolBlue from "../../images/symbolBlue.png";
 
-import "../styles/general.css";
+import "../../styles/general.css";
 
 const ChatMessage = ({ text, fromUser, isFile = false }) => {
   return (

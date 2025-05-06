@@ -1,13 +1,10 @@
-import React from "react";
-import Grid from "@mui/material/Grid";
-import { Box } from "@mui/material";
-import Typography from "@mui/material/Typography";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
-import kpmgWhite from "../images/kpmgWhite.png";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import "../styles/testStyles.css";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import Grid from "@mui/material/Grid";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import React from "react";
 import symbol from "../images/symbol.png";
+import "../styles/testStyles.css";
 
 export default function Header() {
   const defaultTheme = createTheme();

@@ -1,40 +1,28 @@
-import Box from "@mui/joy/Box";
-import Sheet from "@mui/joy/Sheet";
-import Stack from "@mui/joy/Stack";
-import React, {
-  useEffect,
-  useState,
-  useContext,
-  useRef,
-  useCallback,
-} from "react";
-import ChatMessage from "./ChatMessage";
-import "../styles/chatbot.css";
-import "../styles/general.css";
-import Smiley from "@mui/icons-material/SentimentSatisfiedAlt";
-import Add from "@mui/icons-material/AddCircle";
-import SendIcon from "@mui/icons-material/Send";
-import Grid from "@mui/material/Grid";
-import Typography from "@mui/material/Typography";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
-import bgImage from "../images/bgImage.png";
-import { useTheme } from "@mui/material/styles";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import { AuthContext, useAuthContext } from "../context/ContextsMasterFile";
-import axios from "axios";
-import { StyledModalRoot } from "@mui/joy/Modal/Modal";
-import PdfCard from "./PDF Generation/PdfCard";
-import ReactMarkdown from "react-markdown";
-import "../styles/chatbot.css";
-import { styled } from "@mui/material/styles";
-import { Backdrop, CircularProgress, IconButton } from "@mui/material";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
-import TypingIndicatorComponent from "./TypingIndicatorComponent";
-import MicIcon from "@mui/icons-material/Mic";
-import ChatbotInputForm from "./ChatbotInputForm";
 import { Card } from "@mui/joy";
-import EmailPdf from "./PDF Generation/EmailPdf";
+import Box from "@mui/joy/Box";
+import Sheet from "@mui/joy/Sheet";
+import { Backdrop, CircularProgress } from "@mui/material";
+import axios from "axios";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import ReactMarkdown from "react-markdown";
+import "../../styles/chatbot.css";
+import "../../styles/general.css";
+import "../../styles/chatbot.css";
+import ChatMessage from "../../components/ChatMessage/ChatMessage";
+import ChatbotInputForm from "../../components/ChatMessage/ChatbotInputForm";
+import EmailPdf from "../../components/PDF Generation/EmailPdf";
+import PdfCard from "../../components/PDF Generation/PdfCard";
+
+import { AuthContext } from "../../context/ContextsMasterFile";
+import TypingIndicatorComponent from "../../components/ChatMessage/TypingIndicatorComponent";
  
 export default function PromoChatbotPane() {
   const [messages, setMessages] = useState([]);
@@ -135,15 +123,15 @@ export default function PromoChatbotPane() {
     value.setPromotionCounterId(`PROMO${value.promotionCounter}`);
   }, [value.promotionCounter]);
   const submitFormData = async () => {
-    // await handleMessageSubmit("Please submit the data provided");
+    await handleMessageSubmit("Please submit the data provided");
     // await promotionHeaderCreation();
-    console.log("Submit called")      
-    await EmailPdf({
-      emailUsed: "bonyvincent11@gmail.com",
-      bodyUsed: { title: "Hello World", name: "John Doe" },
-      promotion: true,
-      documentId: "PROMO123"
-    });
+    // console.log("Submit called")      
+    // await EmailPdf({
+    //   emailUsed: "bonyvincent11@gmail.com",
+    //   bodyUsed: { title: "Hello World", name: "John Doe" },
+    //   promotion: true,
+    //   documentId: "PROMO123"
+    // });
   };
   //clear
   const clearFormData = () => {

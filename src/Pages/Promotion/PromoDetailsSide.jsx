@@ -2,108 +2,64 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 
 // Images
-import loginImage from "../images/loginBackground.png";
-import kpmgWhite from "../images/kpmgWhite.png";
-import symbolBlue from "../images/symbolBlue.png";
 
 // Pages
-import SignInSide from "../Pages/Login";
 
 // Material UI components
 import {
-  Grid,
-  Typography,
+  Cancel,
+  ExpandLess,
+  ExpandMore,
+  Visibility
+} from "@mui/icons-material";
+import {
   Button,
-  InputAdornment,
-  InputBase,
-  InputLabel,
-  MenuItem,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TablePagination,
-  TableRow,
-  Dialog,
-  FormControlLabel,
   Checkbox,
+  Dialog,
   DialogActions,
-  DialogTitle,
   DialogContent,
   DialogContentText,
-  ListItemText,
-  Chip,
+  DialogTitle,
+  FormControlLabel,
+  Grid,
+  Typography
 } from "@mui/material";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
-import {
-  HomeRoundedIcon,
-  ChevronRightRoundedIcon,
-  EmailRoundedIcon,
-  AccessTimeFilledRoundedIcon,
-  VideocamRoundedIcon,
-  InsertDriveFileRoundedIcon,
-  EditRoundedIcon,
-  ExpandMore,
-  ExpandLess,
-  CloudUploadIcon,
-  SendIcon,
-  Visibility,
-  Cancel,
-} from "@mui/icons-material";
+import "../../styles/Overall.css"; 
 // Joy UI components
 import {
-  AspectRatio,
-  Box,
-  Divider,
-  FormControl,
-  FormLabel,
-  FormHelperText,
-  Input,
-  IconButton,
-  Textarea,
-  Stack,
-  Select,
-  Option,
-  Tabs,
-  TabList,
-  Tab,
-  Breadcrumbs,
-  Link,
   Card,
   CardActions,
   CardOverflow,
+  FormControl,
+  IconButton,
+  Option,
+  Select,
+  Stack
 } from "@mui/joy";
 
 // Bootstrap components
 import { Form } from "react-bootstrap";
 
 // React PDF
-import { BlobProvider, PDFDownloadLink } from "@react-pdf/renderer";
 
 // Context
-import { AuthContext } from "../context/ContextsMasterFile";
+
 
 // Custom Components
-import Chatbot from "./Chatbot";
-import Chatb from "./Chatb";
+import { DynamicCutoutInput } from "../../components/DynamicCutoutInput";
+import ItemInfoPopup from "../../components/PopupMessage/ItemInfoPopup";
+import PopUp from "../../components/PopupMessage/FormSubmissionStatusPopUp";
 import PromoChatbotPane from "./PromoChatbotPane";
-import PopUp from "./PopUp";
-import { DynamicCutoutInput } from "./DynamicCutoutInput";
-import Invoice from "./PDF Generation/Invoice";
-import ItemInfoPopup from "./ItemInfoPopup";
-import SupplierInfoPopUp from "./SupplierInfoPopUp";
+import SupplierInfoPopUp from "../../components/PopupMessage/SupplierInfoPopUp";
 
 // React Icons
-import { BsFillInfoCircleFill } from "react-icons/bs";
 import { FiUpload } from "react-icons/fi";
-import zIndex from "@mui/material/styles/zIndex";
-import Promotion from "./PDF Generation/Promotion";
-import PreviewDocs from "./PDF Generation/PreviewDocs";
 
 // PDF Viewer
 import { PDFViewer } from "@react-pdf/renderer";
+import PreviewDocs from "../../components/PDF Generation/PreviewDocs";
+import { AuthContext } from "../../context/ContextsMasterFile";
+import CustomButton from "../../components/CustomButton/CustomButton.js";
 
 function PromoDetailsSide() {
   const messagesEndRef = useRef(null);
@@ -1433,44 +1389,23 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                 marginRight: "1rem",
               }}
             >
-              <Button
-                size="md"
-                variant="solid"
-                style={{
-                  backgroundColor: "#1C244B",
-                  fontFamily: "Poppins,sans-serif",
-                  color: "white",
-                }}
+              <CustomButton
                 onClick={() => value.setFormSave((prevState) => !prevState)}
               >
                 SAVE
-              </Button>
+              </CustomButton>
 
-              <Button
-                size="md"
-                variant="solid"
-                style={{
-                  backgroundColor: "#1C244B",
-                  fontFamily: "Poppins,sans-serif",
-                  color: "white",
-                }}
+              <CustomButton
                 onClick={() => setPromoPreview(true)}
               >
                 PREVIEW
-              </Button>
+              </CustomButton>
 
-              <Button
-                size="md"
-                variant="solid"
-                style={{
-                  backgroundColor: "#1C244B",
-                  fontFamily: "Poppins,sans-serif",
-                  color: "white",
-                }}
+              <CustomButton
                 onClick={() => value.setFormSubmit((prevState) => !prevState)}
               >
                 SUBMIT
-              </Button>
+              </CustomButton>
             </CardActions>
           </CardOverflow>
         </Card>
@@ -1511,13 +1446,13 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                 </p>
               </div>
               <div class="modal-footer">
-                <button
+                <Button
                   class="btn btn-success btn-block"
                   data-dismiss="modal"
                   onClick={() => value.setModalVisible(false)}
                 >
                   OK
-                </button>
+                </Button>
               </div>
             </div>
           </div>

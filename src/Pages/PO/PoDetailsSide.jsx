@@ -1,69 +1,37 @@
-import React, { useContext, useEffect, useRef } from "react";
-import loginImage from "../images/loginBackground.png";
-import kpmgWhite from "../images/kpmgWhite.png";
-import symbolBlue from "../images/symbolBlue.png";
-import SignInSide from "../Pages/Login";
-import Grid from "@mui/material/Grid";
-import { useState } from "react";
-import "../styles/testStyles.css";
-import "../styles/general.css";
-import Chatbot from "../../components/Chatbot";
-import Typography from "@mui/material/Typography";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
-import AspectRatio from "@mui/joy/AspectRatio";
-import Box from "@mui/joy/Box";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Button from "@mui/joy/Button";
-import Divider from "@mui/joy/Divider";
-import FormControl from "@mui/joy/FormControl";
-import FormLabel from "@mui/joy/FormLabel";
-import FormHelperText from "@mui/joy/FormHelperText";
-import Input from "@mui/joy/Input";
-import IconButton from "@mui/joy/IconButton";
-import Textarea from "@mui/joy/Textarea";
-import Stack from "@mui/joy/Stack";
-import Select from "@mui/joy/Select";
-import Option from "@mui/joy/Option";
-import Tabs from "@mui/joy/Tabs";
-import TabList from "@mui/joy/TabList";
-import Tab, { tabClasses } from "@mui/joy/Tab";
-import Breadcrumbs from "@mui/joy/Breadcrumbs";
-import Link from "@mui/joy/Link";
 import Card from "@mui/joy/Card";
 import CardActions from "@mui/joy/CardActions";
 import CardOverflow from "@mui/joy/CardOverflow";
-import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
-import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
-import EmailRoundedIcon from "@mui/icons-material/EmailRounded";
-import AccessTimeFilledRoundedIcon from "@mui/icons-material/AccessTimeFilledRounded";
-import VideocamRoundedIcon from "@mui/icons-material/VideocamRounded";
-import InsertDriveFileRoundedIcon from "@mui/icons-material/InsertDriveFileRounded";
-import EditRoundedIcon from "@mui/icons-material/EditRounded";
-import "../styles/general.css";
-import { Dialog, InputAdornment, InputBase, InputLabel } from "@mui/material";
-import { Form } from "react-bootstrap";
-import { DynamicCutoutInput } from "../../components/DynamicCutoutInput";
-import Chatb from "../../components/Chatb";
+import FormControl from "@mui/joy/FormControl";
+import IconButton from "@mui/joy/IconButton";
+import Stack from "@mui/joy/Stack";
+import { Dialog } from "@mui/material";
+import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
-import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import ChatbotPane from "../Invoice/InvoiceChatbot";
-import { AuthContext } from "../../context/ContextsMasterFile";
-import PopUp from "../../components/PopupMessage/FormSubmissionStatusPopUp";
-import { BlobProvider, PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
-import Invoice from "../../components/PDF Generation/Invoice";
-import POChatbotPane from "./POChatbotPane";
-import { BsFillInfoCircleFill } from "react-icons/bs";
-import SupplierInfoPopUp from "../../components/PopupMessage/SupplierInfoPopUp";
-import ItemInfoPopup from "../../components/PopupMessage/ItemInfoPopup";
-import PreviewDocs from "../../components/PDF Generation/PreviewDocs";
+import Typography from "@mui/material/Typography";
+import { PDFViewer } from "@react-pdf/renderer";
 import axios from "axios";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { BsFillInfoCircleFill } from "react-icons/bs";
+import { DynamicCutoutInput } from "../../components/DynamicCutoutInput";
+import PreviewDocs from "../../components/PDF Generation/PreviewDocs";
+import PopUp from "../../components/PopupMessage/FormSubmissionStatusPopUp";
+import ItemInfoPopup from "../../components/PopupMessage/ItemInfoPopup";
+import SupplierInfoPopUp from "../../components/PopupMessage/SupplierInfoPopUp";
+import CustomButton from "../../components/CustomButton/CustomButton";
+import { AuthContext } from "../../context/ContextsMasterFile";
+import "../../styles/general.css";
+import "../../styles/testStyles.css";
+import "../../styles/general.css";
+import POChatbotPane from "./POChatbotPane";
 
 function PoDetailsSide() {
   const messagesEndRef = useRef(null);
@@ -762,7 +730,7 @@ function PoDetailsSide() {
                 marginRight: "1rem",
               }}
             >
-              <Button
+              <CustomButton
                 size="md"
                 variant="solid"
                 style={{
@@ -772,31 +740,19 @@ function PoDetailsSide() {
                 onClick={() => value.setFormSave((prevState) => !prevState)}
               >
                 SAVE
-              </Button>
-              <Button
-                size="md"
-                variant="solid"
-                style={{
-                  backgroundColor: "#1C244B",
-                  fontFamily: "Poppins,sans-serif",
-                  color: "white",
-                }}
+              </CustomButton>
+              <CustomButton
                 onClick={() => setPoPreview(true)}
               >
                 PREVIEW
-              </Button>
-              <Button
-                size="md"
-                variant="solid"
-                style={{
-                  backgroundColor: "#1C244B",
-                  fontFamily: "Poppins,sans-serif",
-                }}
+              </CustomButton>
+              <CustomButton
+                
                 onClick={() =>(supplierRiskApi('SUP130'),setSupplierPopupStatus(true))}
                 // onClick={() => value.setFormSubmit((prevState) => !prevState)}
               >
                 SUBMIT
-              </Button>
+              </CustomButton>
             </CardActions>
           </CardOverflow>
         </Card>

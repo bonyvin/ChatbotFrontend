@@ -78,7 +78,7 @@ import Add from "@mui/icons-material/AddCircle";
 import Smiley from "@mui/icons-material/EmojiEmotions";
 import MicIcon from "@mui/icons-material/Mic";
 import SendIcon from "@mui/icons-material/Send";
-import "../styles/ChatbotInputForm.css";
+import "../../styles/ChatbotInputForm.css";
 
 const ChatbotInputForm = ({
   input,

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "../styles/popupStyles.css";
+import "../../styles/popupStyles.css";
 import { FaWindowClose } from "react-icons/fa";
 function ItemInfoPopup({ visible, setVisible }) {
   const [show, setShow] = useState(false);

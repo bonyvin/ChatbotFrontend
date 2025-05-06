@@ -1,8 +1,10 @@
 import React from "react";
-import typingIndicator from "../images/typingIndicator1.gif";
-import ChatMessage from "./ChatMessage";
-import "../styles/chatbot.css";
-import "../styles/general.css";
+import typingIndicator from "../../images/typingIndicator1.gif";
+import ChatMessage from "../ChatMessage/ChatMessage";
+import "../../styles/chatbot.css";
+import "../../styles/general.css";
+
+
 const TypingIndicatorComponent = ({ scrollToBottom }) => {
   scrollToBottom();
   return (

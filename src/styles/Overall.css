@@ -1,0 +1,10 @@
+.custom-button {
+    width: 10%;
+    background-color: #1C244B;
+    font-family: "Varela Round", sans-serif;
+    color: white;
+    padding: 5px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    
+}
