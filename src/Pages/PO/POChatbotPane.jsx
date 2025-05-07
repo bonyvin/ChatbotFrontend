@@ -21,6 +21,7 @@ import { AuthContext } from "../../context/ContextsMasterFile";
 import "../../styles/chatbot.css";
 import "../../styles/general.css";
 import "../../styles/chatbot.css";
+import { ADD_PO_DETAILS, CHAT, CLEAR_DATA, FETCH_SUPPLIER_BYID, PO_CREATION, UPLOAD_PO } from "../../const/ApiConst";
 
 export default function POChatbotPane() {
   const [messages, setMessages] = useState([]);
@@ -192,7 +193,7 @@ export default function POChatbotPane() {
 
       try {
         const response = await axios.get(
-          `http://localhost:8000/suppliers/${id}`
+          FETCH_SUPPLIER_BYID(id)
         );
         if (response.status === 200 || response.status === 201) {
           console.log(
@@ -365,7 +366,7 @@ export default function POChatbotPane() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/chat", // API endpoint
+        CHAT, // API endpoint
         {
           user_id: "admin", // The user_id value
           message: input, // The message value
@@ -489,7 +490,7 @@ export default function POChatbotPane() {
 
       const response = await axios({
         method: "post",
-        url: `http://localhost:8000/poDetailsAdd/`,
+        url: ADD_PO_DETAILS,
         headers: {
           "Content-Type": "application/json",
           accept: "application/json",
@@ -539,7 +540,7 @@ export default function POChatbotPane() {
     try {
       const response = await axios({
         method: "post",
-        url: `http://localhost:8000/poCreation/`,
+        url: PO_CREATION,
         headers: {
           "Content-Type": "application/json",
           accept: "application/json",
@@ -686,7 +687,7 @@ export default function POChatbotPane() {
     try {
       const response = await axios({
         method: "POST",
-        url: `http://localhost:8000/uploadPo/`,
+        url: UPLOAD_PO,
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -743,7 +744,7 @@ export default function POChatbotPane() {
       // console.log("clearDataApi");
       const response = await axios({
         method: "post",
-        url: `http://localhost:8000/clearData?submitted=submitted`,
+        url: CLEAR_DATA,
         headers: {
           "Content-Type": "application/json",
           accept: "application/json",

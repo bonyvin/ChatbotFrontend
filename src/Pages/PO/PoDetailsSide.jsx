@@ -32,6 +32,7 @@ import "../../styles/general.css";
 import "../../styles/testStyles.css";
 import "../../styles/general.css";
 import POChatbotPane from "./POChatbotPane";
+import { SUPPLIER_RISK_INSIGHT } from "../../const/ApiConst";
 
 function PoDetailsSide() {
   const messagesEndRef = useRef(null);
@@ -151,7 +152,7 @@ function PoDetailsSide() {
         // console.log("clearDataApi");
         const response = await axios({
           method: "get",
-          url: `http://localhost:8000/supplier-risk-insights?supplierId=${supplierId}`,
+          url: SUPPLIER_RISK_INSIGHT(supplierId),
           headers: {
             "Content-Type": "application/json",
             accept: "application/json",
@@ -164,6 +165,8 @@ function PoDetailsSide() {
         console.log("Supplier Risk Error:", error, error.data);
       }
     };
+
+    
   return (
     <Grid container component="main" style={{ backgroundColor: "#e9ecef" }}>
       <Grid

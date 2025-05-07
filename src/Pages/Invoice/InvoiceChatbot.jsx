@@ -23,6 +23,9 @@ import "../../styles/chatbot.css";
 import { Card } from "@mui/joy";
 import ChatbotInputForm from "../../components/ChatMessage/ChatbotInputForm";
 import TypingIndicatorComponent from "../../components/ChatMessage/TypingIndicatorComponent";
+import { ADD_INVOICE_DETAILS, FETCH_PO_BY_ID, NEW_RESPONSE_CREATION, INVOICE_CREATION,
+   UPLOAD_GPT, 
+   CLEAR_DATA} from "../../const/ApiConst";
 
 
 export default function InvoiceChatbot() {
@@ -419,7 +422,7 @@ export default function InvoiceChatbot() {
       prevIdRef.current = id; // Update the previous ID
       try {
         const response = await axios.get(
-          `http://localhost:8000/poDetails/${id}`
+          FETCH_PO_BY_ID(id)
         );
         console.log("PO Response: ", response.data);
         console.log(
@@ -765,7 +768,7 @@ export default function InvoiceChatbot() {
     try {
       const response = await axios.post(
         // `http://localhost:8000/creation/response?query=${input}`,
-        `http://localhost:8000/creation/response_new`, // API endpoint
+        NEW_RESPONSE_CREATION, // API endpoint
         {
           user_id: "admin", // The user_id value
           message: input, // The message value
@@ -909,7 +912,7 @@ export default function InvoiceChatbot() {
       }));
       const response = await axios({
         method: "post",
-        url: `http://localhost:8000/invDetailsAdd/`,
+        url: ADD_INVOICE_DETAILS,
         headers: {
           "Content-Type": "application/json",
           accept: "application/json",
@@ -957,7 +960,7 @@ export default function InvoiceChatbot() {
     try {
       const response = await axios({
         method: "post",
-        url: `http://localhost:8000/invCreation/`,
+        url: INVOICE_CREATION,
         headers: {
           "Content-Type": "application/json",
           accept: "application/json",
@@ -1046,7 +1049,7 @@ export default function InvoiceChatbot() {
     try {
       const response = await axios({
         method: "POST",
-        url: `http://localhost:8000/uploadGpt/`,
+        url: UPLOAD_GPT,
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -1113,7 +1116,7 @@ export default function InvoiceChatbot() {
       // console.log("clearDataApi");
       const response = await axios({
         method: "post",
-        url: `http://localhost:8000/clearData?submitted=submitted`,
+        url: CLEAR_DATA,
         headers: {
           "Content-Type": "application/json",
           accept: "application/json",

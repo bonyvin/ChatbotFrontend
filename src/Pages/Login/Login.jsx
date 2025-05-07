@@ -78,6 +78,8 @@ export default function SignInSide() {
     fontFamily: ["OpenSans", "sans-serif"],
   }));
   const navigate = useNavigate();
+
+  
   return (
     <ThemeProvider theme={theme}>
       <Grid container component="main" style={{ height: "100vh" }}>

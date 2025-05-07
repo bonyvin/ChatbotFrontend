@@ -23,6 +23,7 @@ import PdfCard from "../../components/PDF Generation/PdfCard";
 
 import { AuthContext } from "../../context/ContextsMasterFile";
 import TypingIndicatorComponent from "../../components/ChatMessage/TypingIndicatorComponent";
+import { CLEAR_DATA, ITEMS, PROMO_CHAT, PROMO_HEADER, PROMO_LIST, STORE_LIST, UPLOAD_PROMO } from "../../const/ApiConst";
  
 export default function PromoChatbotPane() {
   const [messages, setMessages] = useState([]);
@@ -378,7 +379,7 @@ export default function PromoChatbotPane() {
     }, 1500);
     try {
       const response = await axios.post(
-        "http://localhost:8000/promo-chat", // API endpoint
+        PROMO_CHAT, // API endpoint
         {
           user_id: "admin", // The user_id value
           message: input, // The message value
@@ -454,7 +455,7 @@ export default function PromoChatbotPane() {
     try {
       const response = await axios({
         method: "get",
-        url: `http://localhost:8000/items`,
+        url: ITEMS,
         headers: {
           "Content-Type": "application/json",
           accept: "application/json",
@@ -472,7 +473,7 @@ export default function PromoChatbotPane() {
     try {
       const response = await axios({
         method: "get",
-        url: `http://localhost:8000/storeList`,
+        url: STORE_LIST,
         headers: {
           "Content-Type": "application/json",
           accept: "application/json",
@@ -512,7 +513,7 @@ export default function PromoChatbotPane() {
 
       const response = await axios({
         method: "post",
-        url: `http://localhost:8000/promotionDetails/`,
+        url: PROMO_LIST,
         headers: {
           "Content-Type": "application/json",
           accept: "application/json",
@@ -558,7 +559,7 @@ export default function PromoChatbotPane() {
     try {
       const response = await axios({
         method: "post",
-        url: `http://localhost:8000/promotionHeader/`,
+        url: PROMO_HEADER,
         headers: {
           "Content-Type": "application/json",
           accept: "application/json",
@@ -679,7 +680,7 @@ export default function PromoChatbotPane() {
     try {
       const response = await axios({
         method: "POST",
-        url: `http://localhost:8000/uploadPromo/`,
+        url: UPLOAD_PROMO,
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -822,7 +823,7 @@ export default function PromoChatbotPane() {
       // console.log("clearDataApi");
       const response = await axios({
         method: "post",
-        url: `http://localhost:8000/clearData?submitted=submitted`,
+        url: CLEAR_DATA,
         headers: {
           "Content-Type": "application/json",
           accept: "application/json",
@@ -836,6 +837,7 @@ export default function PromoChatbotPane() {
     }
   };
   console.log("checkConsole  ", value);
+  
   return (
     <Card className="chatbot-card">
     <Sheet

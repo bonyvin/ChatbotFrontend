@@ -107,6 +107,7 @@ function InvoiceDetailsSide() {
       console.log("poDetailsData length <= 0, handleItemAndQuantity");
     }
   };
+  
   // console.log("pod:",value.poDetailsData)
   return (
     <Grid container component="main" style={{ backgroundColor: "#e9ecef" }}>
