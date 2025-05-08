@@ -30,8 +30,8 @@
 
 .form-control {
   border: none;
-  border-radius: 0;
-  border-bottom: 2px solid #ced4da;
+  border-radius: 0.2rem;
+  border: 0.08rem solid #ced4da;
   /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);  */
   /* Adjust shadow as needed */
 }
@@ -63,11 +63,6 @@
 #formGroup {
 }
  
-.input-with-icons {
-  padding-left: 30px; /* Space for the start icon */
-  padding-right: 30px; /* Space for the end icon */
-}
-
 .input-icon {
   position: absolute;
   top: 50%;
@@ -83,6 +78,6 @@
 }
 
 .input-with-icons {
-  padding-left: 30px;
-  padding-right: 30px;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
 }

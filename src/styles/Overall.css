@@ -1,11 +1,13 @@
 .custom-button {
-    width: 12%;
+    width: 100%; /* Default for small screens */
+    max-width: 150px; /* Optional max width */
     background-color: #1C244B;
     font-family: "Varela Round", sans-serif;
     color: white;
     padding: 0.3125rem;
-    border-radius: 0.3125rem;
-    font-size: 0.9rem;
+    border-radius: 0.2rem;
+    font-size: 0.8rem;
+    box-sizing: border-box;
 }
 
 .dialog-container{
@@ -13,4 +15,18 @@
     height: 100%;
     display: "flex";
     overflow: "hidden";
+}
+    
+/* Medium screens */
+@media (min-width: 600px) {
+    .custom-button {
+        width: 30%;
+    }
+}
+
+/* Large screens */
+@media (min-width: 1024px) {
+    .custom-button {
+        width: 12%;
+    }
 }
