@@ -3,6 +3,7 @@ import { pdf } from "@react-pdf/renderer";
 import PromotionPdf from "./PromotionPdf";
 import { PurchaseOrderPdf } from "./PurchaseOrderPdf";
 import { InvoicePdf } from "./InvoicePdf";
+import { FETCH_INVOICE_BY_ID, FETCH_PO_BY_ID, NEW_FILE, SUPPLIER_API } from "../../const/ApiConst";
 
 // Helper to POST the file
 async function sendFile(file, email, body) {
@@ -13,7 +14,7 @@ async function sendFile(file, email, body) {
 
   try {
     const { status } = await axios.post(
-      "http://localhost:8000/filenew",
+      NEW_FILE,
       form,
       { headers: { "Content-Type": "multipart/form-data" } }
     );
@@ -27,7 +28,7 @@ async function sendFile(file, email, body) {
 const docConfigs = {
   promotion: {
     fetch: async (id) => {
-      const { data } = await axios.get(`http://localhost:8000/promotionHeader/${id}`);
+      const { data } = await axios.get();
       return {
         header: data.promotion_header,
         details: data.promotion_details,
@@ -40,9 +41,13 @@ const docConfigs = {
   },
   purchaseOrder: {
     fetch: async (id) => {
-      const { data } = await axios.get(`http://localhost:8000/poDetails/${id}`);
+      const { data } = await axios.get(FETCH_PO_BY_ID(id));
+      
+      const supplierId = data.po_details[0]?.supplierId;
+      const apiUrl = SUPPLIER_API(supplierId);
+
       const supplierResp = await axios.get(
-        `http://localhost:8000/suppliers/${data.po_details[0]?.supplierId}`
+        apiUrl
       );
       return {
         poHeader: data.po_header,
@@ -61,7 +66,7 @@ const docConfigs = {
   },
   invoice: {
     fetch: async (id) => {
-      const { data } = await axios.get(`http://localhost:8000/invoiceDetails/${id}`);
+      const { data } = await axios.get(FETCH_INVOICE_BY_ID(id));
       return {
         invoiceHeader: data.inv_header,
         inv_details: data.inv_details,

@@ -10,6 +10,7 @@ import {
 } from "@react-pdf/renderer";
 import logo from "../../images/symbolBlue.png";
 import { AuthContext } from "../../context/ContextsMasterFile";
+import { FETCH_INVOICE_BY_ID } from "../../const/ApiConst";
 
 const Invoice = ({ invoiceId }) => {
   const [invData, setInvData] = useState(null); // Initialize with null
@@ -20,7 +21,7 @@ const Invoice = ({ invoiceId }) => {
     try {
       const response = await axios({
         method: "get",
-        url: `http://localhost:8000/invoiceDetails/${id}`,
+        url: FETCH_INVOICE_BY_ID,
         headers: {
           "Content-Type": "application/json",
           accept: "application/json",

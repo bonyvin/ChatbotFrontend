@@ -26,6 +26,7 @@ import TypingIndicatorComponent from "../../components/ChatMessage/TypingIndicat
 import { ADD_INVOICE_DETAILS, FETCH_PO_BY_ID, NEW_RESPONSE_CREATION, INVOICE_CREATION,
    UPLOAD_GPT, 
    CLEAR_DATA} from "../../const/ApiConst";
+import { apiCallMethod } from "../../components/ApiRequest";
 
 
 export default function InvoiceChatbot() {
@@ -557,9 +558,8 @@ export default function InvoiceChatbot() {
     [
       getPoDetails,
       updateItemDetails,
-      //   value.poDetailsData, // Remove unstable dependency
       value.invoiceDatafromConversation,
-      value.setInvoiceData, // Add stable setters
+      value.setInvoiceData,
       value.setinvoiceDatafromConversation,
       value.invoiceData,
     ]
@@ -600,18 +600,29 @@ export default function InvoiceChatbot() {
 
     //typingIndicator
     try {
-      const response = await axios.post(
-        // `http://localhost:8000/creation/response?query=${input}`,
-        NEW_RESPONSE_CREATION, // API endpoint
-        {
-          user_id: "admin", // The user_id value
-          message: input, // The message value
-        },
+      // const response = await axios.post(
+      //   // `http://localhost:8000/creation/response?query=${input}`,
+      //   NEW_RESPONSE_CREATION, // API endpoint
+      //   {
+      //     user_id: "admin", // The user_id value
+      //     message: input, // The message value
+      //   },
 
-        { headers: { "Content-Type": "application/json" } }
-      );
+      //   { headers: { "Content-Type": "application/json" } }
+      // );
 
+      const payload =    {
+            user_id: "admin", 
+            message: input, 
+          };
+      const response = await apiCallMethod({
+        url: NEW_RESPONSE_CREATION,
+        methodType: "POST",
+        body: payload,
+      });
       console.log("Data response", response.data);
+
+
       if (response.data.test_model_reply === "Creation") {
         value.setIsActive(true);
       } else if (response.data.test_model_reply === "Fetch") {
@@ -725,7 +736,6 @@ export default function InvoiceChatbot() {
       }
       setTyping(false);
       //typingIndicator
-
       console.error("Error fetching data:", error);
     }
   };
@@ -742,16 +752,22 @@ export default function InvoiceChatbot() {
         totalItemCost: item.invAmt,
         itemQuantity: item.invQty,
       }));
-      const response = await axios({
-        method: "post",
+      // const response = await axios({
+      //   method: "post",
+      //   url: ADD_INVOICE_DETAILS,
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     accept: "application/json",
+      //     "Access-Control-Allow-Origin": "*",
+      //   },
+      //   data: updatedInvoiceItems,
+      // });
+      const response = await apiCallMethod({
         url: ADD_INVOICE_DETAILS,
-        headers: {
-          "Content-Type": "application/json",
-          accept: "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
-        data: updatedInvoiceItems,
+        methodType: "POST",
+        body: updatedInvoiceItems,
       });
+
       value.setModalDetails({
         visible: true,
         text: "Invoice Created Successfully",
@@ -790,17 +806,25 @@ export default function InvoiceChatbot() {
       storeId: "STORE001",
     };
     try {
-      const response = await axios({
-        method: "post",
+      // const response = await axios({
+      //   method: "post",
+      //   url: INVOICE_CREATION,
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     accept: "application/json",
+      //     "Access-Control-Allow-Origin": "*",
+      //   },
+      //   data: invData,
+      // });
+
+      const response = await apiCallMethod({
         url: INVOICE_CREATION,
-        headers: {
-          "Content-Type": "application/json",
-          accept: "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
-        data: invData,
+        methodType: "POST",
+        body: invData,
       });
-      // console.log("invoice Creation Response:", response.data);
+
+
+     console.log("invoice Creation Response:", response.data);
       await invoiceDetailsCreation();
       setPdfData(value);
       setMessages((prevMessages) => [
@@ -879,23 +903,20 @@ export default function InvoiceChatbot() {
     setUploadLoading(true);
 
     try {
-      const response = await axios({
-        method: "POST",
+      // const response = await axios({
+      //   method: "POST",
+      //   url: UPLOAD_GPT,
+      //   headers: {
+      //     "Content-Type": "multipart/form-data",
+      //   },
+      //   data: formData,
+      // });
+      
+      const response = await apiCallMethod({
         url: UPLOAD_GPT,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        data: formData,
+        methodType: "POST",
+        body: formData,
       });
-      // const response = await axios.post(
-      //   "http://localhost:8000/upload/",
-      //   formData,
-      //   {
-      //     headers: {
-      //       "Content-Type": "multipart/form-data",
-      //     },
-      //   }
-      // );
       console.log("upload response: ", response.data);
       if (response.status === 200 || response.status === 201) {
         // await clearDataApi();
@@ -946,14 +967,20 @@ export default function InvoiceChatbot() {
 
     try {
       // console.log("clearDataApi");
-      const response = await axios({
-        method: "post",
+      // const response = await axios({
+      //   method: "post",
+      //   url: CLEAR_DATA,
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     accept: "application/json",
+      //     "Access-Control-Allow-Origin": "*",
+      //   },
+      // });
+
+      const response = await apiCallMethod({
         url: CLEAR_DATA,
-        headers: {
-          "Content-Type": "application/json",
-          accept: "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
+        methodType: "POST",
+       
       });
 
       // console.log("invoice Clear Response:", response.data);

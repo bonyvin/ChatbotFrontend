@@ -837,19 +837,10 @@ export default function PromoChatbotPane() {
     }
   };
   console.log("checkConsole  ", value);
-  
+
   return (
     <Card className="chatbot-card">
     <Sheet
-      // className="imageBackground"
-      // sx={{
-      //   height: "92.75vh",
-      //   display: "flex",
-      //   flexDirection: "column",
-      //   backgroundColor: "#FFFAF3",
-      //   overflowY: "auto",
-      //   flexGrow: 1,
-      // }}
       className="chatbot-area imageBackground"
       ref={messageEl}
     >

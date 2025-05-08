@@ -10,6 +10,7 @@ import {
 } from "@react-pdf/renderer";
 import logo from "../../images/symbolBlue.png";
 import { AuthContext } from "../../context/ContextsMasterFile";
+import { FETCH_PROMO_BY_ID } from "../../const/ApiConst";
 
 const Promotion = ({ promoId }) => {
   const [promoData, setPromoData] = useState(null);
@@ -19,7 +20,7 @@ const Promotion = ({ promoId }) => {
     console.log("PROMO ID:", id);
     try {
       const response = await axios.get(
-        `http://localhost:8000/promotionHeader/${id}`,
+        FETCH_PROMO_BY_ID,
         {
           headers: {
             "Content-Type": "application/json",

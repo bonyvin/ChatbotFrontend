@@ -89,6 +89,7 @@ function PromoDetailsSide() {
   const [excludedSelectedStores, setExcludedSelectedStores] =
     useState(initialStoresState);
 
+
   // State to control modal visibility and type ("items" or "excluded")
   const [itemModalVisible, setItemModalVisible] = useState(false);
   const [storeModalVisible, setStoreModalVisible] = useState(false);
@@ -278,9 +279,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
         md={8}
         container
         component="main"
-        // style={{ padding: "0.5rem" }}//padding-all
         style={{ padding: "1rem", paddingLeft: "0.25rem" }}
-        // className="imageBackground"
         ref={messagesEndRef}
       >
         <div style={{ position: "absolute" }}>
@@ -431,12 +430,12 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
           >
             <div
               className="dialog-container"
-              style={{
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                overflow: "hidden",
-              }}
+              // style={{
+              //   width: "100%",
+              //   height: "100%",
+              //   display: "flex",
+              //   overflow: "hidden",
+              // }}
             >
               {/* Use PDFViewer to allow for real-time updates */}
               <PDFViewer

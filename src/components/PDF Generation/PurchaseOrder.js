@@ -10,6 +10,7 @@ import {
 } from "@react-pdf/renderer";
 import logo from "../../images/symbolBlue.png";
 import { AuthContext } from "../../context/ContextsMasterFile";
+import { FETCH_PO_BY_ID, FETCH_SUPPLIER_BYID } from "../../const/ApiConst";
 
 const PurchaseOrder = ({ poId }) => {
   const [poData, setPoData] = useState(null);
@@ -20,7 +21,7 @@ const PurchaseOrder = ({ poId }) => {
     console.log("PO ID:", id);
     try {
       const response = await axios.get(
-        `http://localhost:8000/poDetails/${id}`,
+       FETCH_PO_BY_ID,
         {
           headers: {
             "Content-Type": "application/json",
@@ -38,7 +39,7 @@ const PurchaseOrder = ({ poId }) => {
   };
   const getSupplierDetails = async (id) => {
     try {
-      const response = await axios.get(`http://localhost:8000/suppliers/${id}`);
+      const response = await axios.get(FETCH_SUPPLIER_BYID);
       if (response.status === 200 || response.status === 201) {
         console.log("Supplier Response: ", response.data);
         setSupplierData(response.data);
