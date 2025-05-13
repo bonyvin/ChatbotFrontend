@@ -988,14 +988,15 @@ export default function InvoiceChatbot() {
         >
           <CircularProgress color="inherit" />
         </Backdrop>
-        <Box
-          style={{
-            display: "flex",
-            flex: 1,
-            flexDirection: "column ",
-            padding: 2,
-            justifyContent: "flex-end",
-          }}
+
+        <Box className="chat-Message-Box"
+          // style={{
+          //   display: "flex",
+          //   flex: 1,
+          //   flexDirection: "column ",
+          //   padding: 2,
+          //   justifyContent: "flex-end",
+          // }}
         >
           {messages.map((message, index) => (
             <div
@@ -1089,8 +1090,8 @@ export default function InvoiceChatbot() {
           setPickerVisible={setPickerVisible}
         />
         {isPickerVisible && (
-          <div
-            style={{ position: "absolute", zIndex: 1000, bottom: "4rem" }}
+          <div className="picker-div"
+            // style={{ position: "absolute", zIndex: 1000, bottom: "4rem" }}
             ref={pickerRef}
           >
             <Picker data={data} onEmojiSelect={handleEmojiSelect} />

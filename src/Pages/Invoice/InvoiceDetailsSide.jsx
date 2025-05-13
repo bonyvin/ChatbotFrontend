@@ -132,15 +132,15 @@ function InvoiceDetailsSide() {
             visible={supplierPopupStatus}
             setVisible={setSupplierPopupStatus}
           />
-          <Dialog
+          <Dialog className="invoice-preview"
             open={invoicePreview}
             onClose={() => setInvoicePreview(false)}
             aria-labelledby="responsive-dialog-title"
-            style={{
-              width: "90%",
-              height: "90%",
-              margin: "auto",
-            }}
+            // style={{
+            //   width: "90%",
+            //   height: "90%",
+            //   margin: "auto",
+            // }}
             PaperProps={{
               style: {
                 width: "100%",
@@ -151,24 +151,16 @@ function InvoiceDetailsSide() {
               },
             }}
           >
-            <div
-              className="dialog-container"
-              style={{
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                overflow: "hidden",
-              }}
-            >
+            <div className="dialog-container">
               {/* Use PDFViewer to allow for real-time updates */}
-              <PDFViewer
-                style={{
-                  flex: 1,
-                  width: "100%",
-                  height: "100%",
-                  border: "none",
-                  overflow: "hidden",
-                }}
+              <PDFViewer className="pdf-viewer"
+                // style={{
+                //   flex: 1,
+                //   width: "100%",
+                //   height: "100%",
+                //   border: "none",
+                //   overflow: "hidden",
+                // }}
               >
                 <PreviewDocs
                   invoicePreview={true}
@@ -427,7 +419,7 @@ function InvoiceDetailsSide() {
                       <DynamicCutoutInput
                         label="Payment Terms"
                         required={true}
-                        placeholder="Enter your Payment Terms"
+                        placeholder="Payment Terms"
                         value={value?.poHeaderData?.paymentTerm}
                         fun={(text) =>
                           value.setPoHeaderData({
@@ -444,7 +436,7 @@ function InvoiceDetailsSide() {
                         label="Total Amount"
                         required={true}
                         type="number"
-                        placeholder="Enter your Total Amount"
+                        placeholder="Total Amount"
                         value={value.invoiceData?.totalAmount}
                         fun={(text) =>
                           value.setInvoiceData({
@@ -462,7 +454,7 @@ function InvoiceDetailsSide() {
                         label="Total Tax"
                         required={true}
                         type="number"
-                        placeholder="Enter your Total Tax"
+                        placeholder="Total Tax"
                         value={value.invoiceData?.totalTax}
                         fun={(text) =>
                           value.setInvoiceData({
@@ -495,7 +487,7 @@ function InvoiceDetailsSide() {
                       <DynamicCutoutInput
                         label="Currency"
                         required={true}
-                        placeholder="Enter your Currency"
+                        placeholder="Currency"
                         value={value.poHeaderData?.currency}
                         fun={(text) =>
                           value.setPoHeaderData({
@@ -511,7 +503,7 @@ function InvoiceDetailsSide() {
                       <DynamicCutoutInput
                         label="Currency Exchange Rate"
                         required={false}
-                        placeholder="Enter your Currency Exchange Rate"
+                        placeholder="Currency Exchange Rate"
                         value={value.poHeaderData?.exchangeRate}
                         fun={(text) =>
                           value.setPoHeaderData({

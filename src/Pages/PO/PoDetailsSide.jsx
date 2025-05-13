@@ -212,12 +212,12 @@ function PoDetailsSide() {
           >
             <div
               className="dialog-container"
-              style={{
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                overflow: "hidden",
-              }}
+              // style={{
+              //   width: "100%",
+              //   height: "100%",
+              //   display: "flex",
+              //   overflow: "hidden",
+              // }}
             >
               {/* Use PDFViewer to allow for real-time updates */}
               <PDFViewer
@@ -279,7 +279,7 @@ function PoDetailsSide() {
                         label="PO Number"
                         required={true}
                         //   type="date"
-                        placeholder="Enter Purchase Order No."
+                        placeholder="Purchase Order No."
                         value={`PO${value.poCounter}`}
                         editable={true}
                       />
@@ -313,7 +313,7 @@ function PoDetailsSide() {
                         label="Lead Time"
                         required={true}
                         //   type="date"
-                        placeholder="Enter Lead Time"
+                        placeholder="Lead Time"
                         value={value.supplierDetails.leadTime}
                         fun={(text) =>
                           value.setSupplierDetails({
@@ -348,7 +348,7 @@ function PoDetailsSide() {
                         label="Total Quantity"
                         required={true}
                         type="number"
-                        placeholder="Enter Total Quantity"
+                        placeholder="Total Quantity"
                         inputValue={purchaseOrderData.totalQuantity}
                         fun={(text) => {
                           dispatch({
@@ -365,7 +365,7 @@ function PoDetailsSide() {
                         label="Total Cost"
                         required={true}
                         type="number"
-                        placeholder="Enter Total Cost"
+                        placeholder="Total Cost"
                         inputValue={purchaseOrderData.totalCost}
                         fun={(text) => {
                           // console.log("Date selected:", text);
@@ -385,7 +385,7 @@ function PoDetailsSide() {
                         label="Total Tax"
                         required={true}
                         type="number"
-                        placeholder="Enter Total Tax"
+                        placeholder="Total Tax"
                         inputValue={purchaseOrderData.totalTax}
                         fun={(text) => {
                           // console.log("Date selected:", text);

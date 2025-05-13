@@ -160,3 +160,61 @@
   color: white;
 
 }
+
+.img-div {
+  padding: 2%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.img-div1 {
+  align-self: flex-start;
+  width: 4vw;
+  position: absolute;
+  top: 10%;
+  left: 3%;
+}
+
+.img-div2 {
+  width: 15%;
+  margin-top: 5%;
+}
+
+.signIn-div{
+  align-items: "flex-start";
+  display: "flex";
+  flex-direction: "column";
+}
+.signIn-heading{
+ font-size: 1.5rem;
+ color: white;
+ font-weight: 700;
+ margin-bottom: 0.5%;
+}
+.signIn-sub-heading{
+  color: #CBCBCB;
+  font-size: 0.5rem;
+  font-weight: 600;
+  margin-bottom: 2%;
+}
+.form-details{
+  align-items: "flex-start";
+  display: "flex";
+  flex-direction: "column";
+}
+.input-heading{
+ color: white;
+ font-size: 0.75rem;
+ font-weight: 600;
+}
+.footer-div{
+  color: #CBCBCB;
+  font-size: 0.6rem;
+  font-weight: 600;
+  display: "flex";
+  align-items: "center";
+  margin-bottom: 4%;
+  margin-top: 2%;
+}

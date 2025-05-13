@@ -947,17 +947,17 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                         />
                       </div>
                     )}
-                    <div
-                      style={{
-                        fontFamily: "Poppins,sans-serif",
-                        width: "50%",
-                        fontSize: "0.5rem",
-                        display: "flex",
-                        // justifyContent:'center',
-                        alignItems: "flex-end",
-                        padding: "0.25rem",
-                        paddingLeft: "0.5rem",
-                      }}
+                    <div className="upload-div"
+                      // style={{
+                      //   fontFamily: "Poppins,sans-serif",
+                      //   width: "50%",
+                      //   fontSize: "0.5rem",
+                      //   display: "flex",
+                      //   // justifyContent:'center',
+                      //   alignItems: "flex-end",
+                      //   padding: "0.25rem",
+                      //   paddingLeft: "0.5rem",
+                      // }}
                     >
                       Only Excel files allowed
                     </div>
@@ -1156,31 +1156,31 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                       sx={{ flex: 1, display: "flex", flexDirection: "row" }}
                     >
                       {!value.storeUpload.stores && (
-                        <Button
-                          variant="outlined"
-                          endIcon={<FiUpload style={{ fontSize: "1rem" }} />}
-                          style={{
-                            fontFamily: "Poppins,sans-serif",
-                            width: "50%",
-                            fontSize: "0.8rem",
-                            position: "relative", // Make the button the container for the file input
-                            overflow: "hidden",
-                            cursor: "pointer",
-                          }}
+                        <CustomButton className="upload-btn"
+                          // variant="outlined"
+                          // endIcon={<FiUpload style={{ fontSize: "1rem" }} />}
+                          // style={{
+                          //   fontFamily: "Poppins,sans-serif",
+                          //   width: "50%",
+                          //   fontSize: "0.8rem",
+                          //   position: "relative", // Make the button the container for the file input
+                          //   overflow: "hidden",
+                          //   cursor: "pointer",
+                          // }}
                         >
                           Upload
-                          <input
+                          <input className="file-upload-input"
                             type="file"
                             accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-                            style={{
-                              position: "absolute",
-                              top: 0,
-                              left: 0,
-                              width: "100%",
-                              height: "100%",
-                              opacity: 0,
-                              cursor: "pointer", // Ensures the input behaves like a button
-                            }}
+                            // style={{
+                            //   position: "absolute",
+                            //   top: 0,
+                            //   left: 0,
+                            //   width: "100%",
+                            //   height: "100%",
+                            //   opacity: 0,
+                            //   cursor: "pointer", // Ensures the input behaves like a button
+                            // }}
                             onChange={(e) =>
                               value.setStoreUpload({
                                 ...value.storeUpload,
@@ -1190,7 +1190,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                             }
                             onClick={(event) => (event.target.value = "")} // To allow uploading the same file again
                           />
-                        </Button>
+                        </CustomButton>
                       )}
                       {value.storeUpload.stores && (
                         <div style={{ display: "flex" }}>
@@ -1221,17 +1221,17 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                           />
                         </div>
                       )}
-                      <div
-                        style={{
-                          fontFamily: "Poppins,sans-serif",
-                          width: "50%",
-                          fontSize: "0.5rem",
-                          display: "flex",
-                          // justifyContent:'center',
-                          alignItems: "flex-end",
-                          padding: "0.25rem",
-                          paddingLeft: "0.5rem",
-                        }}
+                      <div className="upload-div"
+                        // style={{
+                        //   fontFamily: "Poppins,sans-serif",
+                        //   width: "50%",
+                        //   fontSize: "0.5rem",
+                        //   display: "flex",
+                        //   // justifyContent:'center',
+                        //   alignItems: "flex-end",
+                        //   padding: "0.25rem",
+                        //   paddingLeft: "0.5rem",
+                        // }}
                       >
                         Only Excel files allowed
                       </div>
@@ -1286,31 +1286,31 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                       sx={{ flex: 1, display: "flex", flexDirection: "row" }}
                     >
                       {!value.storeUpload.excludedStores && (
-                        <Button
-                          variant="outlined"
-                          endIcon={<FiUpload style={{ fontSize: "1rem" }} />}
-                          style={{
-                            fontFamily: "Poppins,sans-serif",
-                            width: "50%",
-                            fontSize: "0.8rem",
-                            position: "relative", // Make the button the container for the file input
-                            overflow: "hidden",
-                            cursor: "pointer",
-                          }}
+                        <CustomButton className="upload-btn"
+                          // variant="outlined"
+                          // endIcon={<FiUpload style={{ fontSize: "1rem" }} />}
+                          // style={{
+                          //   fontFamily: "Poppins,sans-serif",
+                          //   width: "50%",
+                          //   fontSize: "0.8rem",
+                          //   position: "relative", // Make the button the container for the file input
+                          //   overflow: "hidden",
+                          //   cursor: "pointer",
+                          // }}
                         >
                           Upload
-                          <input
+                          <input className="file-upload-input"
                             type="file"
                             accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-                            style={{
-                              position: "absolute",
-                              top: 0,
-                              left: 0,
-                              width: "100%",
-                              height: "100%",
-                              opacity: 0,
-                              cursor: "pointer", // Ensures the input behaves like a button
-                            }}
+                            // style={{
+                            //   position: "absolute",
+                            //   top: 0,
+                            //   left: 0,
+                            //   width: "100%",
+                            //   height: "100%",
+                            //   opacity: 0,
+                            //   cursor: "pointer", // Ensures the input behaves like a button
+                            // }}
                             onChange={(e) =>
                               value.setStoreUpload({
                                 ...value.storeUpload,
@@ -1320,7 +1320,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                             }
                             onClick={(event) => (event.target.value = "")} // To allow uploading the same file again
                           />
-                        </Button>
+                        </CustomButton>
                       )}
                       {value.storeUpload.excludedStores && (
                         <div style={{ display: "flex" }}>
@@ -1352,17 +1352,17 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                           />
                         </div>
                       )}
-                      <div
-                        style={{
-                          fontFamily: "Poppins,sans-serif",
-                          width: "50%",
-                          fontSize: "0.5rem",
-                          display: "flex",
-                          // justifyContent:'center',
-                          alignItems: "flex-end",
-                          padding: "0.25rem",
-                          paddingLeft: "0.5rem",
-                        }}
+                      <div className="upload-div"
+                        // style={{
+                        //   fontFamily: "Poppins,sans-serif",
+                        //   width: "50%",
+                        //   fontSize: "0.5rem",
+                        //   display: "flex",
+                        //   // justifyContent:'center',
+                        //   alignItems: "flex-end",
+                        //   padding: "0.25rem",
+                        //   paddingLeft: "0.5rem",
+                        // }}
                       >
                         Only Excel files allowed
                       </div>
@@ -1416,12 +1416,13 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
         sm={4}
         md={4}
         // className="imageBackground"
-        style={{
-          marginTop: "7.25vh",
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-        }}
+        className="grid1"
+        // style={{
+        //   marginTop: "7.25vh",
+        //   width: "100%",
+        //   display: "flex",
+        //   flexDirection: "column",
+        // }}
       >
         {/* <Card
       className="generalView"

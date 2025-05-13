@@ -16,7 +16,79 @@
     display: "flex";
     overflow: "hidden";
 }
-    
+
+/* INVOICE CHAT*/
+.chat-Message-Box{
+      display: "flex";
+      flex: 1;
+      flex-direction: "column ";
+      padding: 2;
+      justify-content: "flex-end";
+}
+
+.picker-div{
+    position: "absolute";
+    z-index: 1000;
+    bottom: 4rem;
+}
+
+.invoice-preview{
+      width: 90%;
+      height: 90%;
+      margin: "auto";
+}
+
+.pdf-viewer{
+       flex: 1;
+       width: 100%;
+      height: 100%;
+       border: "none";
+      overflow: "hidden";
+}
+
+.upload-div {
+    font-family: "Poppins,sans-serif";
+    width: 50%;
+    font-size: 0.5rem;
+    display: "flex";
+    /* justifyContent:'center', */
+    align-items: "flex-end";
+    padding: 0.25rem;
+    padding-left: 0.5rem;
+}
+
+.dialog-container{
+    width: 100%;
+    height: 100%;
+    display: "flex";
+    overflow: "hidden";
+}
+.grid1{
+ 
+        margin-top: 7.25vh;
+        width: 100%;
+        display: "flex";
+        flex-direction: "column";
+}
+
+.file-upload-input{
+    position: "absolute";
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: "pointer";
+}
+
+.upload-btn{
+    font-family: "Poppins,sans-serif";
+    width: 50%;
+    font-size: 0.8rem;
+     position: "relative"; /*Make the button the container for the file input */
+    overflow: "hidden";
+    cursor: "pointer";
+}
 /* Medium screens */
 @media (min-width: 600px) {
     .custom-button {
