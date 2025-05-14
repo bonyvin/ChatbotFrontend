@@ -23,9 +23,12 @@ import "../../styles/chatbot.css";
 import { Card } from "@mui/joy";
 import ChatbotInputForm from "../../components/ChatMessage/ChatbotInputForm";
 import TypingIndicatorComponent from "../../components/ChatMessage/TypingIndicatorComponent";
-import { ADD_INVOICE_DETAILS, FETCH_PO_BY_ID, NEW_RESPONSE_CREATION, INVOICE_CREATION,
-   UPLOAD_GPT, 
-   CLEAR_DATA} from "../../const/ApiConst";
+import {
+  ADD_INVOICE_DETAILS, FETCH_PO_BY_ID, NEW_RESPONSE_CREATION, INVOICE_CREATION,
+  UPLOAD_GPT,
+  CLEAR_DATA
+} from "../../const/ApiConst";
+import EmailPdf from "../../components/PDF Generation/EmailPdf";
 
 
 export default function InvoiceChatbot() {
@@ -81,42 +84,37 @@ export default function InvoiceChatbot() {
       });
     let savedData = `
     ${trueValueKey ? `Type of Invoice: ${trueValueKey},` : ""}
-    ${
-      value.invoiceData.invoiceDate
+    ${value.invoiceData.invoiceDate
         ? `Date: ${value.invoiceData.invoiceDate},`
         : ""
-    }
-    ${
-      value.invoiceData.poNumber
+      }
+    ${value.invoiceData.poNumber
         ? `PO number: ${value.invoiceData.poNumber},`
         : ""
-    }
-    ${
-      value.invoiceData.supplierId
+      }
+    ${value.invoiceData.supplierId
         ? `Supplier Id: ${value.invoiceData.supplierId},`
         : ""
-    }
-    ${
-      value.invoiceData.totalAmount
+      }
+    ${value.invoiceData.totalAmount
         ? `Total amount: ${value.invoiceData.totalAmount},`
         : ""
-    }
-    ${
-      value.invoiceData.totalTax
+      }
+    ${value.invoiceData.totalTax
         ? `Total tax: ${value.invoiceData.totalTax},`
         : ""
-    }
+      }
     ${
       // value.itemDetailsInput.items
       itemsPresent
         ? `Items: ${filteredItems},`
         : // ? `Items: ${value.itemDetailsInput.items},`
-          ""
-    }
+        ""
+      }
     ${
       // value.itemDetailsInput.quantity
       quantitiesPresent ? `Quantity: ${filteredQuantities}` : ""
-    }
+      }
     `;
     await handleMessageSubmit(savedData);
     value.setFormSave((prevState) => !prevState);
@@ -366,13 +364,13 @@ export default function InvoiceChatbot() {
       const updatedPoDetails = prevPoDetailsData.map((item) =>
         tempDictionary[item.itemId]
           ? {
-              ...item,
-              invQty: tempDictionary[item.itemId].quantity,
-              invAmt:
-                tempDictionary[item.itemId].quantity *
-                tempDictionary[item.itemId].invoiceCost,
-              invCost: tempDictionary[item.itemId].invoiceCost,
-            }
+            ...item,
+            invQty: tempDictionary[item.itemId].quantity,
+            invAmt:
+              tempDictionary[item.itemId].quantity *
+              tempDictionary[item.itemId].invoiceCost,
+            invCost: tempDictionary[item.itemId].invoiceCost,
+          }
           : item
       );
 
@@ -552,7 +550,7 @@ export default function InvoiceChatbot() {
       value.setInvoiceData(updatedInvoiceData);
       typeSelection(invoiceDatafromConversation);
 
-      return poStatus; 
+      return poStatus;
     },
     [
       getPoDetails,
@@ -570,13 +568,13 @@ export default function InvoiceChatbot() {
     if (
       value.invoiceDatafromConversation &&
       JSON.stringify(prevInvoiceDataRef.current) !==
-        JSON.stringify(value.invoiceDatafromConversation)
+      JSON.stringify(value.invoiceDatafromConversation)
     ) {
       updateItemDetails(value.invoiceDatafromConversation);
       prevInvoiceDataRef.current = value.invoiceDatafromConversation; // Update ref
     }
   }, [value.invoiceDatafromConversation, updateItemDetails]);
-  
+
 
   const handleMessageSubmit = async (input, inputFromUpload) => {
     if (!input.trim()) return;
@@ -631,11 +629,11 @@ export default function InvoiceChatbot() {
           parseFloat(String(invoice_json["Total Tax"]).replace(/,/g, ""));
         console.log("Total amount,total tax:", totalAmount, totalTax);
         const updatedInvoiceJson = {
-          ...invoice_json,  
-          "Total Amount": totalAmount?totalAmount:null,
-          "Total Tax": totalTax?totalTax:null,
+          ...invoice_json,
+          "Total Amount": totalAmount ? totalAmount : null,
+          "Total Tax": totalTax ? totalTax : null,
         };
-       
+
         value.setinvoiceDatafromConversation(
           response.data.invoiceDatafromConversation
         );
@@ -679,6 +677,11 @@ export default function InvoiceChatbot() {
           } else {
             value.setModalVisible(false);
           }
+          if (response.data.invoice_json["Email"] != "") {
+            console.log("Inside Email: ", response.data.invoice_json["Email"], value.invoiceCounter - 1)
+            await sendEmail({ emailUsed: response.data.invoice_json["Email"], documentId: `INV${value.invoiceCounter - 1}` })
+
+          }
         } else {
           if (
             invoiceCheckStatus) {
@@ -704,6 +707,11 @@ export default function InvoiceChatbot() {
               // }
             } else {
               value.setModalVisible(false);
+            }
+            if (response.data.invoice_json["Email"] != "") {
+              console.log("Inside Email: ", response.data.invoice_json["Email"], value.invoiceCounter - 1)
+              await sendEmail({ emailUsed: response.data.invoice_json["Email"], documentId: `INV${value.invoiceCounter - 1}` })
+  
             }
           } else {
             console.log("invoiceCheckStatus:FALSEEEEEEEEEEEEEEEEEEEEE");
@@ -787,7 +795,7 @@ export default function InvoiceChatbot() {
       total_amount: value.invoiceData.totalAmount,
       invoicedate: formatDate(value.invoiceData.invoiceDate),
       total_qty: sumQuantities(value.itemDetails.quantity),
-      storeId: "STORE001",
+      storeIds: ["STORE001"],
     };
     try {
       const response = await axios({
@@ -964,6 +972,14 @@ export default function InvoiceChatbot() {
   };
   console.log("checkConsole", value);
 
+  const sendEmail = async ({ emailUsed, documentId }) => {
+    await EmailPdf({
+      emailUsed: emailUsed,
+      bodyUsed: { "documentType": "Invoice" },
+      invoice: true,
+      documentId: documentId
+    });
+  }
   return (
     <Card className="chatbot-card">
       <Sheet
@@ -990,13 +1006,13 @@ export default function InvoiceChatbot() {
         </Backdrop>
 
         <Box className="chat-Message-Box"
-          // style={{
-          //   display: "flex",
-          //   flex: 1,
-          //   flexDirection: "column ",
-          //   padding: 2,
-          //   justifyContent: "flex-end",
-          // }}
+        // style={{
+        //   display: "flex",
+        //   flex: 1,
+        //   flexDirection: "column ",
+        //   padding: 2,
+        //   justifyContent: "flex-end",
+        // }}
         >
           {messages.map((message, index) => (
             <div

@@ -1430,35 +1430,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
       ref={messagesEndRef}
     > */}
         <PromoChatbotPane />
-        {/* </Card> */}
-        <div id="myModal" class="modal fade">
-          <div class="modal-dialog modal-confirm">
-            <div class="modal-content">
-              <div class="modal-header">
-                <div class="icon-box">
-                  <i class="material-icons">&#xE876;</i>
-                </div>
-                <h4 class="modal-title w-100">Awesome!</h4>
-              </div>
-              <div class="modal-body">
-                <p class="text-center">
-                  Your booking has been confirmed. Check your email for detials.
-                </p>
-              </div>
-              <div class="modal-footer">
-                <Button
-                  class="btn btn-success btn-block"
-                  data-dismiss="modal"
-                  onClick={() => value.setModalVisible(false)}
-                >
-                  OK
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
       </Grid>
-      {/* <Chatbot /> */}
     </Grid>
   );
 }

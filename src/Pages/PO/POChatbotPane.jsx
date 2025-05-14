@@ -22,6 +22,7 @@ import "../../styles/chatbot.css";
 import "../../styles/general.css";
 import "../../styles/chatbot.css";
 import { ADD_PO_DETAILS, CHAT, CLEAR_DATA, FETCH_SUPPLIER_BYID, PO_CREATION, UPLOAD_PO } from "../../const/ApiConst";
+import EmailPdf from "../../components/PDF Generation/EmailPdf";
 
 export default function POChatbotPane() {
   const [messages, setMessages] = useState([]);
@@ -47,16 +48,14 @@ export default function POChatbotPane() {
   //save
   const saveFormData = async () => {
     let savedData = `
-      ${
-        value.supplierDetails.supplierId
-          ? `Supplier Id: ${value.supplierDetails.supplierId},`
-          : ""
+      ${value.supplierDetails.supplierId
+        ? `Supplier Id: ${value.supplierDetails.supplierId},`
+        : ""
       }
 
-      ${
-        purchaseOrderData.estDeliveryDate
-          ? `Estimated Delivery Date: ${purchaseOrderData.estDeliveryDate},`
-          : ""
+      ${purchaseOrderData.estDeliveryDate
+        ? `Estimated Delivery Date: ${purchaseOrderData.estDeliveryDate},`
+        : ""
       }
      
     `;
@@ -421,6 +420,11 @@ export default function POChatbotPane() {
           } else {
             value.setModalVisible(false);
           }
+          if (response.data.po_json["Email"] != "") {
+            console.log("Inside Email: ", response.data.po_json["Email"], value.poCounter - 1)
+            await sendEmail({ emailUsed: response.data.po_json["Email"], documentId: `PO${value.poCounter - 1}` })
+
+          }
         } else {
           if (poCheckStatus) {
             const formattedConversation = response.data.chat_history["admin"]
@@ -447,6 +451,11 @@ export default function POChatbotPane() {
               // }
             } else {
               value.setModalVisible(false);
+            }
+            if (response.data.po_json["Email"] != "") {
+              console.log("Inside Email: ", response.data.po_json["Email"], value.poCounter - 1)
+              await sendEmail({ emailUsed: response.data.po_json["Email"], documentId: `PO${value.poCounter - 1}` })
+  
             }
           } else {
             console.log("poCheckStatus:FALSEEEEEEEEEEEEEEEEEEEEE");
@@ -652,8 +661,7 @@ export default function POChatbotPane() {
                       ([subKey, subValue]) =>
                         `${subKey
                           .replace(/_/g, " ")
-                          .replace(/\b\w/g, (char) => char.toUpperCase())}: ${
-                          subValue ?? "N/A"
+                          .replace(/\b\w/g, (char) => char.toUpperCase())}: ${subValue ?? "N/A"
                         }`
                     )
                     .join(", ")
@@ -664,9 +672,8 @@ export default function POChatbotPane() {
           // Handle normal key-value pairs
           return `${key
             .replace(/_/g, " ")
-            .replace(/\b\w/g, (char) => char.toUpperCase())}: ${
-            value ?? "N/A"
-          }`;
+            .replace(/\b\w/g, (char) => char.toUpperCase())}: ${value ?? "N/A"
+            }`;
         }
       })
       .join("\n");
@@ -759,6 +766,14 @@ export default function POChatbotPane() {
     }
   };
 
+  const sendEmail = async ({ emailUsed, documentId }) => {
+    await EmailPdf({
+      emailUsed: emailUsed,
+      bodyUsed: { "documentType": "Purchase Order" },
+      purchaseOrder: true,
+      documentId: documentId
+    });
+  }
 
 
   console.log("checkConsole", value);

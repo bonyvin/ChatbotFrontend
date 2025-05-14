@@ -494,7 +494,8 @@ export default function PromoChatbotPane() {
   const sendEmail=async({emailUsed,documentId})=>{
     await EmailPdf({
       emailUsed: emailUsed,
-      bodyUsed: { title: "Hello World", name: "John Doe" },
+      bodyUsed: { "documentType": "Promotion" },
+      // bodyUsed: { title: "Hello World", name: "John Doe" },
       promotion: true,
       documentId: documentId
     });
