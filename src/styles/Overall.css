@@ -63,6 +63,9 @@
     display: "flex";
     overflow: "hidden";
 }
+.typography-div{
+    margin: 1.5%;
+}
 .grid1{
  
         margin-top: 7.25vh;

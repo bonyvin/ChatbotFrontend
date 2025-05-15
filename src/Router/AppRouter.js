@@ -12,6 +12,7 @@ import InvoiceChatbot from "../Pages/Invoice/InvoiceChatbot";
 import InvoiceDetailsSide from "../Pages/Invoice/InvoiceDetailsSide";
 import PoDetailsSide from "../Pages/PO/PoDetailsSide";
 import PromoDetailsSide from "../Pages/Promotion/PromoDetailsSide";
+import ItemCreationDetailsSide from "../Pages/ItemCreation/ItemCreationDetailsSide";
 
 
 const AppRouter = () => {
@@ -23,6 +24,7 @@ const AppRouter = () => {
         <Route path="/chat" element={<InvoiceChatbot />} />
         <Route path="/poChatbot" element={<PoDetailsSide/>} />
         <Route path="/promoChatbot" element={<PromoDetailsSide/>}/>
+        <Route path="/itemChatbot" element ={<ItemCreationDetailsSide/>}/>
         <Route path="/llmtest" element={<LLMChatbotTest/>}/>
 
       </Routes>
