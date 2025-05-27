@@ -60,6 +60,8 @@ import { PDFViewer } from "@react-pdf/renderer";
 import PreviewDocs from "../../components/PDF Generation/PreviewDocs";
 import { AuthContext } from "../../context/ContextsMasterFile";
 import CustomButton from "../../components/CustomButton/CustomButton.js";
+import { ITEMS, STORE_LIST } from "../../const/ApiConst.js";
+import axios from "axios";
 
 function PromoDetailsSide() {
   const messagesEndRef = useRef(null);
@@ -261,15 +263,52 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
     }
   };
   // Function to open modal and set the type
-  const handleItemModal = (type) => {
+  const handleItemModal = async (type) => {
     setModalType(type); // type should be "items" or "excluded"
     setItemModalVisible(true);
+    await getItemDetails();
   };
-  const handleStoreModal = (type) => {
+  const handleStoreModal = async (type) => {
     setModalType(type); // type should be "items" or "excluded"
     setStoreModalVisible(true);
+    await getStoreDetails()
   };
-
+  const getItemDetails = async () => {
+    try {
+      const response = await axios({
+        method: "get",
+        url: ITEMS,
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+      let allItems = response.data.map((item) => item.itemId);
+      value.setPromoTotalItemsArray(allItems);
+      console.log("ITem details REsponse: ", response);
+    } catch (error) {
+      console.log("ITem details Error: ", error);
+    }
+  };
+  const getStoreDetails = async () => {
+    try {
+      const response = await axios({
+        method: "get",
+        url: STORE_LIST,
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+      let storeList = response.data.map((item) => item.storeId);
+      value.setPromoStoreListArray(storeList);
+      console.log("Store details REsponse: ", response);
+    } catch (error) {
+      console.log("Store details Error: ", error);
+    }
+  };
   return (
     <Grid container component="main" style={{ backgroundColor: "#e9ecef" }}>
       <Grid
@@ -523,7 +562,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                 Promotions
               </Typography>
               <Typography style={{ fontSize: "0.6rem" }}>
-                Fields marked as * are mandatory
+                Fields marked as <span style={{color:'red'}}>*</span> are mandatory
               </Typography>
             </div>
 
@@ -642,7 +681,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                       width: "6rem",
                     }}
                   >
-                    Hierarchy<div style={{ color: "red" }}>*</div>
+                    Hierarchy<span style={{ color: "red" }}>*</span>
                   </Typography>
 
                   <FormControl sx={{ flex: 1, position: "relative" }}>
@@ -716,7 +755,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                       width: "6rem",
                     }}
                   >
-                    Item<div style={{ color: "red" }}>*</div>
+                    Item<span style={{ color: "red" }}>*</span>
                   </Typography>
                   <FormControl sx={{ flex: 1 }}>
                     <DynamicCutoutInput
@@ -926,8 +965,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                           )}
                           target="_blank"
                           rel="noopener noreferrer"
-                        >
-                          {value.itemUpload.eventExcludedItems.target.files[0]
+                        >{value.itemUpload.eventExcludedItems.target.files[0]
                             .name.length < 12
                             ? value.itemUpload.eventExcludedItems.target
                                 .files[0].name
@@ -1010,7 +1048,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                         width: "6rem",
                       }}
                     >
-                      Discount<div style={{ color: "red" }}>*</div>
+                      Discount<span style={{ color: "red" }}>*</span>
                     </Typography>
                     <FormControl sx={{ flex: 1, position: "relative" }}>
                       <Form.Label
@@ -1074,7 +1112,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                         width: "6rem",
                       }}
                     >
-                      Date<div style={{ color: "red" }}>*</div>
+                      Date<span style={{ color: "red" }}>*</span>
                     </Typography>
                     <FormControl sx={{ flex: 1 }}>
                       <DynamicCutoutInput
@@ -1123,7 +1161,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                         width: "6rem",
                       }}
                     >
-                      Location<div style={{ color: "red" }}>*</div>
+                      Location<span style={{ color: "red" }}>*</span>
                     </Typography>
                     <FormControl sx={{ flex: 1 }}>
                       <DynamicCutoutInput
@@ -1156,19 +1194,20 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                       sx={{ flex: 1, display: "flex", flexDirection: "row" }}
                     >
                       {!value.storeUpload.stores && (
-                        <CustomButton className="upload-btn"
-                          // variant="outlined"
-                          // endIcon={<FiUpload style={{ fontSize: "1rem" }} />}
-                          // style={{
-                          //   fontFamily: "Poppins,sans-serif",
-                          //   width: "50%",
-                          //   fontSize: "0.8rem",
-                          //   position: "relative", // Make the button the container for the file input
-                          //   overflow: "hidden",
-                          //   cursor: "pointer",
-                          // }}
-                        >
-                          Upload
+                        // <CustomButton className="upload-btn"                        >
+                          
+                        <Button
+                        variant="outlined"
+                        endIcon={<FiUpload style={{ fontSize: "1rem" }} />}
+                        style={{
+                          fontFamily: "Poppins,sans-serif",
+                          width: "50%",
+                          fontSize: "0.8rem",
+                          position: "relative", // Make the button the container for the file input
+                          overflow: "hidden",
+                          cursor: "pointer",
+                        }}
+                      >Upload
                           <input className="file-upload-input"
                             type="file"
                             accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
@@ -1190,7 +1229,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                             }
                             onClick={(event) => (event.target.value = "")} // To allow uploading the same file again
                           />
-                        </CustomButton>
+                        </Button>
                       )}
                       {value.storeUpload.stores && (
                         <div style={{ display: "flex" }}>
@@ -1286,18 +1325,20 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                       sx={{ flex: 1, display: "flex", flexDirection: "row" }}
                     >
                       {!value.storeUpload.excludedStores && (
-                        <CustomButton className="upload-btn"
-                          // variant="outlined"
-                          // endIcon={<FiUpload style={{ fontSize: "1rem" }} />}
-                          // style={{
-                          //   fontFamily: "Poppins,sans-serif",
-                          //   width: "50%",
-                          //   fontSize: "0.8rem",
-                          //   position: "relative", // Make the button the container for the file input
-                          //   overflow: "hidden",
-                          //   cursor: "pointer",
-                          // }}
-                        >
+                        // <CustomButton className="upload-btn"
+                        // >
+                        <Button
+                        variant="outlined"
+                        endIcon={<FiUpload style={{ fontSize: "1rem" }} />}
+                        style={{
+                          fontFamily: "Poppins,sans-serif",
+                          width: "50%",
+                          fontSize: "0.8rem",
+                          position: "relative", // Make the button the container for the file input
+                          overflow: "hidden",
+                          cursor: "pointer",
+                        }}
+                      >
                           Upload
                           <input className="file-upload-input"
                             type="file"
@@ -1320,7 +1361,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                             }
                             onClick={(event) => (event.target.value = "")} // To allow uploading the same file again
                           />
-                        </CustomButton>
+                        </Button>
                       )}
                       {value.storeUpload.excludedStores && (
                         <div style={{ display: "flex" }}>
@@ -1416,13 +1457,13 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
         sm={4}
         md={4}
         // className="imageBackground"
-        className="grid1"
-        // style={{
-        //   marginTop: "7.25vh",
-        //   width: "100%",
-        //   display: "flex",
-        //   flexDirection: "column",
-        // }}
+        // className="grid1"
+        style={{
+          marginTop: "7.25vh",
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+        }}
       >
         {/* <Card
       className="generalView"

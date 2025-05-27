@@ -36,8 +36,6 @@ import { SUPPLIER_RISK_INSIGHT } from "../../const/ApiConst";
 
 function PoDetailsSide() {
   const messagesEndRef = useRef(null);
-  const [supplierInsights,setSupplierInsights]=useState('')
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -147,25 +145,6 @@ function PoDetailsSide() {
     // });
   }, [value.poCounter]);
 
-    const supplierRiskApi=async(supplierId)=>{
-      try {
-        // console.log("clearDataApi");
-        const response = await axios({
-          method: "get",
-          url: SUPPLIER_RISK_INSIGHT(supplierId),
-          headers: {
-            "Content-Type": "application/json",
-            accept: "application/json",
-            "Access-Control-Allow-Origin": "*",
-          },
-        });
-        setSupplierInsights(response.data)
-        // console.log("invoice Clear Response:", response.data);
-      } catch (error) {
-        console.log("Supplier Risk Error:", error, error.data);
-      }
-    };
-
     
   return (
     <Grid container component="main" style={{ backgroundColor: "#384B70" }}>
@@ -189,7 +168,7 @@ function PoDetailsSide() {
           <SupplierInfoPopUp
             visible={supplierPopupStatus}
             setVisible={setSupplierPopupStatus}
-            data={supplierInsights}
+            data={value.supplierDetails.supplierInsights}
           />
           <Dialog
             open={poPreview}
@@ -689,8 +668,8 @@ function PoDetailsSide() {
               </CustomButton>
               <CustomButton
                 
-                onClick={() =>(supplierRiskApi('SUP130'),setSupplierPopupStatus(true))}
-                // onClick={() => value.setFormSubmit((prevState) => !prevState)}
+                // onClick={() =>(supplierRiskApi('SUP130'),setSupplierPopupStatus(true))}
+                onClick={() => value.setFormSubmit((prevState) => !prevState)}
               >
                 SUBMIT
               </CustomButton>

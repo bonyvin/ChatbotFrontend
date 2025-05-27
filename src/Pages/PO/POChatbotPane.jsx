@@ -21,7 +21,16 @@ import { AuthContext } from "../../context/ContextsMasterFile";
 import "../../styles/chatbot.css";
 import "../../styles/general.css";
 import "../../styles/chatbot.css";
-import { ADD_PO_DETAILS, CHAT, CLEAR_DATA, FETCH_SUPPLIER_BYID, PO_CREATION, UPLOAD_PO } from "../../const/ApiConst";
+import {
+  ADD_PO_DETAILS,
+  CHAT,
+  CLEAR_DATA,
+  CLEAR_DATA_NEW,
+  FETCH_SUPPLIER_BYID,
+  PO_CREATION,
+  SUPPLIER_RISK_INSIGHT,
+  UPLOAD_PO,
+} from "../../const/ApiConst";
 import EmailPdf from "../../components/PDF Generation/EmailPdf";
 
 export default function POChatbotPane() {
@@ -48,14 +57,16 @@ export default function POChatbotPane() {
   //save
   const saveFormData = async () => {
     let savedData = `
-      ${value.supplierDetails.supplierId
-        ? `Supplier Id: ${value.supplierDetails.supplierId},`
-        : ""
+      ${
+        value.supplierDetails.supplierId
+          ? `Supplier Id: ${value.supplierDetails.supplierId},`
+          : ""
       }
 
-      ${purchaseOrderData.estDeliveryDate
-        ? `Estimated Delivery Date: ${purchaseOrderData.estDeliveryDate},`
-        : ""
+      ${
+        purchaseOrderData.estDeliveryDate
+          ? `Estimated Delivery Date: ${purchaseOrderData.estDeliveryDate},`
+          : ""
       }
      
     `;
@@ -191,22 +202,28 @@ export default function POChatbotPane() {
       prevIdRef.current = id;
 
       try {
-        const response = await axios.get(
-          FETCH_SUPPLIER_BYID(id)
-        );
+        const response = await axios.get(FETCH_SUPPLIER_BYID(id));
         if (response.status === 200 || response.status === 201) {
           console.log(
             "Supplier Response: ",
             response.data,
             response.data.lead_time
           );
-          value.setSupplierDetails({
+          // value.setSupplierDetails({
+          //   ...value.supplierDetails,
+          //   apiResponse: response.data,
+          //   supplierId: id,
+          //   leadTime: response.data.lead_time,
+          //   supplierStatus: true,
+          // });
+          value.setSupplierDetails((prev) => ({
+            ...prev,
             apiResponse: response.data,
             supplierId: id,
             leadTime: response.data.lead_time,
             supplierStatus: true,
-          });
-
+          }));
+          await supplierRiskApi(id);
           return true; // Return boolean for further processing
         } else {
           console.log("False Supplier Details");
@@ -236,6 +253,29 @@ export default function POChatbotPane() {
     },
     [value.supplierDetails]
   );
+
+  //SUPPLIER INSIGHTS
+  const supplierRiskApi = async (supplierId) => {
+    try {
+      // console.log("clearDataApi");
+      const response = await axios({
+        method: "get",
+        url: SUPPLIER_RISK_INSIGHT(supplierId),
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+      value.setSupplierDetails((prev) => ({
+        ...prev,
+        supplierInsights: response.data,
+      }));
+      // console.log("invoice Clear Response:", response.data);
+    } catch (error) {
+      console.log("Supplier Risk Error:", error, error.data);
+    }
+  };
   //ITEM AND QUANTITY UPDATES
 
   const updateItemDetails = useCallback(
@@ -410,6 +450,14 @@ export default function POChatbotPane() {
             "Submission Status inside HMS",
             response.data.submissionStatus
           );
+          const email = response.data.po_email;
+          if (email) {
+            console.log("Inside Email: ", email, value.poCounter - 1);
+            await sendEmail({
+              emailUsed: email,
+              documentId: `PO${value.poCounter - 1}`,
+            });
+          }
           if (response.data.submissionStatus == "submitted") {
             // let newPoCounter=value.PoCounter+1
             // value.setPoCounter(newPoCounter);
@@ -419,11 +467,6 @@ export default function POChatbotPane() {
             // }
           } else {
             value.setModalVisible(false);
-          }
-          if (response.data.po_json["Email"] != "") {
-            console.log("Inside Email: ", response.data.po_json["Email"], value.poCounter - 1)
-            await sendEmail({ emailUsed: response.data.po_json["Email"], documentId: `PO${value.poCounter - 1}` })
-
           }
         } else {
           if (poCheckStatus) {
@@ -452,10 +495,13 @@ export default function POChatbotPane() {
             } else {
               value.setModalVisible(false);
             }
-            if (response.data.po_json["Email"] != "") {
-              console.log("Inside Email: ", response.data.po_json["Email"], value.poCounter - 1)
-              await sendEmail({ emailUsed: response.data.po_json["Email"], documentId: `PO${value.poCounter - 1}` })
-  
+            const email = response.data.po_email;
+            if (email) {
+              console.log("Inside Email: ", email, value.poCounter - 1);
+              await sendEmail({
+                emailUsed: email,
+                documentId: `PO${value.poCounter - 1}`,
+              });
             }
           } else {
             console.log("poCheckStatus:FALSEEEEEEEEEEEEEEEEEEEEE");
@@ -661,7 +707,8 @@ export default function POChatbotPane() {
                       ([subKey, subValue]) =>
                         `${subKey
                           .replace(/_/g, " ")
-                          .replace(/\b\w/g, (char) => char.toUpperCase())}: ${subValue ?? "N/A"
+                          .replace(/\b\w/g, (char) => char.toUpperCase())}: ${
+                          subValue ?? "N/A"
                         }`
                     )
                     .join(", ")
@@ -672,8 +719,9 @@ export default function POChatbotPane() {
           // Handle normal key-value pairs
           return `${key
             .replace(/_/g, " ")
-            .replace(/\b\w/g, (char) => char.toUpperCase())}: ${value ?? "N/A"
-            }`;
+            .replace(/\b\w/g, (char) => char.toUpperCase())}: ${
+            value ?? "N/A"
+          }`;
         }
       })
       .join("\n");
@@ -751,7 +799,8 @@ export default function POChatbotPane() {
       // console.log("clearDataApi");
       const response = await axios({
         method: "post",
-        url: CLEAR_DATA,
+        url: CLEAR_DATA_NEW,
+        data: { user_id: "admin" },
         headers: {
           "Content-Type": "application/json",
           accept: "application/json",
@@ -759,22 +808,56 @@ export default function POChatbotPane() {
         },
       });
 
-      // console.log("invoice Clear Response:", response.data);
+      console.log(" Clear data Response:", response.data);
       clearFormData();
     } catch (error) {
-      // console.log("Invoice Clear Error:", error, error.data);
+      console.log(" Clear data Error:", error, error.data);
     }
   };
-
+  const clearAllData = async () => {
+    try {
+      const response = await axios({
+        method: "post",
+        url: CLEAR_DATA,
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+      console.log("cleared all data");
+      clearFormData();
+    } catch (error) {
+      console.log("Clear Error:", error, error.data);
+    }
+  };
+  // const sendEmail = async ({ emailUsed, documentId }) => {
+  //   await EmailPdf({
+  //     emailUsed: emailUsed,
+  //     bodyUsed: { "documentType": "Purchase Order" },
+  //     purchaseOrder: true,
+  //     documentId: documentId
+  //   });
+  // }
   const sendEmail = async ({ emailUsed, documentId }) => {
-    await EmailPdf({
+    const emailStatus = await EmailPdf({
       emailUsed: emailUsed,
-      bodyUsed: { "documentType": "Purchase Order" },
+      bodyUsed: { documentType: "Purchase Order" },
       purchaseOrder: true,
-      documentId: documentId
+      documentId: documentId,
     });
-  }
 
+    if (emailStatus && emailStatus.success) {
+      console.log(
+        "Email sending was successful! Now calling another function...",
+        emailStatus
+      );
+      clearFormData();
+    } else {
+      console.log("Email sending failed or returned no status.");
+      console.error("Error message:", emailStatus?.message || "Unknown error");
+    }
+  };
 
   console.log("checkConsole", value);
   return (
