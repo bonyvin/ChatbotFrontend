@@ -17,7 +17,9 @@ export const FETCH_INVOICE_BY_ID = (id) => `${API_URL}/invoiceDetails/${id}`;
 
 export const UPLOAD_GPT = API_URL + "/uploadGpt/";
 
-export const CLEAR_DATA = API_URL + "/clearData?submitted=submitted";
+export const CLEAR_DATA = API_URL + "/clearData";
+// export const CLEAR_DATA = API_URL + "/clearData?submitted=submitted";
+export const CLEAR_DATA_NEW= API_URL + "/clearDataNew";
 
 export const CHAT = API_URL + "/chat";
 export const PROMO_CHAT = API_URL + "/promo-chat";

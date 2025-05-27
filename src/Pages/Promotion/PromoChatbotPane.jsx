@@ -23,8 +23,17 @@ import PdfCard from "../../components/PDF Generation/PdfCard";
 
 import { AuthContext } from "../../context/ContextsMasterFile";
 import TypingIndicatorComponent from "../../components/ChatMessage/TypingIndicatorComponent";
-import { CLEAR_DATA, ITEMS, PROMO_CHAT, PROMO_HEADER, PROMO_LIST, STORE_LIST, UPLOAD_PROMO } from "../../const/ApiConst";
- 
+import {
+  CLEAR_DATA,
+  CLEAR_DATA_NEW,
+  ITEMS,
+  PROMO_CHAT,
+  PROMO_HEADER,
+  PROMO_LIST,
+  STORE_LIST,
+  UPLOAD_PROMO,
+} from "../../const/ApiConst";
+
 export default function PromoChatbotPane() {
   const [messages, setMessages] = useState([]);
   const value = useContext(AuthContext);
@@ -42,7 +51,7 @@ export default function PromoChatbotPane() {
   const pickerRef = useRef(null);
   const [typing, setTyping] = useState(false);
   const typingTimeoutRef = useRef(null);
- 
+
   //FORM ACTIONS
   //save
   const saveFormData = async () => {
@@ -126,7 +135,7 @@ export default function PromoChatbotPane() {
   const submitFormData = async () => {
     await handleMessageSubmit("Please submit the data provided");
     // await promotionHeaderCreation();
-    // console.log("Submit called")      
+    // console.log("Submit called")
     // await EmailPdf({
     //   emailUsed: "bonyvincent11@gmail.com",
     //   bodyUsed: { title: "Hello World", name: "John Doe" },
@@ -415,17 +424,31 @@ export default function PromoChatbotPane() {
             ...prevMessages,
             { text: formattedConversation, fromUser: false },
           ]);
+          const email = response.data.promo_email;
+          if (email) {
+            console.log("Inside Email: ", email, value.promotionCounter - 1);
+            await sendEmail({
+              emailUsed: email,
+              documentId: `PROMO${value.promotionCounter - 1}`,
+            });
+          }
+          // if (response.data.promo_json["Email"] != "") {
+          //   console.log(
+          //     "Inside Email: ",
+          //     response.data.promo_json["Email"],
+          //     value.promotionCounter - 1
+          //   );
+          //   await sendEmail({
+          //     emailUsed: response.data.promo_json["Email"],
+          //     documentId: `PROMO${value.promotionCounter - 1}`,
+          //   });
+          // }
           if (response.data.submissionStatus == "submitted") {
             value.setPromotionCounter((prevCounter) => prevCounter + 1);
             await promotionHeaderCreation();
             // }
           } else {
             value.setModalVisible(false);
-          }
-          if(response.data.promo_json["Email"]!=""){
-            console.log("Inside Email: ",response.data.promo_json["Email"],value.promotionCounter-1)
-            await sendEmail({emailUsed:response.data.promo_json["Email"],documentId:`PROMO${value.promotionCounter-1}`})
-            
           }
         }
         if (typingTimeoutRef.current) {
@@ -451,54 +474,71 @@ export default function PromoChatbotPane() {
       console.error("Error fetching data:", error);
     }
   };
-  const getItemDetails = async () => {
-    try {
-      const response = await axios({
-        method: "get",
-        url: ITEMS,
-        headers: {
-          "Content-Type": "application/json",
-          accept: "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
-      });
-      let allItems = response.data.map((item) => item.itemId);
-      value.setPromoTotalItemsArray(allItems);
-      console.log("ITem details REsponse: ", response);
-    } catch (error) {
-      console.log("ITem details Error: ", error);
-    }
-  };
-  const getStoreDetails = async () => {
-    try {
-      const response = await axios({
-        method: "get",
-        url: STORE_LIST,
-        headers: {
-          "Content-Type": "application/json",
-          accept: "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
-      });
-      let storeList = response.data.map((item) => item.storeId);
-      value.setPromoStoreListArray(storeList);
-      console.log("Store details REsponse: ", response);
-    } catch (error) {
-      console.log("Store details Error: ", error);
-    }
-  };
-  useEffect(() => {
-    // getItemDetails();
-    // getStoreDetails();
-  }, []);
-  const sendEmail=async({emailUsed,documentId})=>{
-    await EmailPdf({
+  // const getItemDetails = async () => {
+  //   try {
+  //     const response = await axios({
+  //       method: "get",
+  //       url: ITEMS,
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         accept: "application/json",
+  //         "Access-Control-Allow-Origin": "*",
+  //       },
+  //     });
+  //     let allItems = response.data.map((item) => item.itemId);
+  //     value.setPromoTotalItemsArray(allItems);
+  //     console.log("ITem details REsponse: ", response);
+  //   } catch (error) {
+  //     console.log("ITem details Error: ", error);
+  //   }
+  // };
+  // const getStoreDetails = async () => {
+  //   try {
+  //     const response = await axios({
+  //       method: "get",
+  //       url: STORE_LIST,
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         accept: "application/json",
+  //         "Access-Control-Allow-Origin": "*",
+  //       },
+  //     });
+  //     let storeList = response.data.map((item) => item.storeId);
+  //     value.setPromoStoreListArray(storeList);
+  //     console.log("Store details REsponse: ", response);
+  //   } catch (error) {
+  //     console.log("Store details Error: ", error);
+  //   }
+  // };
+  // useEffect(() => {
+  //   // getItemDetails();
+  //   // getStoreDetails();
+  // }, []);
+  // const sendEmail = async ({ emailUsed, documentId }) => {
+  //   await EmailPdf({
+  //     emailUsed: emailUsed,
+  //     bodyUsed: { documentType: "Promotion" },
+  //     // bodyUsed: { title: "Hello World", name: "John Doe" },
+  //     promotion: true,
+  //     documentId: documentId,
+  //   });
+  //  };
+   const sendEmail = async ({ emailUsed, documentId }) => {
+
+    const emailStatus = await EmailPdf({
       emailUsed: emailUsed,
-      bodyUsed: { "documentType": "Promotion" },
-      // bodyUsed: { title: "Hello World", name: "John Doe" },
+      bodyUsed: { documentType: "Promotion" },
       promotion: true,
-      documentId: documentId
+      documentId: documentId,
     });
+
+    if (emailStatus && emailStatus.success) {
+      console.log("Email sending was successful! Now calling another function...",emailStatus);
+      clearFormData(); 
+    } else {
+      console.log("Email sending failed or returned no status.");
+      console.error("Error message:", emailStatus?.message || "Unknown error");
+    }
   }
   //create invoice details
   const promotionDetailsCreation = async () => {
@@ -689,120 +729,73 @@ export default function PromoChatbotPane() {
       });
       console.log("upload response: ", response.data);
       if (response.status === 200 || response.status === 201) {
-        // await clearDataApi();
         //PDF VIEW
-        if (file && file.type === "application/pdf") {
-          value.setUploadedFile(fileDetails);
-
-          // value.setModalText("Invoice uploaded successfully!");
-          setUploadLoading(false);
-          value.setModalDetails({
-            visible: true,
-            text: "File uploaded successfully!",
-            isSuccessful: true,
-          });
-
-          setMessages((prevMessages) => [
-            ...prevMessages,
-            {
-              component: <PdfCard uploadedFile={fileDetails} />,
-              fromUser: true,
-              isFile: true,
-            },
-          ]);
-          // await handleMessageSubmit(
-          //   value.itemUpload.items && value.itemUpload.items
-          //     ? `Items ${JSON.stringify(
-          //         response.data.structured_data["Items"]
-          //       )}`
-          //     : value.itemUpload.excludedItems && value.itemUpload.excludedItems
-          //     ? `Excluded Items ${JSON.stringify(
-          //         response.data.structured_data["Items"]
-          //       )}`
-          //     : response.data.structured_data["Items"],
-          //   true
-          // );
-          // value.setItemUpload({
-          //   items: items,
-          //   excludedItems: excludedItems,
-          //   event: value.itemUpload.event,
-          // });
-        } else if (
-          file &&
-          (file.type ===
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
-            file.type === "application/vnd.ms-excel")
+        value.setUploadedFile(fileDetails);
+        setUploadLoading(false);
+        value.setModalDetails({
+          visible: true,
+          text: "Excel file uploaded successfully!",
+          isSuccessful: true,
+        });
+        console.log("items", response.data.structured_data["Items"]);
+        console.log("stores", response.data.structured_data["Stores"]);
+        if (
+          value.itemUpload.items ||
+          value.itemUpload.excludedItems ||
+          value.storeUpload.stores ||
+          value.storeUpload.excludedStores
         ) {
-          value.setUploadedFile(fileDetails);
-          setUploadLoading(false);
-          value.setModalDetails({
-            visible: true,
-            text: "Excel file uploaded successfully!",
-            isSuccessful: true,
-          });
-          console.log("items", response.data.structured_data["Items"]);
-          console.log("stores", response.data.structured_data["Stores"]);
-          if (
-            value.itemUpload.items ||
-            value.itemUpload.excludedItems ||
-            value.storeUpload.stores ||
-            value.storeUpload.excludedStores
-          ) {
-            await handleMessageSubmit(
-              value.itemUpload.items &&
+          await handleMessageSubmit(
+            value.itemUpload.items &&
+              response.data.structured_data["Items"].length > 0
+              ? `Items ${JSON.stringify(
+                  response.data.structured_data["Items"]
+                )}`
+              : value.itemUpload.excludedItems &&
                 response.data.structured_data["Items"].length > 0
-                ? `Items ${JSON.stringify(
-                    response.data.structured_data["Items"]
-                  )}`
-                : value.itemUpload.excludedItems &&
-                  response.data.structured_data["Items"].length > 0
-                ? `Excluded Items ${JSON.stringify(
-                    response.data.structured_data["Items"]
-                  )}`
-                : value.storeUpload.stores &&
-                  response.data.structured_data["Stores"].length > 0
-                ? `Stores ${JSON.stringify(
-                    response.data.structured_data["Stores"]
-                  )}`
-                : value.storeUpload.excludedStores &&
-                  response.data.structured_data["Stores"].length > 0
-                ? `Excluded Stores ${JSON.stringify(
-                    response.data.structured_data["Stores"]
-                  )}`
-                : null,
-              true
-            );
-          }
-          //  else if (
-          //   value.storeUpload.stores ||
-          //   value.storeUpload.excludedStores
-          // ) {
-          //   await handleMessageSubmit(
-          //     value.storeUpload.stores
-          //       ? `Stores ${JSON.stringify(
-          //           response.data.structured_data["Stores"]
-          //         )}`
-          //       : value.storeUpload.excludedStores
-          //       ? `Excluded Stores ${JSON.stringify(
-          //           response.data.structured_data["Stores"]
-          //         )}`
-          //       : response.data.structured_data["Stores"],
-          //     true
-          //   );
-          // }
-
-          // value.setItemUpload({
-          //   items: items,
-          //   excludedItems: excludedItems,
-          //   event: value.itemUpload.event,
-          // });
-        } else {
-          alert("Please upload a valid PDF file.");
-          // await clearDataApi();
-          value.setItemUpload({
-            ...value.itemUpload,
-            event: null,
-          });
+              ? `Excluded Items ${JSON.stringify(
+                  response.data.structured_data["Items"]
+                )}`
+              : value.storeUpload.stores &&
+                response.data.structured_data["Stores"].length > 0
+              ? `Stores ${JSON.stringify(
+                  response.data.structured_data["Stores"]
+                )}`
+              : value.storeUpload.excludedStores &&
+                response.data.structured_data["Stores"].length > 0
+              ? `Excluded Stores ${JSON.stringify(
+                  response.data.structured_data["Stores"]
+                )}`
+              : null,
+            true
+          );
+        }
+        if (
+          response.data.structured_data["Items"] ||
+          response.data.structured_data["Excluded Items"] ||
+          response.data.structured_data["Stores"] ||
+          response.data.structured_data["Excluded Stores"]
+        ) {
+          await handleMessageSubmit(
+            response.data.structured_data["Items"].length > 0
+              ? `Items ${JSON.stringify(
+                  response.data.structured_data["Items"]
+                )}`
+              : response.data.structured_data["Excluded Items"].length > 0
+              ? `Excluded Items ${JSON.stringify(
+                  response.data.structured_data["Excluded Items"]
+                )}`
+              : response.data.structured_data["Stores"].length > 0
+              ? `Stores ${JSON.stringify(
+                  response.data.structured_data["Stores"]
+                )}`
+              : response.data.structured_data["Excluded Stores"].length > 0
+              ? `Excluded Stores ${JSON.stringify(
+                  response.data.structured_data["Excluded Stores"]
+                )}`
+              : null,
+            true
+          );
         }
       }
     } catch (error) {
@@ -815,6 +808,153 @@ export default function PromoChatbotPane() {
       });
     }
   };
+  // const uploadInvoice = async (event) => {
+  //   let file = event.target.files[0];
+  //   console.log("Event:", event.target.files);
+  //   const formData = new FormData();
+  //   formData.append("file", file);
+  //   let fileDetails = {
+  //     status: true,
+  //     name: file?.name,
+  //     file: file,
+  //   };
+  //   setUploadLoading(true);
+  //   try {
+  //     const response = await axios({
+  //       method: "POST",
+  //       url: UPLOAD_PROMO,
+  //       headers: {
+  //         "Content-Type": "multipart/form-data",
+  //       },
+  //       data: formData,
+  //     });
+  //     console.log("upload response: ", response.data);
+  //     if (response.status === 200 || response.status === 201) {
+  //       // await clearDataApi();
+  //       //PDF VIEW
+  //       if (file && file.type === "application/pdf") {
+  //         value.setUploadedFile(fileDetails);
+  //         // value.setModalText("Invoice uploaded successfully!");
+  //         setUploadLoading(false);
+  //         value.setModalDetails({
+  //           visible: true,
+  //           text: "File uploaded successfully!",
+  //           isSuccessful: true,
+  //         });
+
+  //         setMessages((prevMessages) => [
+  //           ...prevMessages,
+  //           {
+  //             component: <PdfCard uploadedFile={fileDetails} />,
+  //             fromUser: true,
+  //             isFile: true,
+  //           },
+  //         ]);
+  //         // await handleMessageSubmit(
+  //         //   value.itemUpload.items && value.itemUpload.items
+  //         //     ? `Items ${JSON.stringify(
+  //         //         response.data.structured_data["Items"]
+  //         //       )}`
+  //         //     : value.itemUpload.excludedItems && value.itemUpload.excludedItems
+  //         //     ? `Excluded Items ${JSON.stringify(
+  //         //         response.data.structured_data["Items"]
+  //         //       )}`
+  //         //     : response.data.structured_data["Items"],
+  //         //   true
+  //         // );
+  //         // value.setItemUpload({
+  //         //   items: items,
+  //         //   excludedItems: excludedItems,
+  //         //   event: value.itemUpload.event,
+  //         // });
+  //       } else if (
+  //         file &&
+  //         (file.type ===
+  //           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+  //           file.type === "application/vnd.ms-excel")
+  //       ) {
+  //         value.setUploadedFile(fileDetails);
+  //         setUploadLoading(false);
+  //         value.setModalDetails({
+  //           visible: true,
+  //           text: "Excel file uploaded successfully!",
+  //           isSuccessful: true,
+  //         });
+  //         console.log("items", response.data.structured_data["Items"]);
+  //         console.log("stores", response.data.structured_data["Stores"]);
+  //         if (
+  //           value.itemUpload.items ||
+  //           value.itemUpload.excludedItems ||
+  //           value.storeUpload.stores ||
+  //           value.storeUpload.excludedStores
+  //         ) {
+  //           await handleMessageSubmit(
+  //             value.itemUpload.items &&
+  //               response.data.structured_data["Items"].length > 0
+  //               ? `Items ${JSON.stringify(
+  //                   response.data.structured_data["Items"]
+  //                 )}`
+  //               : value.itemUpload.excludedItems &&
+  //                 response.data.structured_data["Items"].length > 0
+  //               ? `Excluded Items ${JSON.stringify(
+  //                   response.data.structured_data["Items"]
+  //                 )}`
+  //               : value.storeUpload.stores &&
+  //                 response.data.structured_data["Stores"].length > 0
+  //               ? `Stores ${JSON.stringify(
+  //                   response.data.structured_data["Stores"]
+  //                 )}`
+  //               : value.storeUpload.excludedStores &&
+  //                 response.data.structured_data["Stores"].length > 0
+  //               ? `Excluded Stores ${JSON.stringify(
+  //                   response.data.structured_data["Stores"]
+  //                 )}`
+  //               : null,
+  //             true
+  //           );
+  //         }
+  //         //  else if (
+  //         //   value.storeUpload.stores ||
+  //         //   value.storeUpload.excludedStores
+  //         // ) {
+  //         //   await handleMessageSubmit(
+  //         //     value.storeUpload.stores
+  //         //       ? `Stores ${JSON.stringify(
+  //         //           response.data.structured_data["Stores"]
+  //         //         )}`
+  //         //       : value.storeUpload.excludedStores
+  //         //       ? `Excluded Stores ${JSON.stringify(
+  //         //           response.data.structured_data["Stores"]
+  //         //         )}`
+  //         //       : response.data.structured_data["Stores"],
+  //         //     true
+  //         //   );
+  //         // }
+
+  //         // value.setItemUpload({
+  //         //   items: items,
+  //         //   excludedItems: excludedItems,
+  //         //   event: value.itemUpload.event,
+  //         // });
+  //       } else {
+  //         alert("Please upload a valid PDF file.");
+  //         // await clearDataApi();
+  //         value.setItemUpload({
+  //           ...value.itemUpload,
+  //           event: null,
+  //         });
+  //       }
+  //     }
+  //   } catch (error) {
+  //     setUploadLoading(false);
+  //     console.log("Upload Error:", error, error.data);
+  //     value.setModalDetails({
+  //       visible: true,
+  //       text: "An error occured while uploading file",
+  //       isSuccessful: false,
+  //     });
+  //   }
+  // };
   //clear data
   const clearDataApi = async () => {
     value.setModalVisible(true);
@@ -824,7 +964,8 @@ export default function PromoChatbotPane() {
       // console.log("clearDataApi");
       const response = await axios({
         method: "post",
-        url: CLEAR_DATA,
+        url: CLEAR_DATA_NEW,
+        data: { user_id: "admin" },
         headers: {
           "Content-Type": "application/json",
           accept: "application/json",
@@ -837,47 +978,64 @@ export default function PromoChatbotPane() {
       // console.log("Invoice Clear Error:", error, error.data);
     }
   };
+  const clearAllData = async () => {
+    try {
+      const response = await axios({
+        method: "post",
+        url: CLEAR_DATA,
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+      console.log("cleared all data");
+      clearFormData();
+    } catch (error) {
+      console.log("Clear Error:", error, error.data);
+    }
+  };
   console.log("checkConsole  ", value);
 
   return (
     <Card className="chatbot-card">
-    <Sheet
-      className="chatbot-area imageBackground"
-      ref={messageEl}
-    >
-      <Backdrop
-        sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
-        open={uploadLoading}
-        onClick={() => setUploadLoading(false)}
-      >
-        <CircularProgress color="inherit" />
-      </Backdrop>
-      <Box className="chat-Message-Box"
-        // style={{
-        //   display: "flex",
-        //   flex: 1,
-        //   flexDirection: "column ",
-        //   padding: 2,
-        //   justifyContent: "flex-end",
-        // }}
-      >
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={message.fromUser ? "user-message" : "bot-message"}
-          >
-            <ChatMessage
+      <Sheet className="chatbot-area imageBackground" ref={messageEl}>
+        <Backdrop
+          sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
+          open={uploadLoading}
+          onClick={() => setUploadLoading(false)}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
+        <Box
+          className="chat-Message-Box"
+          // style={{
+          //   display: "flex",
+          //   flex: 1,
+          //   flexDirection: "column ",
+          //   padding: 2,
+          //   justifyContent: "flex-end",
+          // }}
+        >
+          {messages.map((message, index) => (
+            <div
               key={index}
-              text={message.text ? message.text : message.component}
-              fromUser={message.fromUser}
-              isFile={message.isFile}
-            />
-          </div>
-        ))}
-        {typing && <TypingIndicatorComponent scrollToBottom={scrollToBottom} />}
-      </Box>
+              className={message.fromUser ? "user-message" : "bot-message"}
+            >
+              <ChatMessage
+                key={index}
+                text={message.text ? message.text : message.component}
+                fromUser={message.fromUser}
+                isFile={message.isFile}
+              />
+            </div>
+          ))}
+          {typing && (
+            <TypingIndicatorComponent scrollToBottom={scrollToBottom} />
+          )}
+        </Box>
 
-      {/* <form
+        {/* <form
               onSubmit={(e) => {
                 e.preventDefault();
                 handleMessageSubmit(input);
@@ -942,22 +1100,24 @@ export default function PromoChatbotPane() {
               />
               <i className="fa fa-paper-plane-o" aria-hidden="true"></i>
             </form>  */}
-      <ChatbotInputForm
-        input={input}
-        setInput={setInput}
-        handleMessageSubmit={handleMessageSubmit}
-        uploadInvoice={uploadInvoice}
-        isPickerVisible={isPickerVisible}
-        setPickerVisible={setPickerVisible}
-      />
-      {isPickerVisible && (
-        <div className="picker-div"
-          // style={{ position: "absolute", zIndex: 1000, bottom: "4rem" }}
-          ref={pickerRef}
-        >
-          <Picker data={data} onEmojiSelect={handleEmojiSelect} />
-        </div>
-      )}
-    </Sheet></Card>
+        <ChatbotInputForm
+          input={input}
+          setInput={setInput}
+          handleMessageSubmit={handleMessageSubmit}
+          uploadInvoice={uploadInvoice}
+          isPickerVisible={isPickerVisible}
+          setPickerVisible={setPickerVisible}
+        />
+        {isPickerVisible && (
+          <div
+            className="picker-div"
+            // style={{ position: "absolute", zIndex: 1000, bottom: "4rem" }}
+            ref={pickerRef}
+          >
+            <Picker data={data} onEmojiSelect={handleEmojiSelect} />
+          </div>
+        )}
+      </Sheet>
+    </Card>
   );
 }

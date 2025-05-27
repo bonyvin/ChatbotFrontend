@@ -21,7 +21,7 @@ const Invoice = ({ invoiceId }) => {
     try {
       const response = await axios({
         method: "get",
-        url: FETCH_INVOICE_BY_ID,
+        url: FETCH_INVOICE_BY_ID(id),
         headers: {
           "Content-Type": "application/json",
           accept: "application/json",

@@ -21,7 +21,7 @@ const PurchaseOrder = ({ poId }) => {
     console.log("PO ID:", id);
     try {
       const response = await axios.get(
-       FETCH_PO_BY_ID,
+       FETCH_PO_BY_ID(id),
         {
           headers: {
             "Content-Type": "application/json",

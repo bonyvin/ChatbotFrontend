@@ -20,7 +20,7 @@ const Promotion = ({ promoId }) => {
     console.log("PROMO ID:", id);
     try {
       const response = await axios.get(
-        FETCH_PROMO_BY_ID,
+        FETCH_PROMO_BY_ID(id),
         {
           headers: {
             "Content-Type": "application/json",

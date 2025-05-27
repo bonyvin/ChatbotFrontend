@@ -26,7 +26,9 @@ import TypingIndicatorComponent from "../../components/ChatMessage/TypingIndicat
 import {
   ADD_INVOICE_DETAILS, FETCH_PO_BY_ID, NEW_RESPONSE_CREATION, INVOICE_CREATION,
   UPLOAD_GPT,
-  CLEAR_DATA
+  CLEAR_DATA,
+  SUPPLIER_RISK_INSIGHT,
+  CLEAR_DATA_NEW
 } from "../../const/ApiConst";
 import EmailPdf from "../../components/PDF Generation/EmailPdf";
 
@@ -323,7 +325,14 @@ export default function InvoiceChatbot() {
       console.log(Array.isArray(invoiceDatafromConversation.Items).length);
       const { Items: itemsArray = [] } = invoiceDatafromConversation; // Extract "Items" array
       console.log("updateitemdetails invdfc: ", itemsArray);
-
+    // NEW: if *all* items have *all* keys null, bail out
+    const allNullEntries = itemsArray.every(item =>
+      Object.values(item).every(v => v === null)
+    );
+    if (allNullEntries) {
+      // do nothing further
+      return;
+    }
       // Ensure correct mapping of extracted values
       const tempDictionary = itemsArray.reduce((acc, item) => {
         acc[item["Item ID"]] = {
@@ -400,6 +409,7 @@ export default function InvoiceChatbot() {
     },
     [value.setItemDetails, value.setItemDetailsInput, value.setPoDetailsData]
   );
+  
   //PO DETAILS
   const getPoDetails = useCallback(
     async (id, invoiceDatafromConversation) => {
@@ -439,7 +449,9 @@ export default function InvoiceChatbot() {
             exchangeRate: 1,
             paymentTerm: poHeader.payment_term,
           };
-
+          if(response.data.po_details[0]?.supplierId){
+            await supplierRiskApi(response.data.po_details[0]?.supplierId)
+          }
           value.setPoHeaderData(updatedPoHeaderData);
           const newUpdatedData = response.data.po_details.map((item) => ({
             ...item,
@@ -496,6 +508,28 @@ export default function InvoiceChatbot() {
       updateItemDetails,
     ]
   );
+    //SUPPLIER INSIGHTS
+    const supplierRiskApi=async(supplierId)=>{
+      try {
+        // console.log("clearDataApi");
+        const response = await axios({
+          method: "get",
+          url: SUPPLIER_RISK_INSIGHT(supplierId),
+          headers: {
+            "Content-Type": "application/json",
+            accept: "application/json",
+            "Access-Control-Allow-Origin": "*",
+          },
+        });
+        value.setSupplierDetails(prev => ({
+          ...prev,
+          supplierInsights:response.data,
+        }));
+        // console.log("invoice Clear Response:", response.data);
+      } catch (error) {
+        console.log("Supplier Risk Error:", error, error.data);
+      }
+    };
   //EXTRACTING FIELD DATA FROM BACKEND
   const invoiceCheck2 = useCallback(
     async (invoiceObject, invoiceDatafromConversation) => {
@@ -668,6 +702,12 @@ export default function InvoiceChatbot() {
             { text: formattedConversation, fromUser: false },
           ]);
           // }
+          const email = response.data.invoice_email;
+          if (email) {
+            console.log("Inside Email: ",email, value.invoiceCounter - 1)
+            await sendEmail({ emailUsed: email, documentId: `INV${value.invoiceCounter - 1}` })
+
+          }
           if (response.data.submissionStatus == "submitted") {
             // let validationStatus = await itemQuantityValidation();
             // if (validationStatus) {
@@ -677,11 +717,7 @@ export default function InvoiceChatbot() {
           } else {
             value.setModalVisible(false);
           }
-          if (response.data.invoice_json["Email"] != "") {
-            console.log("Inside Email: ", response.data.invoice_json["Email"], value.invoiceCounter - 1)
-            await sendEmail({ emailUsed: response.data.invoice_json["Email"], documentId: `INV${value.invoiceCounter - 1}` })
 
-          }
         } else {
           if (
             invoiceCheckStatus) {
@@ -708,10 +744,10 @@ export default function InvoiceChatbot() {
             } else {
               value.setModalVisible(false);
             }
-            if (response.data.invoice_json["Email"] != "") {
-              console.log("Inside Email: ", response.data.invoice_json["Email"], value.invoiceCounter - 1)
-              await sendEmail({ emailUsed: response.data.invoice_json["Email"], documentId: `INV${value.invoiceCounter - 1}` })
-  
+            const email = response.data.invoice_email;
+            if (email) {
+              console.log("Inside Email: ",email, value.invoiceCounter - 1)
+              await sendEmail({ emailUsed: email, documentId: `INV${value.invoiceCounter - 1}` })
             }
           } else {
             console.log("invoiceCheckStatus:FALSEEEEEEEEEEEEEEEEEEEEE");
@@ -956,7 +992,8 @@ export default function InvoiceChatbot() {
       // console.log("clearDataApi");
       const response = await axios({
         method: "post",
-        url: CLEAR_DATA,
+        url: CLEAR_DATA_NEW,
+        data:{user_id:"admin"},
         headers: {
           "Content-Type": "application/json",
           accept: "application/json",
@@ -970,15 +1007,46 @@ export default function InvoiceChatbot() {
       // console.log("Invoice Clear Error:", error, error.data);
     }
   };
+  const clearAllData = async () => {
+    try {
+      const response = await axios({
+        method: "post",
+        url: CLEAR_DATA,
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+      console.log("cleared all data");
+      clearFormData();
+    } catch (error) {
+      console.log("Clear Error:", error, error.data);
+    }
+  };
   console.log("checkConsole", value);
 
   const sendEmail = async ({ emailUsed, documentId }) => {
-    await EmailPdf({
+    // await EmailPdf({
+    //   emailUsed: emailUsed,
+    //   bodyUsed: { "documentType": "Invoice" },
+    //   invoice: true,
+    //   documentId: documentId
+    // });
+    const emailStatus = await EmailPdf({
       emailUsed: emailUsed,
-      bodyUsed: { "documentType": "Invoice" },
+      bodyUsed: { documentType: "Invoice" },
       invoice: true,
-      documentId: documentId
+      documentId: documentId,
     });
+
+    if (emailStatus && emailStatus.success) {
+      console.log("Email sending was successful! Now calling another function...",emailStatus);
+      clearFormData(); 
+    } else {
+      console.log("Email sending failed or returned no status.");
+      console.error("Error message:", emailStatus?.message || "Unknown error");
+    }
   }
   return (
     <Card className="chatbot-card">

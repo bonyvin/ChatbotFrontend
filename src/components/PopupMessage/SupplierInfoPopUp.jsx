@@ -6,7 +6,6 @@ import ReactMarkdown from "react-markdown";
 import "../../styles/popupStyles.css";
 import failure from "../../images/failure.gif";
 
-
 function SupplierInfoPopUp({ visible, setVisible, data }) {
   const [show, setShow] = useState(false);
 
@@ -78,9 +77,7 @@ function SupplierInfoPopUp({ visible, setVisible, data }) {
                     src={`${data?.insights?.graph_data?.bar_chart}`}
                     className="tileImg"
                   />
-                  <div
-                    className="graph-sub-heading"
-                  >
+                  <div className="graph-sub-heading">
                     <span>{data?.insights?.fill_rate_dict.fill_rate}</span>
                     <span>{data?.insights?.fill_rate_dict.pending_rate}</span>
                   </div>
@@ -207,6 +204,7 @@ function SupplierInfoPopUp({ visible, setVisible, data }) {
                 style={{
                   display: "flex",
                   flexDirection: "row",
+                  alignItems: "flex-start",
                   // justifyContent: "space-evenly",
                   // justifyContent: "space-between",
                 }}
@@ -221,8 +219,14 @@ function SupplierInfoPopUp({ visible, setVisible, data }) {
                     }}
                   >
                     Key Insights
-                  </div>              <ReactMarkdown>{data?.insights?.key_insights}
-                                </ReactMarkdown>
+                  </div>{" "}
+                  <ReactMarkdown className="insights-text"
+                    style={{
+                      backgroundColor:'yellow'
+                    }}
+                  >
+                    {data?.insights?.key_insights}
+                  </ReactMarkdown>
                   {/*<ol>
                      <li>
                       15% likelihood that all items in your order will not be
@@ -278,7 +282,7 @@ function SupplierInfoPopUp({ visible, setVisible, data }) {
                       Medium Risk Supplier
                     </div>
                   </div>{" "}
-                  <div style={{ color: "black", fontSize: "0.75rem" }}>
+                  <div style={{ color: "black", fontSize: "0.75rem",paddingBottom:'2rem'}}>
                     Alert: Supplier not meeting environmental and safety
                     standards
                   </div>

@@ -87,6 +87,7 @@ const ChatbotInputForm = ({
   uploadInvoice,
   isPickerVisible,
   setPickerVisible,
+  promotion
 }) => {
   // 1) Local ref for the textarea
   const textareaRef = useRef(null);
@@ -156,7 +157,7 @@ const ChatbotInputForm = ({
           className="chatInputTextarea"
           onKeyDown={handleKeyDown}
         />
-        <div className="micDiv" contentEditable>
+        <div className="micDiv" >
           <MicIcon
             className="micIcon"
             onClick={() => console.log("Mic icon clicked")}

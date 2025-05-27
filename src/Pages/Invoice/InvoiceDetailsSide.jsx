@@ -32,6 +32,7 @@ import "../../styles/general.css";
 import "../../styles/testStyles.css";
 import "../../styles/general.css";
 import ChatbotPane from "./InvoiceChatbot";
+import EmailPdf from "../../components/PDF Generation/EmailPdf";
 
 function InvoiceDetailsSide() {
   const messagesEndRef = useRef(null);
@@ -108,6 +109,27 @@ function InvoiceDetailsSide() {
     }
   };
   
+    const sendEmail = async ({ emailUsed, documentId }) => {
+      // await EmailPdf({
+      //   emailUsed: emailUsed,
+      //   bodyUsed: { "documentType": "Invoice" },
+      //   invoice: true,
+      //   documentId: documentId
+      // });
+      const emailStatus = await EmailPdf({
+        emailUsed: emailUsed,
+        bodyUsed: { documentType: "Invoice" },
+        invoice: true,
+        documentId: documentId,
+      });
+  
+      if (emailStatus && emailStatus.success) {
+        console.log("Email sending was successful! Now calling another function...");
+      } else {
+        console.log("Email sending failed or returned no status.");
+        console.error("Error message:", emailStatus?.message || "Unknown error");
+      }
+    }
   // console.log("pod:",value.poDetailsData)
   return (
     <Grid container component="main" style={{ backgroundColor: "#e9ecef" }}>
@@ -131,6 +153,7 @@ function InvoiceDetailsSide() {
           <SupplierInfoPopUp
             visible={supplierPopupStatus}
             setVisible={setSupplierPopupStatus}
+            data={value.supplierDetails.supplierInsights}
           />
           <Dialog className="invoice-preview"
             open={invoicePreview}
@@ -961,6 +984,7 @@ function InvoiceDetailsSide() {
               </CustomButton>
 
               <CustomButton
+                // onClick={() => sendEmail({emailUsed: "experiencex.team@gmail.com",documentId:"INV164"})}
                 onClick={() => value.setFormSubmit((prevState) => !prevState)}
               >
                 SUBMIT

@@ -147,6 +147,7 @@ export default function AuthProvider({ children }) {
     supplierId: "",
     leadTime: "",
     supplierStatus: false,
+    supplierInsights:""
   });
   const [itemDetailsInput, setItemDetailsInput] = useState({
     items: "",
