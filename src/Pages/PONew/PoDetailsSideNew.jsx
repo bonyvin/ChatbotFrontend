@@ -7,6 +7,9 @@ import CardOverflow from "@mui/joy/CardOverflow";
 import FormControl from "@mui/joy/FormControl";
 import IconButton from "@mui/joy/IconButton";
 import Stack from "@mui/joy/Stack";
+
+import { Box } from '@mui/material';
+
 import { Dialog } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
@@ -21,7 +24,7 @@ import { PDFViewer } from "@react-pdf/renderer";
 import axios from "axios";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { BsFillInfoCircleFill } from "react-icons/bs";
-import { DynamicCutoutInput } from "../../components/DynamicCutoutInput";
+// import {InputFieldComponent } from "../../components/DynamicCutoutInput";
 import PreviewDocs from "../../components/PDF Generation/PreviewDocs";
 import PopUp from "../../components/PopupMessage/FormSubmissionStatusPopUp";
 import ItemInfoPopup from "../../components/PopupMessage/ItemInfoPopup";
@@ -31,12 +34,17 @@ import { AuthContext } from "../../context/ContextsMasterFile";
 import "../../styles/general.css";
 import "../../styles/testStyles.css";
 import "../../styles/general.css";
-import POChatbotPane from "./POChatbotPane";
+import PreviewIcon from '@mui/icons-material/Preview';
+import SaveIcon from '@mui/icons-material/Save';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import PublishIcon from '@mui/icons-material/Publish';
+import POChatbotPane from "./POChatbotPaneNew";
 import { SUPPLIER_RISK_INSIGHT } from "../../const/ApiConst";
+import InputFieldComponent from "../../components/InputFieldComponent";
 
 function PoDetailsSide() {
   const messagesEndRef = useRef(null);
-  const [supplierInsights,setSupplierInsights]=useState('')
+  const [supplierInsights, setSupplierInsights] = useState('')
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -147,28 +155,28 @@ function PoDetailsSide() {
     // });
   }, [value.poCounter]);
 
-    const supplierRiskApi=async(supplierId)=>{
-      try {
-        // console.log("clearDataApi");
-        const response = await axios({
-          method: "get",
-          url: SUPPLIER_RISK_INSIGHT(supplierId),
-          headers: {
-            "Content-Type": "application/json",
-            accept: "application/json",
-            "Access-Control-Allow-Origin": "*",
-          },
-        });
-        setSupplierInsights(response.data)
-        // console.log("invoice Clear Response:", response.data);
-      } catch (error) {
-        console.log("Supplier Risk Error:", error, error.data);
-      }
-    };
+  const supplierRiskApi = async (supplierId) => {
+    try {
+      // console.log("clearDataApi");
+      const response = await axios({
+        method: "get",
+        url: SUPPLIER_RISK_INSIGHT(supplierId),
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+      setSupplierInsights(response.data)
+      // console.log("invoice Clear Response:", response.data);
+    } catch (error) {
+      console.log("Supplier Risk Error:", error, error.data);
+    }
+  };
 
-    
+
   return (
-    <Grid container component="main" style={{ backgroundColor: "#384B70" }}>
+    <Grid container component="main" style={{ height: "100vh", backgroundColor: "#384B70" }}>
       <Grid
         item
         xs={8}
@@ -212,12 +220,12 @@ function PoDetailsSide() {
           >
             <div
               className="dialog-container"
-              // style={{
-              //   width: "100%",
-              //   height: "100%",
-              //   display: "flex",
-              //   overflow: "hidden",
-              // }}
+            // style={{
+            //   width: "100%",
+            //   height: "100%",
+            //   display: "flex",
+            //   overflow: "hidden",
+            // }}
             >
               {/* Use PDFViewer to allow for real-time updates */}
               <PDFViewer
@@ -242,214 +250,367 @@ function PoDetailsSide() {
 
         <Card
           className="generalView"
-          style={{ width: "100%", backgroundColor: "#73809A", borderColor: "#73809A"}}
+          style={{ width: "100%", backgroundColor: "#73809A", borderRadius: "3%", borderColor: "#73809A", marginLeft: "4%", boxShadow: "2px 2px 8px rgba(66, 57, 57, 0.75)" }}
           ref={messagesEndRef}
         >
-          <Card ref={messagesEndRef} style={{backgroundColor:"transparent"}}>
-          
-            <div
+          {/* <Card ref={messagesEndRef} style={{backgroundColor:"transparent"}}> */}
+
+          <div
+            style={{
+              marginLeft: "2%",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+            }}
+          >
+            <Typography
               style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
+                fontSize: "1rem",
+                fontWeight: "700",
+                color: "white",
+                fontFamily: "Montserrat,sans-sherif",
               }}
             >
-              <Typography
-                style={{
-                  fontSize: "1rem",
-                  fontWeight: "700",
-                  fontFamily: "Poppins,sans-sherif",
-                }}
-              >
-                PO Details
-              </Typography>
-              <Typography style={{ fontSize: "0.6rem" }}>
-                Fields marked as * are mandatory
-              </Typography>
-            </div>
-            <CardOverflow sx={{ p: 0 }}
-            //  style={{ backgroundColor: "#F5F6F8" }}
-             >
-              <Stack
+              PO Details
+            </Typography>
+            <Typography
+              style={{
+                fontSize: "0.6rem",
+                color: "white",
+                fontFamily: "Montserrat,sans-sherif",
+              }}>
+              Fields marked as * are mandatory
+            </Typography>
+          </div>
+          <CardOverflow sx={{ p: 0 }}
+          //  style={{ backgroundColor: "#F5F6F8" }}
+          >
+            {/* <Stack
                 direction="row"
                 spacing={3}
-                style={{ margin: "1rem", display: "flex" }}
+                style={{ margin: "1rem", display: "flex", paddingLeft:"1rem", paddingRight:"1rem"}}
               >
-                <Stack spacing={2} sx={{ flexGrow: 1 }}>
-                  <Stack direction="row" spacing={2}>
-                    <FormControl sx={{ flex: 1 }}>
-                      <DynamicCutoutInput
-                        label="PO Number"
-                        required={true}
-                        //   type="date"
-                        placeholder="Purchase Order No."
-                        value={`PO${value.poCounter}`}
-                        editable={true}
-                      />
-                    </FormControl>
-                    <FormControl sx={{ flex: 1 }}>
-                      <DynamicCutoutInput
-                        label="Supplier ID"
-                        required={true}
-                        //   type="date"
-                        placeholder="Enter Supplier ID"
-                        value={value.supplierDetails.supplierId}
-                        fun={(text) =>
-                          value.setSupplierDetails({
-                            ...value.supplierDetails,
-                            supplierId: text,
-                          })
-                        }
-                        EndComponent={
-                          value.supplierDetails.supplierStatus == true ? (
-                            <BsFillInfoCircleFill
-                              onClick={() => setSupplierPopupStatus(true)}
-                            />
-                          ) : null
-                        }
-                      />
-                    </FormControl>
-                  </Stack>
-                  <Stack direction="row" spacing={2}>
-                    <FormControl sx={{ flex: 1 }}>
-                      <DynamicCutoutInput
-                        label="Lead Time"
-                        required={true}
-                        //   type="date"
-                        placeholder="Lead Time"
-                        value={value.supplierDetails.leadTime}
-                        fun={(text) =>
-                          value.setSupplierDetails({
-                            ...value.supplierDetails,
-                            leadTime: text,
-                          })
-                        }
-                        editable={true}
-                      />
-                    </FormControl>
-                    <FormControl sx={{ flex: 1 }}>
-                      <DynamicCutoutInput
-                        label="Est. Delivery Date"
-                        required={true}
-                        type="date"
-                        placeholder="Estimated Delivery Date"
-                        inputValue={purchaseOrderData.estDeliveryDate}
-                        fun={(text) => {
-                          // console.log("Date selected:", text);
-                          dispatch({
-                            type: "UPDATE_FIELD",
-                            field: "estDeliveryDate",
-                            value: text,
-                          });
-                        }}
-                      />
-                    </FormControl>
-                  </Stack>
-                  <Stack direction="row" spacing={2}>
-                    <FormControl sx={{ flex: 1 }}>
-                      <DynamicCutoutInput
-                        label="Total Quantity"
-                        required={true}
-                        type="number"
-                        placeholder="Total Quantity"
-                        inputValue={purchaseOrderData.totalQuantity}
-                        fun={(text) => {
-                          dispatch({
-                            type: "UPDATE_FIELD",
-                            field: "totalQuantity",
-                            value: text,
-                          });
-                        }}
-                        editable={true}
-                      />
-                    </FormControl>
-                    <FormControl sx={{ flex: 1 }}>
-                      <DynamicCutoutInput
-                        label="Total Cost"
-                        required={true}
-                        type="number"
-                        placeholder="Total Cost"
-                        inputValue={purchaseOrderData.totalCost}
-                        fun={(text) => {
-                          // console.log("Date selected:", text);
-                          dispatch({
-                            type: "UPDATE_FIELD",
-                            field: "totalCost",
-                            value: text,
-                          });
-                        }}
-                        editable={true}
-                      />
-                    </FormControl>
-                  </Stack>
-                  <Stack direction="row" spacing={2}>
-                    <FormControl sx={{ flex: 1 }}>
-                      <DynamicCutoutInput
-                        label="Total Tax"
-                        required={true}
-                        type="number"
-                        placeholder="Total Tax"
-                        inputValue={purchaseOrderData.totalTax}
-                        fun={(text) => {
-                          // console.log("Date selected:", text);
-                          dispatch({
-                            type: "UPDATE_FIELD",
-                            field: "totalTax",
-                            value: text,
-                          });
-                        }}
-                        editable={true}
-                      />
-                    </FormControl>
-                    <FormControl sx={{ flex: 1 }}>
-                      <DynamicCutoutInput
-                        label="Comments(if any)"
-                        //   required={true}
-                        //   type="date"
-                        placeholder="Enter Comments(if any)"
-                        inputValue={purchaseOrderData.comments}
-                        fun={(text) => {
-                          // console.log("Date selected:", text);
-                          dispatch({
-                            type: "UPDATE_FIELD",
-                            field: "comments",
-                            value: text,
-                          });
-                        }}
-                      />
-                    </FormControl>
-                  </Stack>
+              <Stack spacing={2} sx={{ flexGrow: 1 }}>
+                <Stack direction="row" spacing={2}>
+                  
+                  <FormControl sx={{ flex: 1 }}>
+                    <InputFieldComponent
+                      label="PO Number"
+                      required={true}
+                      placeholder="Purchase Order No."
+                      value={`PO${value.poCounter}`}
+                      editable={true}
+                    />
+                  </FormControl>
+                  <FormControl sx={{ flex: 1 }}>
+                    <InputFieldComponent
+                      label="Supplier ID"
+                      required={true}
+                      placeholder="Enter Supplier ID"
+                      value={value.supplierDetails.supplierId}
+                      fun={(text) =>
+                        value.setSupplierDetails({
+                          ...value.supplierDetails,
+                          supplierId: text,
+                        })
+                      }
+                      EndComponent={
+                        value.supplierDetails.supplierStatus === true ? (
+                          <BsFillInfoCircleFill onClick={() => setSupplierPopupStatus(true)} />
+                        ) : null
+                      }
+                    />
+                  </FormControl>
+                  <FormControl sx={{ flex: 1 }}>
+                    <InputFieldComponent
+                      label="Lead Time"
+                      required={true}
+                      placeholder="Lead Time"
+                      value={value.supplierDetails.leadTime}
+                      fun={(text) =>
+                        value.setSupplierDetails({
+                          ...value.supplierDetails,
+                          leadTime: text,
+                        })
+                      }
+                      editable={true}
+                    />
+                  </FormControl>
+                </Stack>
+
+                <Stack direction="row" spacing={2} mt={2}>
+                  <FormControl sx={{ flex: 1 }}>
+                    <InputFieldComponent
+                      label="Est. Delivery Date"
+                      required={true}
+                      type="date"
+                      placeholder="Estimated Delivery Date"
+                      inputValue={purchaseOrderData.estDeliveryDate}
+                      fun={(text) =>
+                        dispatch({
+                          type: "UPDATE_FIELD",
+                          field: "estDeliveryDate",
+                          value: text,
+                        })
+                      }
+                    />
+                  </FormControl>
+                  <FormControl sx={{ flex: 1 }}>
+                    <InputFieldComponent
+                      label="Total Quantity"
+                      required={true}
+                      type="number"
+                      placeholder="Total Quantity"
+                      inputValue={purchaseOrderData.totalQuantity}
+                      fun={(text) =>
+                        dispatch({
+                          type: "UPDATE_FIELD",
+                          field: "totalQuantity",
+                          value: text,
+                        })
+                      }
+                      editable={true}
+                    />
+                  </FormControl>
+                  <FormControl sx={{ flex: 1 }}>
+                    <InputFieldComponent
+                      label="Total Cost"
+                      required={true}
+                      type="number"
+                      placeholder="Total Cost"
+                      inputValue={purchaseOrderData.totalCost}
+                      fun={(text) =>
+                        dispatch({
+                          type: "UPDATE_FIELD",
+                          field: "totalCost",
+                          value: text,
+                        })
+                      }
+                      editable={true}
+                    />
+                  </FormControl>
+                </Stack>
+
+                <Stack direction="row" spacing={2} mt={2}>
+                  <FormControl sx={{ flex: 1 }}>
+                    <InputFieldComponent
+                      label="Total Tax"
+                      required={true}
+                      type="number"
+                      placeholder="Total Tax"
+                      inputValue={purchaseOrderData.totalTax}
+                      fun={(text) =>
+                        dispatch({
+                          type: "UPDATE_FIELD",
+                          field: "totalTax",
+                          value: text,
+                        })
+                      }
+                      editable={true}
+                    />
+                  </FormControl>
+                  <FormControl sx={{ flex: 1 }}>
+                    <InputFieldComponent
+                      label="Comments (if any)"
+                      placeholder="Enter Comments (if any)"
+                      inputValue={purchaseOrderData.comments}
+                      fun={(text) =>
+                        dispatch({
+                          type: "UPDATE_FIELD",
+                          field: "comments",
+                          value: text,
+                        })
+                      }
+                    />
+                  </FormControl>
                 </Stack>
               </Stack>
-            </CardOverflow>
-          </Card>
-          {/* <Card> */}
-            <div
-              style={{
-                marginLeft:"2%",
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
+              </Stack> */}
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                rowGap: 1,
+                columnGap: 3,
+                px: 4,
+                marginBottom: "1rem"
               }}
             >
-              <Typography
-                className="poppins"
-                style={{
-                  fontSize: "1rem",
-                  fontWeight: "700",
-                  fontFamily: "Poppins,sans-sherif",
-                }}
-              >
-                Item Details
-              </Typography>
-              <IconButton aria-label="exp" onClick={handleTableExpand}>
-                {tableToggle ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-              </IconButton>
-            </div>
-            {tableToggle && (
-              <Paper sx={{ width: "100%" }}>
+              <FormControl>
+                <InputFieldComponent
+                  label="PO Number"
+                  required={true}
+                  placeholder="Purchase Order No."
+                  value={`PO${value.poCounter}`}
+                  editable={true}
+                />
+              </FormControl>
+
+              <FormControl>
+                <InputFieldComponent
+                  label="Supplier ID"
+                  required={true}
+                  placeholder="Enter Supplier ID"
+                  value={value.supplierDetails.supplierId}
+                  fun={(text) =>
+                    value.setSupplierDetails({
+                      ...value.supplierDetails,
+                      supplierId: text,
+                    })
+                  }
+                  EndComponent={
+                    value.supplierDetails.supplierStatus === true ? (
+                      <BsFillInfoCircleFill onClick={() => setSupplierPopupStatus(true)} />
+                    ) : null
+                  }
+                />
+              </FormControl>
+
+              <FormControl>
+                <InputFieldComponent
+                  label="Lead Time"
+                  required={true}
+                  placeholder="Lead Time"
+                  value={value.supplierDetails.leadTime}
+                  fun={(text) =>
+                    value.setSupplierDetails({
+                      ...value.supplierDetails,
+                      leadTime: text,
+                    })
+                  }
+                  editable={true}
+                />
+              </FormControl>
+
+              <FormControl>
+                <InputFieldComponent
+                  label="Est. Delivery Date"
+                  required={true}
+                  type="date"
+                  placeholder="Estimated Delivery Date"
+                  inputValue={purchaseOrderData.estDeliveryDate}
+                  fun={(text) =>
+                    dispatch({
+                      type: "UPDATE_FIELD",
+                      field: "estDeliveryDate",
+                      value: text,
+                    })
+                  }
+                />
+              </FormControl>
+
+              <FormControl>
+                <InputFieldComponent
+                  label="Total Quantity"
+                  required={true}
+                  type="number"
+                  placeholder="Total Quantity"
+                  inputValue={purchaseOrderData.totalQuantity}
+                  fun={(text) =>
+                    dispatch({
+                      type: "UPDATE_FIELD",
+                      field: "totalQuantity",
+                      value: text,
+                    })
+                  }
+                  editable={true}
+                />
+              </FormControl>
+
+              <FormControl>
+                <InputFieldComponent
+                  label="Total Cost"
+                  required={true}
+                  type="number"
+                  placeholder="Total Cost"
+                  inputValue={purchaseOrderData.totalCost}
+                  fun={(text) =>
+                    dispatch({
+                      type: "UPDATE_FIELD",
+                      field: "totalCost",
+                      value: text,
+                    })
+                  }
+                  editable={true}
+                />
+              </FormControl>
+
+              <FormControl>
+                <InputFieldComponent
+                  label="Total Tax"
+                  required={true}
+                  type="number"
+                  placeholder="Total Tax"
+                  inputValue={purchaseOrderData.totalTax}
+                  fun={(text) =>
+                    dispatch({
+                      type: "UPDATE_FIELD",
+                      field: "totalTax",
+                      value: text,
+                    })
+                  }
+                  editable={true}
+                />
+              </FormControl>
+
+              <FormControl>
+                <InputFieldComponent
+                  label="Comments (if any)"
+                  placeholder="Enter Comments (if any)"
+                  inputValue={purchaseOrderData.comments}
+                  fun={(text) =>
+                    dispatch({
+                      type: "UPDATE_FIELD",
+                      field: "comments",
+                      value: text,
+                    })
+                  }
+                />
+              </FormControl>
+            </Box>
+
+          </CardOverflow>
+          {/* </Card> */}
+          {/* <Card> */}
+          <div
+            style={{
+              marginLeft: "2%",
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <Typography
+              style={{
+                fontSize: "1rem",
+                fontWeight: "700",
+                color: "white",
+                fontFamily: "Montserrat,sans-sherif",
+              }}
+            >
+              Item Details
+            </Typography>
+            <IconButton sx={{
+              color: 'white',
+              '&:hover': {
+                backgroundColor: '#a0b3d8',
+                color: 'white',
+              },
+            }} onClick={handleTableExpand} className="expandIcon">
+              {tableToggle ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            </IconButton>
+          </div>
+          {tableToggle && (
+            <div style={{
+              marginLeft: "2%",
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+
+            }}>
+              <Paper sx={{ width: "97.5%" }}>
                 <TableContainer sx={{}}>
-                  <Table stickyHeader aria-label="sticky table">
+                  <Table stickyHeader aria-label="sticky table" className="table-design">
                     <TableHead>
                       <TableRow>
                         <TableCell
@@ -561,7 +722,7 @@ function PoDetailsSide() {
                             >
                               {item.itemQuantity}
                             </TableCell>
-                           
+
                             <TableCell
                               align="center"
                               colSpan={0.5}
@@ -652,9 +813,9 @@ function PoDetailsSide() {
                     </TableBody>
                   </Table>
                 </TableContainer>
-              </Paper>
-            )}
-          {/* </Card> */}
+              </Paper></div>
+          )}
+
           <CardOverflow
             sx={{ borderTop: "1px solid", borderColor: "divider" }}
             style={{
@@ -666,35 +827,34 @@ function PoDetailsSide() {
           >
             <CardActions
               sx={{
-                justifyContent: "space-between",
+                justifyContent: "center",
                 marginLeft: "1rem",
                 marginRight: "1rem",
               }}
             >
               <CustomButton
-                size="md"
-                variant="solid"
-                style={{
-                  backgroundColor: "#1C244B",
-                  fontFamily: "Poppins,sans-serif",
-                }}
+
                 onClick={() => value.setFormSave((prevState) => !prevState)}
               >
+                <SaveIcon style={{ color: "2E333E" }}></SaveIcon>
                 SAVE
               </CustomButton>
               <CustomButton
                 onClick={() => setPoPreview(true)}
               >
+                <PreviewIcon style={{ color: "2E333E" }}></PreviewIcon>
                 PREVIEW
               </CustomButton>
               <CustomButton
-                
-                onClick={() =>(supplierRiskApi('SUP130'),setSupplierPopupStatus(true))}
-                // onClick={() => value.setFormSubmit((prevState) => !prevState)}
+
+                // onClick={() =>(supplierRiskApi('SUP130'),setSupplierPopupStatus(true))}
+                onClick={() => value.setFormSubmit((prevState) => !prevState)}
               >
+                <PublishIcon style={{ color: "2E333E" }}></PublishIcon>
                 SUBMIT
               </CustomButton>
             </CardActions>
+            {/* </div> */}
           </CardOverflow>
         </Card>
       </Grid>

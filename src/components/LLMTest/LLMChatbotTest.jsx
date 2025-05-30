@@ -18,7 +18,7 @@ import "../../styles/chatbot.css";
 import "../../styles/general.css";
 import ChatMessage from "../ChatMessage/ChatMessage";
 import TypingIndicatorComponent from "../ChatMessage/TypingIndicatorComponent";
-
+import ReactMarkdown from "react-markdown";
 export default function LLMChatbotTest() {
   const [messages, setMessages] = useState([]);
   const value = useContext(AuthContext);
@@ -45,70 +45,55 @@ export default function LLMChatbotTest() {
     let promotionType = getTrueValueKey(value.typeOfPromotion);
     let savedData = `
       ${promotionType ? `Promotion Type: ${promotionType},` : ""}
-
-      ${
-        value.promotionData.hierarchyType
-          ? `Hierarchy Type: ${value.promotionData.hierarchyType},`
-          : ""
+      ${value.promotionData.hierarchyType
+        ? `Hierarchy Type: ${value.promotionData.hierarchyType},`
+        : ""
       }
-      ${
-        value.promotionData.hierarchyValue
-          ? `Hierarchy Value: ${value.promotionData.hierarchyValue},`
-          : ""
+      ${value.promotionData.hierarchyValue
+        ? `Hierarchy Value: ${value.promotionData.hierarchyValue},`
+        : ""
       }
-      ${
-        value.promotionData.brand
-          ? `Hierarchy Brand: ${value.promotionData.brand},`
-          : ""
+      ${value.promotionData.brand
+        ? `Hierarchy Brand: ${value.promotionData.brand},`
+        : ""
       }
-      ${
-        value.promotionData.itemList
-          ? `Item List: ${value.promotionData.itemList},`
-          : ""
+      ${value.promotionData.itemList
+        ? `Item List: ${value.promotionData.itemList},`
+        : ""
       }
-      ${
-        value.promotionData.excludedItemList
-          ? `Excluded Item List: ${value.promotionData.excludedItemList},`
-          : ""
+      ${value.promotionData.excludedItemList
+        ? `Excluded Item List: ${value.promotionData.excludedItemList},`
+        : ""
       }
-      ${
-        value.promotionData.discountType
-          ? `Discount Type: ${value.promotionData.discountType},`
-          : ""
+      ${value.promotionData.discountType
+        ? `Discount Type: ${value.promotionData.discountType},`
+        : ""
       }
-      ${
-        value.promotionData.discountValue
-          ? `Discount Value: ${value.promotionData.discountValue},`
-          : ""
+      ${value.promotionData.discountValue
+        ? `Discount Value: ${value.promotionData.discountValue},`
+        : ""
       }
-      ${
-        value.promotionData.startDate
-          ? `Start Date: ${value.promotionData.startDate},`
-          : ""
+      ${value.promotionData.startDate
+        ? `Start Date: ${value.promotionData.startDate},`
+        : ""
       }
-      ${
-        value.promotionData.endDate
-          ? `End Date: ${value.promotionData.endDate},`
-          : ""
+      ${value.promotionData.endDate
+        ? `End Date: ${value.promotionData.endDate},`
+        : ""
       }
-      ${
-        value.promotionData.discountValue
-          ? `Discount Value: ${value.promotionData.discountValue},`
-          : ""
+      ${value.promotionData.discountValue
+        ? `Discount Value: ${value.promotionData.discountValue},`
+        : ""
       }
-      ${
-        value.promotionData.locationList
-          ? `Location List: ${value.promotionData.locationList},`
-          : ""
+      ${value.promotionData.locationList
+        ? `Location List: ${value.promotionData.locationList},`
+        : ""
       }
-      ${
-        value.promotionData.excludedLocationList
-          ? `Excluded Location List: ${value.promotionData.excludedLocationList},`
-          : ""
+      ${value.promotionData.excludedLocationList
+        ? `Excluded Location List: ${value.promotionData.excludedLocationList},`
+        : ""
       }
-     
     `;
-
     await handleMessageSubmit(savedData);
     value.setFormSave((prevState) => !prevState);
   };
@@ -184,16 +169,14 @@ export default function LLMChatbotTest() {
   }, [isPickerVisible]);
   const prevItemUpload = useRef(value.itemUpload);
   const prevStoreUpload = useRef(value.storeUpload);
-
   useEffect(() => {
     const hasChanged =
       prevItemUpload.current.items !== value.itemUpload.items ||
       prevItemUpload.current.excludedItems !== value.itemUpload.excludedItems;
-
     const hasChangedStore =
       prevStoreUpload.current.stores != value.storeUpload.stores ||
       prevStoreUpload.current.excludedStores !=
-        value.storeUpload.excludedStores;
+      value.storeUpload.excludedStores;
     if (
       hasChanged &&
       (value.itemUpload.eventItems != null ||
@@ -205,7 +188,6 @@ export default function LLMChatbotTest() {
       } else if (value.itemUpload.excludedItems) {
         uploadInvoice(value.itemUpload.eventExcludedItems);
       }
-
       prevItemUpload.current = value.itemUpload; // Update the reference to the latest itemUpload
     } else {
       console.log("Not");
@@ -228,7 +210,6 @@ export default function LLMChatbotTest() {
   function formatDate(date) {
     const regex = /^(\d{2})[\/-](\d{2})[\/-](\d{4})$/;
     const match = date.match(regex);
-
     if (match) {
       const day = match[1];
       const month = match[2];
@@ -241,20 +222,17 @@ export default function LLMChatbotTest() {
   }
   const promotionTypeRegex =
     /(\bsimple\b)|(\bBuy\s+\d+\s*,\s*Get\s+\d+\b)|(\bthreshold\s+\d+\b)|(\bGWP\b|\bGift\s+with\s+Purchase\b)/i;
-
   const typeSelection = async (data) => {
     if (typeof data === "string") {
       const match = data.match(promotionTypeRegex);
       if (match) {
         const [_, simple, buyXGetY, threshold, giftWithPurchase] = match;
-
         const newTypeOfPromotion = {
           simple: !!simple,
           buyXGetY: !!buyXGetY,
           threshold: !!threshold,
           giftWithPurchase: !!giftWithPurchase,
         };
-
         console.log(newTypeOfPromotion);
         value.setTypeOfPromotion(newTypeOfPromotion);
       }
@@ -285,7 +263,6 @@ export default function LLMChatbotTest() {
                 ? invoiceObject[key]
                 : [invoiceObject[key]];
               break;
-
             case "Excluded Items":
               // Check if the value is an array, if not, convert it to one
               updatedPromotionData.excludedItemList = Array.isArray(
@@ -346,39 +323,127 @@ export default function LLMChatbotTest() {
     ]
   );
   //API CALLS
+  // const handleMessageSubmit = async (input, inputFromUpload) => {
+  //   console.log("Input: ", input);
+  //   const textToSend = input.trim();
+  //   if (!textToSend && !inputFromUpload) return;
+  //   // Add User Message (if applicable)
+  //   if (!inputFromUpload) {
+  //     setMessages((prevMessages) => [
+  //       ...prevMessages,
+  //       { text: textToSend, fromUser: true, key: `user-${Date.now()}` },
+  //     ]);
+  //     setInput("");
+  //   }
+  //   // Start Typing Indicator
+  //   if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+  //   typingTimeoutRef.current = setTimeout(() => setTyping(true), 1000);
+  //   try {
+  //     const response = await fetch("http://localhost:8000/chat/", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json", Accept: "text/plain" },
+  //       body: JSON.stringify({
+  //         thread_id: "admin",
+  //         message: textToSend || inputFromUpload,
+  //       }),
+  //     });
+  //     // Stop Typing Indicator
+  //     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+  //     typingTimeoutRef.current = null;
+  //     setTyping(false);
+  //     if (!response.ok) {
+  //       const errorBody = await response.text();
+  //       console.error("Server Error Body:", errorBody);
+  //       throw new Error(
+  //         `Failed to fetch data: ${response.status} ${response.statusText}`
+  //       );
+  //     }
+  //     // Add Initial Bot Message Placeholder
+  //     const botMessageKey = `bot-${Date.now()}`;
+  //     setMessages((prevMessages) => [
+  //       ...prevMessages,
+  //       { text: "", fromUser: false, key: botMessageKey },
+  //     ]);
+  //     // --- Process Stream ---
+  //     const reader = response.body.getReader();
+  //     const decoder = new TextDecoder();
+  //     let done = false;
+  //     console.log("Starting stream reading loop..."); // Log loop start
+  //     while (!done) {
+  //       const { value, done: doneReading } = await reader.read();
+  //       done = doneReading;
+  //       // !!! ADD LOGS HERE !!!
+  //       console.log("Reader Read:", { value, done }); // Log raw reader output
+  //       if (value) {
+  //         // Check if value (Uint8Array) exists
+  //         const chunkStr = decoder.decode(value, { stream: !done });
+  //         // !!! ADD LOG HERE !!!
+  //         console.log("Decoded Chunk:", chunkStr); // Log the decoded string
+  //         if (chunkStr) {
+  //           // !!! ADD LOG HERE !!!
+  //           console.log("Attempting to update state with chunk:", chunkStr);
+  //           setMessages((prevMessages) =>
+  //             prevMessages.map((msg) =>
+  //               msg.key === botMessageKey
+  //                 ? { ...msg, text: msg.text + chunkStr }
+  //                 : msg
+  //             )
+  //           );
+  //         } else {
+  //           console.log("Decoded chunk is empty, not updating state.");
+  //         }
+  //       } else if (done) {
+  //         console.log("Stream finished (done is true, no more values).");
+  //       }
+  //     }
+  //     console.log("Finished stream reading loop."); // Log loop end
+  //   } catch (error) {
+  //     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+  //     typingTimeoutRef.current = null;
+  //     setTyping(false);
+  //     console.error("Error fetching or processing stream:", error);
+  //     setMessages((prevMessages) => [
+  //       ...prevMessages,
+  //       {
+  //         text: `Error: ${error.message}`,
+  //         fromUser: false,
+  //         isError: true,
+  //         key: `error-${Date.now()}`,
+  //       },
+  //     ]);
+  //   }
+  // };
   const handleMessageSubmit = async (input, inputFromUpload) => {
     console.log("Input: ", input);
     const textToSend = input.trim();
-    if (!textToSend && !inputFromUpload) return;
-
-    // Add User Message (if applicable)
-    if (!inputFromUpload) {
+    // Ensure inputFromUpload is a string if it's the primary content
+    const messageContent = textToSend || (typeof inputFromUpload === 'string' ? inputFromUpload : "");
+    if (!messageContent) return; // Simplified check if there's any content to send
+    // Add User Message (if applicable and not an upload-only scenario)
+    if (!inputFromUpload && textToSend) { // Only add user message if textToSend is present
       setMessages((prevMessages) => [
         ...prevMessages,
+        // User messages can remain simple text objects
         { text: textToSend, fromUser: true, key: `user-${Date.now()}` },
       ]);
       setInput("");
     }
-
     // Start Typing Indicator
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => setTyping(true), 1000);
-
     try {
       const response = await fetch("http://localhost:8000/chat/", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "text/plain" },
+        headers: { "Content-Type": "application/json", Accept: "text/plain" }, // Server should stream plain text (Markdown)
         body: JSON.stringify({
           thread_id: "admin",
-          message: textToSend || inputFromUpload,
+          message: messageContent, // Use the prepared message content
         }),
       });
-
       // Stop Typing Indicator
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = null;
       setTyping(false);
-
       if (!response.ok) {
         const errorBody = await response.text();
         console.error("Server Error Body:", errorBody);
@@ -386,41 +451,48 @@ export default function LLMChatbotTest() {
           `Failed to fetch data: ${response.status} ${response.statusText}`
         );
       }
-
       // Add Initial Bot Message Placeholder
       const botMessageKey = `bot-${Date.now()}`;
+      const initialMarkdownString = "";
       setMessages((prevMessages) => [
         ...prevMessages,
-        { text: "", fromUser: false, key: botMessageKey },
+        {
+          key: botMessageKey,
+          fromUser: false,
+          // Store the raw Markdown string for accumulation
+          rawMarkdown: initialMarkdownString,
+          // The 'text' field will hold the ReactMarkdown component
+          text: <ReactMarkdown>{initialMarkdownString}</ReactMarkdown>,
+        },
       ]);
-
       // --- Process Stream ---
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let done = false;
-      console.log("Starting stream reading loop..."); // Log loop start
-
+      console.log("Starting stream reading loop...");
       while (!done) {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
-        // !!! ADD LOGS HERE !!!
-        console.log("Reader Read:", { value, done }); // Log raw reader output
-
+        console.log("Reader Read:", { value, done });
         if (value) {
-          // Check if value (Uint8Array) exists
           const chunkStr = decoder.decode(value, { stream: !done });
-          // !!! ADD LOG HERE !!!
-          console.log("Decoded Chunk:", chunkStr); // Log the decoded string
-
+          console.log("Decoded Chunk:", chunkStr);
           if (chunkStr) {
-            // !!! ADD LOG HERE !!!
             console.log("Attempting to update state with chunk:", chunkStr);
             setMessages((prevMessages) =>
-              prevMessages.map((msg) =>
-                msg.key === botMessageKey
-                  ? { ...msg, text: msg.text + chunkStr }
-                  : msg
-              )
+              prevMessages.map((msg) => {
+                // Ensure this is the bot message we intend to update
+                if (msg.key === botMessageKey && !msg.fromUser) {
+                  const newRawMarkdown = (msg.rawMarkdown || "") + chunkStr;
+                  return {
+                    ...msg,
+                    rawMarkdown: newRawMarkdown,
+                    // Update the 'text' field with a new ReactMarkdown component
+                    text: <ReactMarkdown>{newRawMarkdown}</ReactMarkdown>,
+                  };
+                }
+                return msg;
+              })
             );
           } else {
             console.log("Decoded chunk is empty, not updating state.");
@@ -429,7 +501,7 @@ export default function LLMChatbotTest() {
           console.log("Stream finished (done is true, no more values).");
         }
       }
-      console.log("Finished stream reading loop."); // Log loop end
+      console.log("Finished stream reading loop.");
     } catch (error) {
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = null;
@@ -438,6 +510,7 @@ export default function LLMChatbotTest() {
       setMessages((prevMessages) => [
         ...prevMessages,
         {
+          // Error messages can also be simple text or styled differently
           text: `Error: ${error.message}`,
           fromUser: false,
           isError: true,
@@ -446,7 +519,6 @@ export default function LLMChatbotTest() {
       ]);
     }
   };
-
   const getItemDetails = async () => {
     try {
       const response = await axios({
@@ -498,7 +570,6 @@ export default function LLMChatbotTest() {
         discountValue: parseFloat(value.promotionData.discountValue),
       }));
       console.log("updated invoice items: ", promoDataDetails);
-
       const response = await axios({
         method: "post",
         url: `http://localhost:8000/promotionDetails/`,
@@ -515,7 +586,6 @@ export default function LLMChatbotTest() {
         text: "PO Created Successfully",
         isSuccessful: true,
       });
-
       // console.log("invoice Details Creation Response:", response.data);
     } catch (error) {
       value.setModalDetails({
@@ -530,7 +600,6 @@ export default function LLMChatbotTest() {
       console.log("PO DEtails Creation Error:", error, error.data);
     }
   };
-
   //create invoice header
   const promotionHeaderCreation = async () => {
     console.log("Invoice Header Creation");
@@ -575,10 +644,8 @@ export default function LLMChatbotTest() {
           isFile: true,
         },
       ]);
-
       // value.setModalText("Invoice created successfully!");
       await clearDataApi();
-
       // Set pdfCardVisible to true to ensure it stays visible
       setPdfCardVisible(false);
     } catch (error) {
@@ -597,7 +664,6 @@ export default function LLMChatbotTest() {
   const formatInvoice = (jsonData) => {
     console.log("JSON data: ", jsonData.date);
     let modifiedDate = "";
-
     // Format the date field
     try {
       const dateObject = new Date(jsonData.date);
@@ -612,10 +678,8 @@ export default function LLMChatbotTest() {
     } catch (error) {
       console.log("Error parsing date:", error);
     }
-
     // Update the date field in JSON
     const modifiedJsonData = { ...jsonData, date: modifiedDate };
-
     return Object.entries(modifiedJsonData)
       .map(([key, value]) => {
         if (Array.isArray(value)) {
@@ -633,8 +697,7 @@ export default function LLMChatbotTest() {
                       ([subKey, subValue]) =>
                         `${subKey
                           .replace(/_/g, " ")
-                          .replace(/\b\w/g, (char) => char.toUpperCase())}: ${
-                          subValue ?? "N/A"
+                          .replace(/\b\w/g, (char) => char.toUpperCase())}: ${subValue ?? "N/A"
                         }`
                     )
                     .join(", ")
@@ -645,15 +708,13 @@ export default function LLMChatbotTest() {
           // Handle normal key-value pairs
           return `${key
             .replace(/_/g, " ")
-            .replace(/\b\w/g, (char) => char.toUpperCase())}: ${
-            value ?? "N/A"
-          }`;
+            .replace(/\b\w/g, (char) => char.toUpperCase())}: ${value ?? "N/A"
+            }`;
         }
       })
       .join("\n");
   };
   const [uploadLoading, setUploadLoading] = useState(false);
-
   const uploadInvoice = async (event) => {
     let file = event.target.files[0];
     console.log("Event:", event.target.files);
@@ -680,7 +741,6 @@ export default function LLMChatbotTest() {
         //PDF VIEW
         if (file && file.type === "application/pdf") {
           value.setUploadedFile(fileDetails);
-
           // value.setModalText("Invoice uploaded successfully!");
           setUploadLoading(false);
           value.setModalDetails({
@@ -688,7 +748,6 @@ export default function LLMChatbotTest() {
             text: "File uploaded successfully!",
             isSuccessful: true,
           });
-
           setMessages((prevMessages) => [
             ...prevMessages,
             {
@@ -739,24 +798,24 @@ export default function LLMChatbotTest() {
               value.itemUpload.items &&
                 response.data.structured_data["Items"].length > 0
                 ? `Items ${JSON.stringify(
-                    response.data.structured_data["Items"]
-                  )}`
+                  response.data.structured_data["Items"]
+                )}`
                 : value.itemUpload.excludedItems &&
                   response.data.structured_data["Items"].length > 0
-                ? `Excluded Items ${JSON.stringify(
+                  ? `Excluded Items ${JSON.stringify(
                     response.data.structured_data["Items"]
                   )}`
-                : value.storeUpload.stores &&
-                  response.data.structured_data["Stores"].length > 0
-                ? `Stores ${JSON.stringify(
-                    response.data.structured_data["Stores"]
-                  )}`
-                : value.storeUpload.excludedStores &&
-                  response.data.structured_data["Stores"].length > 0
-                ? `Excluded Stores ${JSON.stringify(
-                    response.data.structured_data["Stores"]
-                  )}`
-                : null,
+                  : value.storeUpload.stores &&
+                    response.data.structured_data["Stores"].length > 0
+                    ? `Stores ${JSON.stringify(
+                      response.data.structured_data["Stores"]
+                    )}`
+                    : value.storeUpload.excludedStores &&
+                      response.data.structured_data["Stores"].length > 0
+                      ? `Excluded Stores ${JSON.stringify(
+                        response.data.structured_data["Stores"]
+                      )}`
+                      : null,
               true
             );
           }
@@ -777,7 +836,6 @@ export default function LLMChatbotTest() {
           //     true
           //   );
           // }
-
           // value.setItemUpload({
           //   items: items,
           //   excludedItems: excludedItems,
@@ -806,7 +864,6 @@ export default function LLMChatbotTest() {
   const clearDataApi = async () => {
     value.setModalVisible(true);
     value.setIsActive(false);
-
     try {
       // console.log("clearDataApi");
       const response = await axios({
@@ -876,21 +933,21 @@ export default function LLMChatbotTest() {
         }}
         id="form1"
         className="chatbot-input-form"
-      >
-        <label className="paneIcon">
-          <input
+>
+<label className="paneIcon">
+<input
             type="file"
             style={{ display: "none" }}
             onChange={(e) => uploadInvoice(e)}
             onClick={(event) => (event.target.value = "")}
           />
-          <Add className="paneIcon" />
-        </label>
-        <Smiley
+<Add className="paneIcon" />
+</label>
+<Smiley
           className="paneIcon"
           onClick={() => setPickerVisible(!isPickerVisible)} // Toggle emoji picker visibility
         />
-        <input
+<input
           id="inputValue"
           type="text"
           placeholder="Type a message..."
@@ -901,12 +958,12 @@ export default function LLMChatbotTest() {
           }}
           style={{ margin: "0.5rem", height: "2rem" }}
         />
-        <SendIcon
+<SendIcon
           className="paneIcon"
           onClick={() => handleMessageSubmit(input)}
         />
-        <i className="fa fa-paper-plane-o" aria-hidden="true"></i>
-      </form> */}
+<i className="fa fa-paper-plane-o" aria-hidden="true"></i>
+</form> */}
       <ChatbotInputForm
         input={input}
         setInput={setInput}

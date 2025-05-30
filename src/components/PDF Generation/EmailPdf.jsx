@@ -3,8 +3,7 @@ import { pdf } from "@react-pdf/renderer";
 import PromotionPdf from "./PromotionPdf";
 import { PurchaseOrderPdf } from "./PurchaseOrderPdf";
 import { InvoicePdf } from "./InvoicePdf";
-import { CLEAR_DATA, FETCH_INVOICE_BY_ID, FETCH_PO_BY_ID, FETCH_PROMO_BY_ID, NEW_FILE, SUPPLIER_API } from "../../const/ApiConst";
-
+import { CLEAR_DATA, FETCH_INVOICE_BY_ID, FETCH_PO_BY_ID, FETCH_PROMO_BY_ID, NEW_FILE, FETCH_SUPPLIER_BYID } from "../../const/ApiConst";
 // Helper to POST the file
 const clearAllData = async () => {
   try {
@@ -22,13 +21,11 @@ const clearAllData = async () => {
     console.log("Clear Error:", error, error.data);
   }
 };
-
 async function sendFile(file, email, body) {
   const form = new FormData();
   form.append("file", file);
   form.append("email", email);
   form.append("body", JSON.stringify(body));
-
   try {
     const { status } = await axios.post(
       NEW_FILE,
@@ -46,7 +43,6 @@ async function sendFile(file, email, body) {
     return { success: false, message: err.response?.data?.message || err.message }; // Indicate failure with error message
   }
 }
-
 // Centralize each “type”’s fetch, component, and filename
 const docConfigs = {
   promotion: {
@@ -58,17 +54,15 @@ const docConfigs = {
       };
     },
     component: ({ header, details }) => (
-      <PromotionPdf header={header} details={details} />
+<PromotionPdf header={header} details={details} />
     ),
     filename: (id) => `Promotion-${id}.pdf`,
   },
   purchaseOrder: {
     fetch: async (id) => {
       const { data } = await axios.get(FETCH_PO_BY_ID(id));
-      
       const supplierId = data.po_details[0]?.supplierId;
-      const apiUrl = SUPPLIER_API(supplierId);
-
+      const apiUrl = FETCH_SUPPLIER_BYID(supplierId);
       const supplierResp = await axios.get(
         apiUrl
       );
@@ -79,7 +73,7 @@ const docConfigs = {
       };
     },
     component: ({ poHeader, details, supplierData }) => (
-      <PurchaseOrderPdf
+<PurchaseOrderPdf
         poHeader={poHeader}
         details={details}
         supplierData={supplierData}
@@ -96,12 +90,11 @@ const docConfigs = {
       };
     },
     component: ({ invoiceHeader, inv_details }) => (
-      <InvoicePdf invoiceHeader={invoiceHeader} inv_details={inv_details} />
+<InvoicePdf invoiceHeader={invoiceHeader} inv_details={inv_details} />
     ),
     filename: (id) => `Invoice-${id}.pdf`,
   },
 };
-
 export default async function EmailPdf({
   emailUsed,
   bodyUsed,
@@ -124,7 +117,6 @@ export default async function EmailPdf({
       // Explicitly return a failure status if no type is selected
       return { success: false, message: "No document type selected" };
     }
-
     // 2. Fetch data & build component
     const config = docConfigs[type];
     const props = await config.fetch(documentId);
@@ -134,15 +126,12 @@ export default async function EmailPdf({
       return { success: false, message: `No data for ${type}` };
     }
     const Doc = config.component(props);
-
     // 3. Generate PDF blob
     const blob = await pdf(Doc).toBlob();
-
     // 4. Wrap in File and send
     const file = new File([blob], config.filename(documentId), {
       type: "application/pdf",
     });
-    
     // Crucial: Return the result of sendFile
     return await sendFile(file, emailUsed, bodyUsed);
   } catch (err) {
@@ -173,7 +162,6 @@ export default async function EmailPdf({
 // //   form.append("file", file);
 // //   form.append("email", email);
 // //   form.append("body", JSON.stringify(body));
-
 // //   try {
 // //     const { status } = await axios.post(
 // //       NEW_FILE,
@@ -193,7 +181,6 @@ export default async function EmailPdf({
 //   form.append("file", file);
 //   form.append("email", email);
 //   form.append("body", JSON.stringify(body));
-
 //   try {
 //     const { status } = await axios.post(
 //       NEW_FILE,
@@ -211,7 +198,6 @@ export default async function EmailPdf({
 //     return { success: false, message: err.response?.data?.message || err.message }; // Indicate failure with error message
 //   }
 // }
-
 // // Centralize each “type”’s fetch, component, and filename
 // const docConfigs = {
 //   promotion: {
@@ -230,10 +216,8 @@ export default async function EmailPdf({
 //   purchaseOrder: {
 //     fetch: async (id) => {
 //       const { data } = await axios.get(FETCH_PO_BY_ID(id));
-      
 //       const supplierId = data.po_details[0]?.supplierId;
-//       const apiUrl = SUPPLIER_API(supplierId);
-
+//       const apiUrl = FETCH_SUPPLIER_BYID(supplierId);
 //       const supplierResp = await axios.get(
 //         apiUrl
 //       );
@@ -266,7 +250,6 @@ export default async function EmailPdf({
 //     filename: (id) => `Invoice-${id}.pdf`,
 //   },
 // };
-
 // export default async function EmailPdf({
 //   emailUsed,
 //   bodyUsed,
@@ -288,7 +271,6 @@ export default async function EmailPdf({
 //       console.warn("No document type selected");
 //       return;
 //     }
-
 //     // 2. Fetch data & build component
 //     const config = docConfigs[type];
 //     const props = await config.fetch(documentId);
@@ -297,10 +279,8 @@ export default async function EmailPdf({
 //       return;
 //     }
 //     const Doc = config.component(props);
-
 //     // 3. Generate PDF blob
 //     const blob = await pdf(Doc).toBlob();
-
 //     // 4. Wrap in File and send
 //     const file = new File([blob], config.filename(documentId), {
 //       type: "application/pdf",
@@ -310,8 +290,6 @@ export default async function EmailPdf({
 //     console.error("Error in EmailPdf:", err);
 //   }
 // }
-
-
 // // Working Email PDF Code:
 // import { BlobProvider, pdf } from "@react-pdf/renderer";
 // import axios from "axios";
@@ -322,7 +300,6 @@ export default async function EmailPdf({
 // import PromotionPdf from "./PromotionPdf";
 // import { PurchaseOrderPdf } from "./PurchaseOrderPdf";
 // import { InvoicePdf } from "./InvoicePdf";
-
 // // sendFile function to upload the file
 // const sendFile = async (file, email, body) => {
 //   const formData = new FormData();
@@ -330,7 +307,6 @@ export default async function EmailPdf({
 //   formData.append("email", email);
 //   formData.append("body", JSON.stringify(body)); // Convert body to JSON string
 //   console.log("Inside send file");
-
 //   try {
 //     const response = await axios.post(
 //       "http://localhost:8000/filenew",
@@ -341,7 +317,6 @@ export default async function EmailPdf({
 //         },
 //       }
 //     );
-
 //     if (response.status === 200) {
 //       console.log("Email has been sent");
 //     }
@@ -355,7 +330,6 @@ export default async function EmailPdf({
 //     }
 //   }
 // };
-
 // // A normal function that generates the PDF and sends it via email
 // const EmailPdf = async ({
 //   emailUsed,
@@ -363,7 +337,6 @@ export default async function EmailPdf({
 //   invoice = false,
 //   purchaseOrder = false,
 //   promotion = false,
-
 //   documentId,
 // }) => {
 //   try {
@@ -371,7 +344,6 @@ export default async function EmailPdf({
 //       console.log("No document type selected");
 //       return null;
 //     }
-
 //     //promotion
 //     let promoHeader;
 //     let promoDetails;
@@ -395,12 +367,10 @@ export default async function EmailPdf({
 //         console.log("Get PO Error:", error);
 //       }
 //     };
-
 //     //purchase order
 //     let poHeader;
 //     let poDetails;
 //     let supplierDetails;
-
 //     const getPoDetails = async (id) => {
 //       console.log("PO ID:", id);
 //       try {
@@ -436,10 +406,8 @@ export default async function EmailPdf({
 //         console.log("Error fetching Supplier details:", error);
 //       }
 //     };
-
 //     let invoiceHeader;
 //     let invoiceDetails;
-
 //     const getInvDetails = async (id) => {
 //       console.log("inv id:", id);
 //       try {
@@ -495,10 +463,8 @@ export default async function EmailPdf({
 //     } else {
 //       throw new Error("No document type selected");
 //     }
-
 //     // 2. Use react-pdf's `pdf()` API to generate a Blob
 //     const blob = await pdf(DocComponent).toBlob();
-
 //     // 3. Wrap that Blob in a File object
 //     const filename = promotion
 //       ? `Promotion-${documentId}.pdf`
@@ -511,5 +477,4 @@ export default async function EmailPdf({
 //     console.error("Error in EmailPdf:", error);
 //   }
 // };
-
 // export default EmailPdf;

@@ -1,9 +1,10 @@
 .generalView {
   margin-top: 7.25vh;
+
   /* height: 90vh; */
   margin-left: 1vw;
   /* margin-left: 2vw; */
-  
+
 }
 
 .openSans {
@@ -15,9 +16,37 @@
 }
 
 .tableHeader {
-  font-family: "Poppins,sans-serif";
+  font-family: "Montserrat", sans-serif;
   font-size: "0.6rem";
-  color: "#575F6E";
+  color: "#666666";
+}
+
+.form-label-styled {
+  margin-bottom: 0.2rem;
+  color: #ffffff;
+  font-family: "Montserrat", sans-serif;
+  /* White label */
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.input-with-icons::placeholder {
+  color: #b0b0b0;
+  font-family: "Montserrat", sans-serif;
+  /* Light grey placeholder */
+  opacity: 1;
+  /* Ensures visibility in some browsers */
+}
+
+
+.TableRow:nth-child(odd) {
+  background-color: #666666;
+  /* Light grey for odd rows */
+}
+
+.TableRow:nth-child(even) {
+  background-color: #ffffff;
+  /* White for even rows */
 }
 
 .labelText {
@@ -30,10 +59,12 @@
   justify-content: center;
   align-items: center;
 }
+
 .generalRadio {
   margin-top: 0.25rem;
   margin-bottom: 0.25rem;
 }
+
 .form-check-inline {
   display: flex;
   justify-content: center;
@@ -69,7 +100,7 @@
 }
 
 .headerGrid {
-  height: 7.25vh;
+  height: 3rem;
   background-color: #2E333E;
   width: 100vw;
   justify-content: space-between;
@@ -88,8 +119,9 @@
 
 .logoImage {
   display: flex;
-  width: 50%;
+  width: 1.8rem;
 }
+
 .iconContainer {
   display: flex;
   flex-direction: row;
@@ -104,30 +136,40 @@
   background-color: #1c244b;
   width: 2%;
 }
+
 .expContainerHeader {
   display: flex;
-  align-items: baseline; /* Align based on text baseline */
+  align-items: baseline;
+  /* Align based on text baseline */
   margin-top: 0.5rem;
-  font-family: "Varela Round", sans-serif;
+  font-family: "Montserrat", sans-serif;
 }
 
 .textStyleHeader {
+  font-family: "Montserrat", sans-serif;
   font-weight: 700;
   color: white;
   font-size: 1.5rem;
-  line-height: 1; /* Optional: helps alignment be more predictable */
+  line-height: 1;
+  /* Optional: helps alignment be more predictable */
 }
 
 .xHeader {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 700;
+  font-family: "Montserrat", sans-serif;
   margin-left: 0.1rem;
   line-height: 1;
   color: white;
 }
+
 .headerIcons {
   margin-left: 0.25rem;
   margin-right: 0.25 rem;
   width: 1.25em;
   height: 1.25em;
 }
+
+/* .MuiIconButton-root {
+  color: #000;
+} */

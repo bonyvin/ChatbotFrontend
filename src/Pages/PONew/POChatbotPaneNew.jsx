@@ -23,6 +23,7 @@ import "../../styles/general.css";
 import "../../styles/chatbot.css";
 import { ADD_PO_DETAILS, CHAT, CLEAR_DATA, FETCH_SUPPLIER_BYID, PO_CREATION, UPLOAD_PO } from "../../const/ApiConst";
 import EmailPdf from "../../components/PDF Generation/EmailPdf";
+import { BorderColor } from "@mui/icons-material";
 
 export default function POChatbotPane() {
   const [messages, setMessages] = useState([]);
@@ -778,8 +779,8 @@ export default function POChatbotPane() {
 
   console.log("checkConsole", value);
   return (
-    <Card className="chatbot-card">
-      <Sheet
+    <div className="chatbot-card">
+      <div
         className="chatbot-area imageBackground"
         ref={messageEl}
       >
@@ -817,9 +818,7 @@ export default function POChatbotPane() {
           {typing && (
             <TypingIndicatorComponent scrollToBottom={scrollToBottom} />
           )}
-          
         </Box>
-       
         <ChatbotInputForm
           input={input}
           setInput={setInput}
@@ -836,7 +835,7 @@ export default function POChatbotPane() {
             <Picker data={data} onEmojiSelect={handleEmojiSelect} />
           </div>
         )}
-      </Sheet>
-    </Card>
+      </div>
+    </div>
   );
 }

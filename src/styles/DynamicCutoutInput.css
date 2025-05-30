@@ -1,4 +1,4 @@
-.position-relative {
+/* .position-relative {
   position: relative;
 }
 
@@ -20,28 +20,24 @@
 
 .text-secondary {
   color: #6c757d !important;
-  /* Bootstrap's secondary text color */
 }
 
 .bg-white {
   background-color: #fff !important;
-  /* Bootstrap's white background color */
 }
 
 .form-control {
   border: none;
   border-radius: 0.2rem;
   border: 0.08rem solid #ced4da;
-  /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);  */
-  /* Adjust shadow as needed */
 }
 
 .form-control:focus {
   border-color: #007bff;
   box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.25);
-}
+} */
 
-#custom {
+/* #custom { */
   /* left: 3rem;
     font-size: 0.75rem;
     font-family: "Poppins", sans-serif;
@@ -50,7 +46,7 @@
     display: flex; */
   /* width: 30%; */
   /* width: max-content; */ /* font-family: "Open Sans", sans-serif; */
-  margin-left: 10%;
+  /* margin-left: 10%;
   justify-content: flex-start;
   width: 90%;
   left: 40%;
@@ -68,16 +64,64 @@
   top: 50%;
   transform: translateY(-50%);
 }
+  .input-with-icons {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+} */
 
+/*
 .input-icon.start {
-  left: 10px; /* Position the start icon inside the input field */
+  left: 10px;  Position the start icon inside the input field 
+}
+  */
+
+  /*
+.input-icon.end {
+  right: 10px;  Position the end icon inside the input field 
+}
+*/
+
+.form-group-styled {
+  margin-bottom: 0.075rem;
 }
 
-.input-icon.end {
-  right: 10px; /* Position the end icon inside the input field */
+
+.form-label-styled {
+  margin-bottom: 0.2rem;
+  /* Less space between label and input */
 }
 
 .input-with-icons {
-  padding-left: 0.75rem;
-  padding-right: 0.75rem;
+  padding: 0.4rem 0.6rem;
+  /* Slightly tighter input padding */
+  font-size: 0.9rem;
+}
+
+
+.required {
+  color: red;
+  margin-left: 0.2rem;
+}
+
+/* .input-with-icons {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+} */
+
+.input-icon.start,
+.input-icon.end {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.input-icon.start {
+  left: 0.75rem;
+}
+
+.input-icon.end {
+  right: 0.75rem;
 }
