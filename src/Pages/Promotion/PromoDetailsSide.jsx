@@ -112,6 +112,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
   useEffect(() => {
     scrollToBottom();
   }, [tableToggle]);
+
   useEffect(() => {
     if (value.promotionData.itemList.length > 0) {
       setSelectedItems((prevSelectedItems) => {
@@ -156,6 +157,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
     value.promoTotalItemsArray,
     value.promotionData.hierarchyType,
   ]);
+
   const handleRadioChange = (type) => {
     value.setTypeOfPromotion({
       simple: type === "simple",
@@ -221,44 +223,156 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
     });
   };
   // Generic change handler that updates the proper state based on modalType
+  // const handleCheckboxChange = (event) => {
+  //   const { name, checked } = event.target;
+  //   if (modalType === "items") {
+  //     setSelectedItems((prev) => ({ ...prev, [name]: checked }));
+  //     console.log("name,checked,event", name, checked);
+  //     value.setPromotionData({
+  //       ...value.promotionData,
+  //       itemList: checked
+  //         ? [...value.promotionData.itemList, name] // Add the item if checked
+  //         : value.promotionData.itemList.filter((item) => item !== name), // Remove the item if unchecked
+  //     });
+  //   } else if (modalType === "excluded") {
+  //     setExcludedSelectedItems((prev) => ({ ...prev, [name]: checked }));
+  //     value.setPromotionData({
+  //       ...value.promotionData,
+  //       itemList: checked
+  //         ? [...value.promotionData.excludedItemList, name] // Add the item if checked
+  //         : value.promotionData.excludedItemList.filter(
+  //             (item) => item !== name
+  //           ), // Remove the item if unchecked
+  //     });
+  //   } else if (modalType === "stores") {
+  //     setSelectedStores((prev) => ({ ...prev, [name]: checked }));
+  //     value.setPromotionData({
+  //       ...value.promotionData,
+  //       locationList: checked
+  //         ? [...value.promotionData.locationList, name] // Add the item if checked
+  //         : value.promotionData.locationList.filter((item) => item !== name),
+  //     });
+  //   } else if (modalType === "storesExcluded") {
+  //     setExcludedSelectedStores((prev) => ({ ...prev, [name]: checked }));
+  //     value.setPromotionData({
+  //       ...value.promotionData,
+  //       excludedLocationList: checked
+  //         ? [...value.promotionData.excludedLocationList, name] // Add the item if checked
+  //         : value.promotionData.excludedLocationList.filter(
+  //             (item) => item !== name
+  //           ),
+  //     });
+  //   }
+  // };
   const handleCheckboxChange = (event) => {
     const { name, checked } = event.target;
+
     if (modalType === "items") {
+      // USER JUST CLICKED a checkbox in the “Items” modal.
+      //  → set selectedItems[name] = checked
+      //  → ALSO force excludedSelectedItems[name] = false if checked === true
       setSelectedItems((prev) => ({ ...prev, [name]: checked }));
-      console.log("name,checked,event", name, checked);
+
+      // Update the “itemList” in promotionData
+      const newItemList = checked
+        ? [...value.promotionData.itemList, name]
+        : value.promotionData.itemList.filter((i) => i !== name);
+
+      // If the user is checking name, we must remove it from excludedSelectedItems
+      let newExcluded = { ...excludedSelectedItems };
+      let newExcludedList = [...value.promotionData.excludedItemList];
+      if (checked) {
+        // Force‐uncheck in excludedSelectedItems
+        newExcluded[name] = false;
+        // Remove from promotionData.excludedItemList if it was there
+        newExcludedList = newExcludedList.filter((i) => i !== name);
+      }
+      setExcludedSelectedItems(newExcluded);
+
+      // Finally, write these two arrays back into promotionData
       value.setPromotionData({
         ...value.promotionData,
-        itemList: checked
-          ? [...value.promotionData.itemList, name] // Add the item if checked
-          : value.promotionData.itemList.filter((item) => item !== name), // Remove the item if unchecked
+        itemList: newItemList,
+        excludedItemList: newExcludedList,
       });
-    } else if (modalType === "excluded") {
+    }
+    else if (modalType === "excluded") {
+      // USER JUST CLICKED a checkbox in the “Excluded Items” modal.
+      //  → set excludedSelectedItems[name] = checked
+      //  → ALSO force selectedItems[name] = false if checked === true
       setExcludedSelectedItems((prev) => ({ ...prev, [name]: checked }));
+
+      // Update the “excludedItemList” in promotionData
+      const newExcludedList = checked
+        ? [...value.promotionData.excludedItemList, name]
+        : value.promotionData.excludedItemList.filter((i) => i !== name);
+
+      // If the user is checking name, we must remove it from selectedItems
+      let newSelected = { ...selectedItems };
+      let newItemList = [...value.promotionData.itemList];
+      if (checked) {
+        // Force‐uncheck in selectedItems
+        newSelected[name] = false;
+        // Remove from promotionData.itemList if it was there
+        newItemList = newItemList.filter((i) => i !== name);
+      }
+      setSelectedItems(newSelected);
+
+      // Finally, write these two arrays back into promotionData
       value.setPromotionData({
         ...value.promotionData,
-        itemList: checked
-          ? [...value.promotionData.excludedItemList, name] // Add the item if checked
-          : value.promotionData.excludedItemList.filter(
-              (item) => item !== name
-            ), // Remove the item if unchecked
+        excludedItemList: newExcludedList,
+        itemList: newItemList,
       });
-    } else if (modalType === "stores") {
+    }
+    else if (modalType === "stores") {
+      // USER JUST CLICKED a checkbox in the “Stores” modal.
       setSelectedStores((prev) => ({ ...prev, [name]: checked }));
+
+      // Update the “locationList” in promotionData
+      const newLocationList = checked
+        ? [...value.promotionData.locationList, name]
+        : value.promotionData.locationList.filter((i) => i !== name);
+
+      // If the user checked name in “stores,” force it out of “storesExcluded”
+      let newExcludedStoreState = { ...excludedSelectedStores };
+      let newExcludedStoreList = [...value.promotionData.excludedLocationList];
+      if (checked) {
+        newExcludedStoreState[name] = false;
+        newExcludedStoreList = newExcludedStoreList.filter((i) => i !== name);
+      }
+      setExcludedSelectedStores(newExcludedStoreState);
+
+      // Write them back into promotionData
       value.setPromotionData({
         ...value.promotionData,
-        locationList: checked
-          ? [...value.promotionData.locationList, name] // Add the item if checked
-          : value.promotionData.locationList.filter((item) => item !== name),
+        locationList: newLocationList,
+        excludedLocationList: newExcludedStoreList,
       });
-    } else if (modalType === "storesExcluded") {
+    }
+    else if (modalType === "storesExcluded") {
+      // USER JUST CLICKED a checkbox in the “Stores Excluded” modal.
       setExcludedSelectedStores((prev) => ({ ...prev, [name]: checked }));
+
+      // Update the “excludedLocationList” in promotionData
+      const newExcludedStoreList = checked
+        ? [...value.promotionData.excludedLocationList, name]
+        : value.promotionData.excludedLocationList.filter((i) => i !== name);
+
+      // If the user checked name in “storesExcluded,” force it out of “stores”
+      let newSelectedStoreState = { ...selectedStores };
+      let newLocationList = [...value.promotionData.locationList];
+      if (checked) {
+        newSelectedStoreState[name] = false;
+        newLocationList = newLocationList.filter((i) => i !== name);
+      }
+      setSelectedStores(newSelectedStoreState);
+
+      // Write them back into promotionData
       value.setPromotionData({
         ...value.promotionData,
-        excludedLocationList: checked
-          ? [...value.promotionData.excludedLocationList, name] // Add the item if checked
-          : value.promotionData.excludedLocationList.filter(
-              (item) => item !== name
-            ),
+        excludedLocationList: newExcludedStoreList,
+        locationList: newLocationList,
       });
     }
   };
