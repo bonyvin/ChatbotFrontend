@@ -54,6 +54,8 @@ export default function PromoChatbotPane() {
   const errorMessage = "Sorry, an unexpected error occured";
   const promoErrorMessage = "An Error occured while creating Promotion";
   const uploadError = "An error occured while uploading";
+  const emailError = "An error occured while sending email";
+
 
   //FORM ACTIONS
   //save
@@ -498,6 +500,20 @@ export default function PromoChatbotPane() {
     } else {
       console.log("Email sending failed or returned no status.");
       console.error("Error message:", emailStatus?.message || "Unknown error");
+      setMessages((prevMessages) => {
+        // Check if there are messages and if so, update the last one
+        if (prevMessages.length > 0) {
+          const updatedMessages = [...prevMessages];
+          updatedMessages[updatedMessages.length - 1] = {
+            text: emailError,
+            fromUser: false,
+          };
+          return updatedMessages;
+        }
+
+        // If there are no messages, just return the error message
+        return [{ text: emailError, fromUser: false }];
+      });
     }
   };
   //create invoice details

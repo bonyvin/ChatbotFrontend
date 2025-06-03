@@ -25,8 +25,10 @@ import {
   ADD_PO_DETAILS,
   CHAT,
   CLEAR_DATA,
+  CLEAR_DATA_NEW,
   FETCH_SUPPLIER_BYID,
   PO_CREATION,
+  SUPPLIER_RISK_INSIGHT,
   UPLOAD_PO,
 } from "../../const/ApiConst";
 import EmailPdf from "../../components/PDF Generation/EmailPdf";
@@ -57,6 +59,8 @@ export default function POChatbotPane() {
     "Sorry, we couldn't find this Supplier Id in our database, please try another Supplier Id";
   const poErrorMessage = "An Error occured while creating Purchase Order";
   const uploadError = "An error occured while uploading";
+  const emailError = "An error occured while sending email";
+
 
   //FORM ACTIONS
   //save
@@ -175,50 +179,86 @@ export default function POChatbotPane() {
       }
       prevIdRef.current = id;
 
-      try {
-        const response = await axios.get(FETCH_SUPPLIER_BYID(id));
-        if (response.status === 200 || response.status === 201) {
-          console.log(
-            "Supplier Response: ",
-            response.data,
-            response.data.lead_time
-          );
-          value.setSupplierDetails({
-            apiResponse: response.data,
-            supplierId: id,
-            leadTime: response.data.lead_time,
-            supplierStatus: true,
-          });
-
-          return true; // Return boolean for further processing
-        } else {
+      if (id) {
+        try {
+          const response = await axios.get(FETCH_SUPPLIER_BYID(id));
+          if (response.status === 200 || response.status === 201) {
+            console.log(
+              "Supplier Response: ",
+              response.data,
+              response.data.lead_time
+            );
+            // value.setSupplierDetails({
+            //   ...value.supplierDetails,
+            //   apiResponse: response.data,
+            //   supplierId: id,
+            //   leadTime: response.data.lead_time,
+            //   supplierStatus: true,
+            // });
+            value.setSupplierDetails((prev) => ({
+              ...prev,
+              apiResponse: response.data,
+              supplierId: id,
+              leadTime: response.data.lead_time,
+              supplierStatus: true,
+            }));
+            await supplierRiskApi(id);
+            return true; // Return boolean for further processing
+          } else {
+            console.log("False Supplier Details");
+            return false;
+          }
+        } catch (error) {
           console.log("False Supplier Details");
-          return false;
-        }
-      } catch (error) {
-        console.log("False Supplier Details");
 
-        value.setSupplierDetails({
-          apiResponse: "",
-          supplierId: "",
-          leadTime: "",
-          supplierStatus: false,
-        });
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          {
-            text: supplierErrorMessage,
-            fromUser: false,
-          },
-        ]);
-        console.error("Error fetching Supplier details:", error);
+          value.setSupplierDetails({
+            apiResponse: "",
+            supplierId: "",
+            leadTime: "",
+            supplierStatus: false,
+          });
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            {
+              text: supplierErrorMessage,
+              fromUser: false,
+            },
+          ]);
+          console.error("Error fetching Supplier details:", error);
+          return false;
+        } finally {
+          setLoading(false);
+        }
+      } else {
         return false;
-      } finally {
-        setLoading(false);
       }
     },
     [value.supplierDetails]
   );
+
+  //SUPPLIER INSIGHTS
+  const supplierRiskApi = async (supplierId) => {
+    try {
+      // console.log("clearDataApi");
+      const response = await axios({
+        method: "get",
+        url: SUPPLIER_RISK_INSIGHT(supplierId),
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+      value.setSupplierDetails((prev) => ({
+        ...prev,
+        supplierInsights: response.data,
+      }));
+      // console.log("invoice Clear Response:", response.data);
+    } catch (error) {
+      console.log("Supplier Risk Error:", error, error.data);
+    }
+  };
+
   //ITEM AND QUANTITY UPDATES
   const updateItemDetails = useCallback(
     (invoiceDatafromConversation) => {
@@ -234,6 +274,25 @@ export default function POChatbotPane() {
         itemDescription: item["Item Description"] || "",
         itemCost: parseFloat(item["Cost Per Unit"] || "0"),
       }));
+      const allEntriesAreNullLike = invoiceDatafromConversation.every(item => {
+        if (item === null || item === undefined) {
+          return true; // Item itself is null or undefined
+        }
+        if (typeof item === 'object') {
+          // For an object, check if all its values are null.
+          // Note: Object.values({}) is [], and [].every() is true.
+          // So, an empty object {} will be considered "null-like" by this logic.
+          return Object.values(item).every(value => value === null);
+        }
+        // If item is a primitive type other than null/undefined (e.g., a non-empty string, a number)
+        // it's not considered "null-like" in this context, so the array isn't "all null-like".
+        return false;
+      });
+
+      if (allEntriesAreNullLike) {
+        console.log("The items array is empty, or all items within it are null, undefined, or objects with all-null properties. Halting further item processing.");
+        return; // Exit the updateItemDetails function
+      }
 
       // Extracting separate arrays for state updates
       const itemIds = itemsArray.map((item) => item.itemId);
@@ -328,161 +387,155 @@ export default function POChatbotPane() {
     ]
   );
   //API CALLS
-  const handleMessageSubmit = async (input, inputFromUpload) => {
-    if (!input.trim()) return;
-    setMessages((prevMessages) => {
-      const newMessages = inputFromUpload
-        ? [...prevMessages] // Do not add any new message for inputFromUpload
-        : [...prevMessages, { text: input, fromUser: true }];
-
-      if (!inputFromUpload) {
-        setInput(""); // Clear input if it's not from an upload
-      }
-      return newMessages;
-    });
-    setInput("");
-    typingTimeoutRef.current = setTimeout(() => {
-      setTyping(true);
-    }, 1500);
-
-    try {
-      const response = await axios.post(
-        CHAT, // API endpoint
-        {
-          user_id: "admin", // The user_id value
-          message: input, // The message value
-        },
-        {
-          headers: { "Content-Type": "application/json" }, // Content-Type header
-        }
-      );
-      const uploadText =
-        "Here is what I could extract from the uploaded document: \n";
-      if (response.status === 200 || response.status === 201) {
-        const poCheckStatus = await poCheck2(response.data.po_json);
-        console.log("Inv check status: ", poCheckStatus);
-        value.setPurchaseOrderApiRes(response.data);
-        console.log("Data response", response.data);
-        const uploadText =
-          "Here is what I could extract from the uploaded document: \n";
-        console.log(
-          "response.data.po_json",
-          response.data.po_json["Supplier ID"]
-        );
-        if (
-          // value.supplierDetails.supplierId === "" &&
-          response.data.po_json["Supplier ID"] === undefined ||
-          response.data.po_json["Supplier ID"] === "" ||
-          response.data.po_json["Supplier ID"] === null
-        ) {
-          console.log("Empty Supplier Id");
-          const formattedConversation = response.data.chat_history["admin"]
-            .slice(-1)
-            .map((text, index) => (
-              <ReactMarkdown key={index} className={"botText"}>
-                {inputFromUpload ? uploadText + text.slice(5) : text.slice(5)}
-              </ReactMarkdown>
-            ));
-          setMessages((prevMessages) => [
-            ...prevMessages,
-            { text: formattedConversation, fromUser: false },
-          ]);
-          // }
-          console.log(
-            "Submission Status inside HMS",
-            response.data.submissionStatus
-          );
-          if (response.data.submissionStatus == "submitted") {
-            // let newPoCounter=value.PoCounter+1
-            // value.setPoCounter(newPoCounter);
-            // value.setPoCounterId(`PO${newPoCounter}`);
-            value.setPoCounter((prevCounter) => prevCounter + 1);
-            await poHeaderCreation();
-            // }
-          } else {
-            value.setModalVisible(false);
-          }
-          if (response.data.po_json["Email"] != "") {
-            console.log(
-              "Inside Email: ",
-              response.data.po_json["Email"],
-              value.poCounter - 1
-            );
-            await sendEmail({
-              emailUsed: response.data.po_json["Email"],
-              documentId: `PO${value.poCounter - 1}`,
-            });
-          }
-        } else {
-          if (poCheckStatus) {
-            const formattedConversation = response.data.chat_history["admin"]
-              .slice(-1)
-              .map((text, index) => (
-                <ReactMarkdown key={index} className={"botText"}>
-                  {inputFromUpload ? uploadText + text.slice(5) : text.slice(5)}
-                </ReactMarkdown>
-              ));
-            console.log(
-              "Submission Status inside HMS",
-              response.data.submissionStatus
-            );
-            setMessages((prevMessages) => [
-              ...prevMessages,
-              { text: formattedConversation, fromUser: false },
-            ]);
-            if (response.data.submissionStatus == "submitted") {
-              // let newPoCounter=value.PoCounter+1
-              // value.setPoCounter(newPoCounter);
-              // value.setPoCounterId(`PO${newPoCounter}`);
-              value.setPoCounter((prevCounter) => prevCounter + 1);
-              await poHeaderCreation();
-              // }
-            } else {
-              value.setModalVisible(false);
-            }
-            if (response.data.po_json["Email"] != "") {
-              console.log(
-                "Inside Email: ",
-                response.data.po_json["Email"],
-                value.poCounter - 1
-              );
-              await sendEmail({
-                emailUsed: response.data.po_json["Email"],
-                documentId: `PO${value.poCounter - 1}`,
-              });
-            }
-          } else {
-            console.log("poCheckStatus:FALSEEEEEEEEEEEEEEEEEEEEE");
-          }
-        }
-        if (typingTimeoutRef.current) {
-          clearTimeout(typingTimeoutRef.current);
-          typingTimeoutRef.current = null;
-        }
-        setTyping(false);
-      }
-
-      if (response.data.test_model_reply === "Creation") {
-        value.setIsActive(true);
-      } else if (response.data.test_model_reply === "Fetch") {
-        value.setIsActive(false);
-        // await getInvoiceDetails("INV498");
-      } else if (response.data.submissionStatus === "submitted") {
-        value.setIsActive(false);
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-        typingTimeoutRef.current = null;
-      }
-      setMessages((prevMessages) => [
+   const handleMessageSubmit = async (input, inputFromUpload) => {
+     if (!input.trim()) return;
+     setMessages((prevMessages) => {
+       const newMessages = inputFromUpload
+         ? [...prevMessages] // Do not add any new message for inputFromUpload
+         : [...prevMessages, { text: input, fromUser: true }];
+ 
+       if (!inputFromUpload) {
+         setInput(""); // Clear input if it's not from an upload
+       }
+       return newMessages;
+     });
+     setInput("");
+     typingTimeoutRef.current = setTimeout(() => {
+       setTyping(true);
+     }, 1500);
+ 
+     try {
+       const response = await axios.post(
+         CHAT, // API endpoint
+         {
+           user_id: "admin", // The user_id value
+           message: input, // The message value
+         },
+         {
+           headers: { "Content-Type": "application/json" }, // Content-Type header
+         }
+       );
+       const uploadText =
+         "Here is what I could extract from the uploaded document: \n";
+       if (response.status === 200 || response.status === 201) {
+         const poCheckStatus = await poCheck2(response.data.po_json);
+         console.log("Inv check status: ", poCheckStatus);
+         value.setPurchaseOrderApiRes(response.data);
+         console.log("Data response", response.data);
+         const uploadText =
+           "Here is what I could extract from the uploaded document: \n";
+         console.log(
+           "response.data.po_json",
+           response.data.po_json["Supplier ID"]
+         );
+         if (
+           // value.supplierDetails.supplierId === "" &&
+           response.data.po_json["Supplier ID"] === undefined ||
+           response.data.po_json["Supplier ID"] === "" ||
+           response.data.po_json["Supplier ID"] === null
+         ) {
+           console.log("Empty Supplier Id");
+           const formattedConversation = response.data.chat_history["admin"]
+             .slice(-1)
+             .map((text, index) => (
+               <ReactMarkdown key={index} className={"botText"}>
+                 {inputFromUpload ? uploadText + text.slice(5) : text.slice(5)}
+               </ReactMarkdown>
+             ));
+           setMessages((prevMessages) => [
+             ...prevMessages,
+             { text: formattedConversation, fromUser: false },
+           ]);
+           // }
+           console.log(
+             "Submission Status inside HMS",
+             response.data.submissionStatus
+           );
+           const email = response.data.po_email;
+           if (email) {
+             console.log("Inside Email: ", email, value.poCounter - 1);
+             await sendEmail({
+               emailUsed: email,
+               documentId: `PO${value.poCounter - 1}`,
+             });
+           }
+           if (response.data.submissionStatus == "submitted") {
+             // let newPoCounter=value.PoCounter+1
+             // value.setPoCounter(newPoCounter);
+             // value.setPoCounterId(`PO${newPoCounter}`);
+             value.setPoCounter((prevCounter) => prevCounter + 1);
+             await poHeaderCreation();
+             // }
+           } else {
+             value.setModalVisible(false);
+           }
+         } else {
+           if (poCheckStatus) {
+             const formattedConversation = response.data.chat_history["admin"]
+               .slice(-1)
+               .map((text, index) => (
+                 <ReactMarkdown key={index} className={"botText"}>
+                   {inputFromUpload ? uploadText + text.slice(5) : text.slice(5)}
+                 </ReactMarkdown>
+               ));
+             console.log(
+               "Submission Status inside HMS",
+               response.data.submissionStatus
+             );
+             setMessages((prevMessages) => [
+               ...prevMessages,
+               { text: formattedConversation, fromUser: false },
+             ]);
+             if (response.data.submissionStatus == "submitted") {
+               // let newPoCounter=value.PoCounter+1
+               // value.setPoCounter(newPoCounter);
+               // value.setPoCounterId(`PO${newPoCounter}`);
+               value.setPoCounter((prevCounter) => prevCounter + 1);
+               await poHeaderCreation();
+               // }
+             } else {
+               value.setModalVisible(false);
+             }
+             const email = response.data.po_email;
+             if (email) {
+               console.log("Inside Email: ", email, value.poCounter - 1);
+               await sendEmail({
+                 emailUsed: email,
+                 documentId: `PO${value.poCounter - 1}`,
+               });
+             }
+           } else {
+             console.log("poCheckStatus:FALSEEEEEEEEEEEEEEEEEEEEE");
+           }
+         }
+         if (typingTimeoutRef.current) {
+           clearTimeout(typingTimeoutRef.current);
+           typingTimeoutRef.current = null;
+         }
+         setTyping(false);
+       }
+ 
+       if (response.data.test_model_reply === "Creation") {
+         value.setIsActive(true);
+       } else if (response.data.test_model_reply === "Fetch") {
+         value.setIsActive(false);
+         // await getInvoiceDetails("INV498");
+       } else if (response.data.submissionStatus === "submitted") {
+         value.setIsActive(false);
+       }
+     } catch (error) {
+       console.error("Error fetching data:", error);
+       if (typingTimeoutRef.current) {
+         clearTimeout(typingTimeoutRef.current);
+         typingTimeoutRef.current = null;
+       }
+       setMessages((prevMessages) => [
         ...prevMessages,
         { text: errorMessage, fromUser: false },
       ]);
-      setTyping(false);
-    }
-  };
+       setTyping(false);
+     }
+   };
   //create po details
 
   const poDetailsCreation = async () => {
@@ -728,7 +781,8 @@ export default function POChatbotPane() {
       // console.log("clearDataApi");
       const response = await axios({
         method: "post",
-        url: CLEAR_DATA,
+        url: CLEAR_DATA_NEW,
+        data: { user_id: "admin" },
         headers: {
           "Content-Type": "application/json",
           accept: "application/json",
@@ -736,20 +790,62 @@ export default function POChatbotPane() {
         },
       });
 
-      // console.log("invoice Clear Response:", response.data);
+      console.log(" Clear data Response:", response.data);
       clearFormData();
     } catch (error) {
-      // console.log("Invoice Clear Error:", error, error.data);
+      console.log(" Clear data Error:", error, error.data);
+    }
+  };
+  const clearAllData = async () => {
+    try {
+      const response = await axios({
+        method: "post",
+        url: CLEAR_DATA,
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+      console.log("cleared all data");
+      clearFormData();
+    } catch (error) {
+      console.log("Clear Error:", error, error.data);
     }
   };
 
   const sendEmail = async ({ emailUsed, documentId }) => {
-    await EmailPdf({
+    const emailStatus = await EmailPdf({
       emailUsed: emailUsed,
       bodyUsed: { documentType: "Purchase Order" },
       purchaseOrder: true,
       documentId: documentId,
     });
+
+    if (emailStatus && emailStatus.success) {
+      console.log(
+        "Email sending was successful! Now calling another function...",
+        emailStatus
+      );
+      clearFormData();
+    } else {
+      console.log("Email sending failed or returned no status.");
+      console.error("Error message:", emailStatus?.message || "Unknown error");
+      setMessages((prevMessages) => {
+        // Check if there are messages and if so, update the last one
+        if (prevMessages.length > 0) {
+          const updatedMessages = [...prevMessages];
+          updatedMessages[updatedMessages.length - 1] = {
+            text: emailError,
+            fromUser: false,
+          };
+          return updatedMessages;
+        }
+
+        // If there are no messages, just return the error message
+        return [{ text: emailError, fromUser: false }];
+      });
+    }
   };
 
   console.log("checkConsole", value);

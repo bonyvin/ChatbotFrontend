@@ -24,14 +24,16 @@ import { Card } from "@mui/joy";
 import ChatbotInputForm from "../../components/ChatMessage/ChatbotInputForm";
 import TypingIndicatorComponent from "../../components/ChatMessage/TypingIndicatorComponent";
 import {
-  ADD_INVOICE_DETAILS, FETCH_PO_BY_ID, NEW_RESPONSE_CREATION, INVOICE_CREATION,
+  ADD_INVOICE_DETAILS,
+  FETCH_PO_BY_ID,
+  NEW_RESPONSE_CREATION,
+  INVOICE_CREATION,
   UPLOAD_GPT,
   CLEAR_DATA,
   SUPPLIER_RISK_INSIGHT,
-  CLEAR_DATA_NEW
+  CLEAR_DATA_NEW,
 } from "../../const/ApiConst";
 import EmailPdf from "../../components/PDF Generation/EmailPdf";
-
 
 export default function InvoiceChatbot() {
   const [messages, setMessages] = useState([]);
@@ -58,6 +60,7 @@ export default function InvoiceChatbot() {
     "Sorry, we couldn't find this Purchase Order Id in our database, please try another PO number";
   const invoiceErrorMessage = "An Error occured while creating Invoice";
   const uploadError = "An error occured while uploading";
+  const emailError = "An error occured while sending email";
   //FORM ACTIONS
   //save
 
@@ -90,37 +93,42 @@ export default function InvoiceChatbot() {
       });
     let savedData = `
     ${trueValueKey ? `Type of Invoice: ${trueValueKey},` : ""}
-    ${value.invoiceData.invoiceDate
+    ${
+      value.invoiceData.invoiceDate
         ? `Date: ${value.invoiceData.invoiceDate},`
         : ""
-      }
-    ${value.invoiceData.poNumber
+    }
+    ${
+      value.invoiceData.poNumber
         ? `PO number: ${value.invoiceData.poNumber},`
         : ""
-      }
-    ${value.invoiceData.supplierId
+    }
+    ${
+      value.invoiceData.supplierId
         ? `Supplier Id: ${value.invoiceData.supplierId},`
         : ""
-      }
-    ${value.invoiceData.totalAmount
+    }
+    ${
+      value.invoiceData.totalAmount
         ? `Total amount: ${value.invoiceData.totalAmount},`
         : ""
-      }
-    ${value.invoiceData.totalTax
+    }
+    ${
+      value.invoiceData.totalTax
         ? `Total tax: ${value.invoiceData.totalTax},`
         : ""
-      }
+    }
     ${
       // value.itemDetailsInput.items
       itemsPresent
         ? `Items: ${filteredItems},`
         : // ? `Items: ${value.itemDetailsInput.items},`
-        ""
-      }
+          ""
+    }
     ${
       // value.itemDetailsInput.quantity
       quantitiesPresent ? `Quantity: ${filteredQuantities}` : ""
-      }
+    }
     `;
     await handleMessageSubmit(savedData);
     value.setFormSave((prevState) => !prevState);
@@ -329,14 +337,14 @@ export default function InvoiceChatbot() {
       console.log(Array.isArray(invoiceDatafromConversation.Items).length);
       const { Items: itemsArray = [] } = invoiceDatafromConversation; // Extract "Items" array
       console.log("updateitemdetails invdfc: ", itemsArray);
-    // NEW: if *all* items have *all* keys null, bail out
-    const allNullEntries = itemsArray.every(item =>
-      Object.values(item).every(v => v === null)
-    );
-    if (allNullEntries) {
-      // do nothing further
-      return;
-    }
+      // NEW: if *all* items have *all* keys null, bail out
+      const allNullEntries = itemsArray.every((item) =>
+        Object.values(item).every((v) => v === null)
+      );
+      if (allNullEntries) {
+        // do nothing further
+        return;
+      }
       // Ensure correct mapping of extracted values
       const tempDictionary = itemsArray.reduce((acc, item) => {
         acc[item["Item ID"]] = {
@@ -377,13 +385,13 @@ export default function InvoiceChatbot() {
       const updatedPoDetails = prevPoDetailsData.map((item) =>
         tempDictionary[item.itemId]
           ? {
-            ...item,
-            invQty: tempDictionary[item.itemId].quantity,
-            invAmt:
-              tempDictionary[item.itemId].quantity *
-              tempDictionary[item.itemId].invoiceCost,
-            invCost: tempDictionary[item.itemId].invoiceCost,
-          }
+              ...item,
+              invQty: tempDictionary[item.itemId].quantity,
+              invAmt:
+                tempDictionary[item.itemId].quantity *
+                tempDictionary[item.itemId].invoiceCost,
+              invCost: tempDictionary[item.itemId].invoiceCost,
+            }
           : item
       );
 
@@ -413,7 +421,7 @@ export default function InvoiceChatbot() {
     },
     [value.setItemDetails, value.setItemDetailsInput, value.setPoDetailsData]
   );
-  
+
   //PO DETAILS
   const getPoDetails = useCallback(
     async (id, invoiceDatafromConversation) => {
@@ -433,9 +441,7 @@ export default function InvoiceChatbot() {
       }
       prevIdRef.current = id; // Update the previous ID
       try {
-        const response = await axios.get(
-          FETCH_PO_BY_ID(id)
-        );
+        const response = await axios.get(FETCH_PO_BY_ID(id));
         console.log("PO Response: ", response.data);
         console.log(
           "PO supplier:",
@@ -453,8 +459,8 @@ export default function InvoiceChatbot() {
             exchangeRate: 1,
             paymentTerm: poHeader.payment_term,
           };
-          if(response.data.po_details[0]?.supplierId){
-            await supplierRiskApi(response.data.po_details[0]?.supplierId)
+          if (response.data.po_details[0]?.supplierId) {
+            await supplierRiskApi(response.data.po_details[0]?.supplierId);
           }
           value.setPoHeaderData(updatedPoHeaderData);
           const newUpdatedData = response.data.po_details.map((item) => ({
@@ -512,28 +518,28 @@ export default function InvoiceChatbot() {
       updateItemDetails,
     ]
   );
-    //SUPPLIER INSIGHTS
-    const supplierRiskApi=async(supplierId)=>{
-      try {
-        // console.log("clearDataApi");
-        const response = await axios({
-          method: "get",
-          url: SUPPLIER_RISK_INSIGHT(supplierId),
-          headers: {
-            "Content-Type": "application/json",
-            accept: "application/json",
-            "Access-Control-Allow-Origin": "*",
-          },
-        });
-        value.setSupplierDetails(prev => ({
-          ...prev,
-          supplierInsights:response.data,
-        }));
-        // console.log("invoice Clear Response:", response.data);
-      } catch (error) {
-        console.log("Supplier Risk Error:", error, error.data);
-      }
-    };
+  //SUPPLIER INSIGHTS
+  const supplierRiskApi = async (supplierId) => {
+    try {
+      // console.log("clearDataApi");
+      const response = await axios({
+        method: "get",
+        url: SUPPLIER_RISK_INSIGHT(supplierId),
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+      value.setSupplierDetails((prev) => ({
+        ...prev,
+        supplierInsights: response.data,
+      }));
+      // console.log("invoice Clear Response:", response.data);
+    } catch (error) {
+      console.log("Supplier Risk Error:", error, error.data);
+    }
+  };
   //EXTRACTING FIELD DATA FROM BACKEND
   const invoiceCheck2 = useCallback(
     async (invoiceObject, invoiceDatafromConversation) => {
@@ -606,13 +612,12 @@ export default function InvoiceChatbot() {
     if (
       value.invoiceDatafromConversation &&
       JSON.stringify(prevInvoiceDataRef.current) !==
-      JSON.stringify(value.invoiceDatafromConversation)
+        JSON.stringify(value.invoiceDatafromConversation)
     ) {
       updateItemDetails(value.invoiceDatafromConversation);
       prevInvoiceDataRef.current = value.invoiceDatafromConversation; // Update ref
     }
   }, [value.invoiceDatafromConversation, updateItemDetails]);
-
 
   const handleMessageSubmit = async (input, inputFromUpload) => {
     if (!input.trim()) return;
@@ -708,9 +713,11 @@ export default function InvoiceChatbot() {
           // }
           const email = response.data.invoice_email;
           if (email) {
-            console.log("Inside Email: ",email, value.invoiceCounter - 1)
-            await sendEmail({ emailUsed: email, documentId: `INV${value.invoiceCounter - 1}` })
-
+            console.log("Inside Email: ", email, value.invoiceCounter - 1);
+            await sendEmail({
+              emailUsed: email,
+              documentId: `INV${value.invoiceCounter - 1}`,
+            });
           }
           if (response.data.submissionStatus == "submitted") {
             // let validationStatus = await itemQuantityValidation();
@@ -721,10 +728,8 @@ export default function InvoiceChatbot() {
           } else {
             value.setModalVisible(false);
           }
-
         } else {
-          if (
-            invoiceCheckStatus) {
+          if (invoiceCheckStatus) {
             const botReply = response.data.chat_history.slice(-1);
             const reply = botReply[0].slice(5);
             const formattedConversation = response.data.chat_history
@@ -750,8 +755,11 @@ export default function InvoiceChatbot() {
             }
             const email = response.data.invoice_email;
             if (email) {
-              console.log("Inside Email: ",email, value.invoiceCounter - 1)
-              await sendEmail({ emailUsed: email, documentId: `INV${value.invoiceCounter - 1}` })
+              console.log("Inside Email: ", email, value.invoiceCounter - 1);
+              await sendEmail({
+                emailUsed: email,
+                documentId: `INV${value.invoiceCounter - 1}`,
+              });
             }
           } else {
             console.log("invoiceCheckStatus:FALSEEEEEEEEEEEEEEEEEEEEE");
@@ -781,7 +789,6 @@ export default function InvoiceChatbot() {
       console.error("Error fetching data:", error);
     }
   };
-
 
   //create invoice details
   const invoiceDetailsCreation = async () => {
@@ -1005,7 +1012,7 @@ export default function InvoiceChatbot() {
       const response = await axios({
         method: "post",
         url: CLEAR_DATA_NEW,
-        data:{user_id:"admin"},
+        data: { user_id: "admin" },
         headers: {
           "Content-Type": "application/json",
           accept: "application/json",
@@ -1053,13 +1060,31 @@ export default function InvoiceChatbot() {
     });
 
     if (emailStatus && emailStatus.success) {
-      console.log("Email sending was successful! Now calling another function...",emailStatus);
-      clearFormData(); 
+      console.log(
+        "Email sending was successful! Now calling another function...",
+        emailStatus
+      );
+      clearFormData();
     } else {
       console.log("Email sending failed or returned no status.");
       console.error("Error message:", emailStatus?.message || "Unknown error");
+
+      setMessages((prevMessages) => {
+        // Check if there are messages and if so, update the last one
+        if (prevMessages.length > 0) {
+          const updatedMessages = [...prevMessages];
+          updatedMessages[updatedMessages.length - 1] = {
+            text: emailError,
+            fromUser: false,
+          };
+          return updatedMessages;
+        }
+
+        // If there are no messages, just return the error message
+        return [{ text: emailError, fromUser: false }];
+      });
     }
-  }
+  };
   return (
     <Card className="chatbot-card">
       <Sheet
@@ -1085,14 +1110,15 @@ export default function InvoiceChatbot() {
           <CircularProgress color="inherit" />
         </Backdrop>
 
-        <Box className="chat-Message-Box"
-        // style={{
-        //   display: "flex",
-        //   flex: 1,
-        //   flexDirection: "column ",
-        //   padding: 2,
-        //   justifyContent: "flex-end",
-        // }}
+        <Box
+          className="chat-Message-Box"
+          // style={{
+          //   display: "flex",
+          //   flex: 1,
+          //   flexDirection: "column ",
+          //   padding: 2,
+          //   justifyContent: "flex-end",
+          // }}
         >
           {messages.map((message, index) => (
             <div
@@ -1186,7 +1212,8 @@ export default function InvoiceChatbot() {
           setPickerVisible={setPickerVisible}
         />
         {isPickerVisible && (
-          <div className="picker-div"
+          <div
+            className="picker-div"
             // style={{ position: "absolute", zIndex: 1000, bottom: "4rem" }}
             ref={pickerRef}
           >
