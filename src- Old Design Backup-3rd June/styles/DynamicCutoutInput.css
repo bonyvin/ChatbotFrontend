@@ -1,0 +1,83 @@
+.position-relative {
+  position: relative;
+}
+
+.position-absolute {
+  position: absolute;
+}
+
+.top-0 {
+  top: 0;
+}
+
+.start-0 {
+  start: 0;
+}
+
+.translate-middle {
+  transform: translate(-50%, -50%);
+}
+
+.text-secondary {
+  color: #6c757d !important;
+  /* Bootstrap's secondary text color */
+}
+
+.bg-white {
+  background-color: #fff !important;
+  /* Bootstrap's white background color */
+}
+
+.form-control {
+  border: none;
+  border-radius: 0.2rem;
+  border: 0.08rem solid #ced4da;
+  /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);  */
+  /* Adjust shadow as needed */
+}
+
+.form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.25);
+}
+
+#custom {
+  /* left: 3rem;
+    font-size: 0.75rem;
+    font-family: "Poppins", sans-serif;
+    font-weight: 700;
+    color: 'black';
+    display: flex; */
+  /* width: 30%; */
+  /* width: max-content; */ /* font-family: "Open Sans", sans-serif; */
+  margin-left: 10%;
+  justify-content: flex-start;
+  width: 90%;
+  left: 40%;
+  font-size: 0.75rem;
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  color: "black";
+  display: flex;
+}
+#formGroup {
+}
+ 
+.input-icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.input-icon.start {
+  left: 10px; /* Position the start icon inside the input field */
+}
+
+.input-icon.end {
+  right: 10px; /* Position the end icon inside the input field */
+}
+
+.input-with-icons {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}

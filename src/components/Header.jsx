@@ -63,6 +63,7 @@ export default function Header() {
             />
           </div>
         </Grid>
+        <div className="curved"></div>
         
         {/* <div className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
           <div className="sidebarToggle" onClick={toggleSidebar}>

@@ -21,7 +21,14 @@ import { AuthContext } from "../../context/ContextsMasterFile";
 import "../../styles/chatbot.css";
 import "../../styles/general.css";
 import "../../styles/chatbot.css";
-import { ADD_PO_DETAILS, CHAT, CLEAR_DATA, FETCH_SUPPLIER_BYID, PO_CREATION, UPLOAD_PO } from "../../const/ApiConst";
+import {
+  ADD_PO_DETAILS,
+  CHAT,
+  CLEAR_DATA,
+  FETCH_SUPPLIER_BYID,
+  PO_CREATION,
+  UPLOAD_PO,
+} from "../../const/ApiConst";
 import EmailPdf from "../../components/PDF Generation/EmailPdf";
 import { BorderColor } from "@mui/icons-material";
 
@@ -45,53 +52,29 @@ export default function POChatbotPane() {
   const { purchaseOrderData, dispatch } = useContext(AuthContext);
   const [typing, setTyping] = useState(false);
   const typingTimeoutRef = useRef(null);
+  const errorMessage = "Sorry, an unexpected error occured";
+  const supplierErrorMessage =
+    "Sorry, we couldn't find this Supplier Id in our database, please try another Supplier Id";
+  const poErrorMessage = "An Error occured while creating Purchase Order";
+  const uploadError = "An error occured while uploading";
+
   //FORM ACTIONS
   //save
   const saveFormData = async () => {
     let savedData = `
-      ${value.supplierDetails.supplierId
-        ? `Supplier Id: ${value.supplierDetails.supplierId},`
-        : ""
+      ${
+        value.supplierDetails.supplierId
+          ? `Supplier Id: ${value.supplierDetails.supplierId},`
+          : ""
       }
 
-      ${purchaseOrderData.estDeliveryDate
-        ? `Estimated Delivery Date: ${purchaseOrderData.estDeliveryDate},`
-        : ""
+      ${
+        purchaseOrderData.estDeliveryDate
+          ? `Estimated Delivery Date: ${purchaseOrderData.estDeliveryDate},`
+          : ""
       }
      
     `;
-    // ${value.poCounterId ? `PO number: ${value.poCounterId},` : ""}
-    // ${
-    //   value.purchaseItemDetails?.map(item=>item.itemId)
-    //     ? `Items: ${value.purchaseItemDetails.map(item=>item.itemId)},`
-    //     : ""
-    // }
-    // ${
-    //   value.purchaseItemDetails?.map(item=>item.itemQuantity)
-    //     ? `Quantity: ${value.purchaseItemDetails?.map(item=>item.itemQuantity)}`
-    //     : ""
-    // ${
-    //   purchaseOrderData.totalQuantity
-    //     ? `Total Quantity: ${purchaseOrderData.totalQuantity},`
-    //     : ""
-    // }
-    // ${
-    //   purchaseOrderData.totalCost
-    //     ? `Total Cost: ${purchaseOrderData.totalCost},`
-    //     : ""
-    // }
-    // ${
-    //   purchaseOrderData.totalTax
-    //     ? `Total Tax: ${purchaseOrderData.totalTax},`
-    //     : ""
-    // }
-    // ${
-    //   purchaseOrderData.comments
-    //     ? `Comments: ${purchaseOrderData.comments},`
-    //     : ""
-    // }
-
-    // }
     await handleMessageSubmit(savedData);
     value.setFormSave((prevState) => !prevState);
   };
@@ -100,7 +83,7 @@ export default function POChatbotPane() {
     value.setPoCounterId(`PO${value.poCounter}`);
   }, [value.poCounter]);
   const submitFormData = async () => {
-    // await handleMessageSubmit("Please submit the data provided");
+    await handleMessageSubmit("Please submit the data provided");
   };
   //clear
   const clearFormData = () => {
@@ -178,6 +161,7 @@ export default function POChatbotPane() {
       return date;
     }
   }
+
   const getSupplierDetails = useCallback(
     async (id) => {
       if (prevIdRef.current && prevIdRef.current !== id) {
@@ -192,9 +176,7 @@ export default function POChatbotPane() {
       prevIdRef.current = id;
 
       try {
-        const response = await axios.get(
-          FETCH_SUPPLIER_BYID(id)
-        );
+        const response = await axios.get(FETCH_SUPPLIER_BYID(id));
         if (response.status === 200 || response.status === 201) {
           console.log(
             "Supplier Response: ",
@@ -225,7 +207,7 @@ export default function POChatbotPane() {
         setMessages((prevMessages) => [
           ...prevMessages,
           {
-            text: "Sorry, we couldn't find this Supplier Id in our database, please try another Supplier Id",
+            text: supplierErrorMessage,
             fromUser: false,
           },
         ]);
@@ -238,7 +220,6 @@ export default function POChatbotPane() {
     [value.supplierDetails]
   );
   //ITEM AND QUANTITY UPDATES
-
   const updateItemDetails = useCallback(
     (invoiceDatafromConversation) => {
       if (!invoiceDatafromConversation) {
@@ -422,9 +403,15 @@ export default function POChatbotPane() {
             value.setModalVisible(false);
           }
           if (response.data.po_json["Email"] != "") {
-            console.log("Inside Email: ", response.data.po_json["Email"], value.poCounter - 1)
-            await sendEmail({ emailUsed: response.data.po_json["Email"], documentId: `PO${value.poCounter - 1}` })
-
+            console.log(
+              "Inside Email: ",
+              response.data.po_json["Email"],
+              value.poCounter - 1
+            );
+            await sendEmail({
+              emailUsed: response.data.po_json["Email"],
+              documentId: `PO${value.poCounter - 1}`,
+            });
           }
         } else {
           if (poCheckStatus) {
@@ -454,9 +441,15 @@ export default function POChatbotPane() {
               value.setModalVisible(false);
             }
             if (response.data.po_json["Email"] != "") {
-              console.log("Inside Email: ", response.data.po_json["Email"], value.poCounter - 1)
-              await sendEmail({ emailUsed: response.data.po_json["Email"], documentId: `PO${value.poCounter - 1}` })
-  
+              console.log(
+                "Inside Email: ",
+                response.data.po_json["Email"],
+                value.poCounter - 1
+              );
+              await sendEmail({
+                emailUsed: response.data.po_json["Email"],
+                documentId: `PO${value.poCounter - 1}`,
+              });
             }
           } else {
             console.log("poCheckStatus:FALSEEEEEEEEEEEEEEEEEEEEE");
@@ -483,10 +476,15 @@ export default function POChatbotPane() {
         clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = null;
       }
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: errorMessage, fromUser: false },
+      ]);
       setTyping(false);
     }
   };
-  //create invoice details
+  //create po details
+
   const poDetailsCreation = async () => {
     try {
       const updatedPoItems = value.purchaseItemDetails.map((item) => ({
@@ -522,9 +520,9 @@ export default function POChatbotPane() {
         text: "An Error occured while creating PO",
         isSuccessful: false,
       });
-      setMessages([
-        ...messages,
-        { text: "An Error occured while creating PO", fromUser: false },
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: poErrorMessage, fromUser: false },
       ]);
       console.log("PO DEtails Creation Error:", error, error.data);
     }
@@ -587,42 +585,14 @@ export default function POChatbotPane() {
         text: "An Error occured while creating Purchase Order",
         isSuccessful: false,
       });
-      setMessages([
-        ...messages,
-        { text: "An Error occured while creating PO", fromUser: false },
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: poErrorMessage, fromUser: false },
       ]);
       console.log("PO Creation Error:", error, error.data);
     }
   };
 
-  // const formatInvoice = (jsonData) => {
-  //   console.log("JSON data: ", jsonData.date);
-  //   let modifiedDate = "";
-  //   try {
-  //     const dateObject = new Date(jsonData.date);
-  //     if (!isNaN(dateObject)) {
-  //       modifiedDate =
-  //         `${(dateObject.getMonth() + 1).toString().padStart(2, "0")}/` +
-  //         `${dateObject.getDate().toString().padStart(2, "0")}/` +
-  //         `${dateObject.getFullYear()}`;
-  //     } else {
-  //       console.log("Invalid date");
-  //     }
-  //   } catch (error) {
-  //     console.log("Error parsing date:", error);
-  //   }
-
-  //   const modifiedJsonData = { ...jsonData, date: modifiedDate };
-  //   console.log("mod", modifiedJsonData);
-  //   return Object.entries(jsonData)
-  //     .map(
-  //       ([key, value]) =>
-  //         `${key
-  //           .replace(/_/g, " ") // Replace underscores with spaces
-  //           .replace(/\b\w/g, (char) => char.toUpperCase())}: ${value ?? "N/A"}`
-  //     )
-  //     .join("\n");
-  // };
   const formatInvoice = (jsonData) => {
     console.log("JSON data: ", jsonData.date);
     let modifiedDate = "";
@@ -662,7 +632,8 @@ export default function POChatbotPane() {
                       ([subKey, subValue]) =>
                         `${subKey
                           .replace(/_/g, " ")
-                          .replace(/\b\w/g, (char) => char.toUpperCase())}: ${subValue ?? "N/A"
+                          .replace(/\b\w/g, (char) => char.toUpperCase())}: ${
+                          subValue ?? "N/A"
                         }`
                     )
                     .join(", ")
@@ -673,8 +644,9 @@ export default function POChatbotPane() {
           // Handle normal key-value pairs
           return `${key
             .replace(/_/g, " ")
-            .replace(/\b\w/g, (char) => char.toUpperCase())}: ${value ?? "N/A"
-            }`;
+            .replace(/\b\w/g, (char) => char.toUpperCase())}: ${
+            value ?? "N/A"
+          }`;
         }
       })
       .join("\n");
@@ -741,6 +713,10 @@ export default function POChatbotPane() {
         text: "An Error occured while creating Invoice",
         isSuccessful: false,
       });
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: uploadError, fromUser: false },
+      ]);
     }
   };
   //clear data
@@ -770,20 +746,16 @@ export default function POChatbotPane() {
   const sendEmail = async ({ emailUsed, documentId }) => {
     await EmailPdf({
       emailUsed: emailUsed,
-      bodyUsed: { "documentType": "Purchase Order" },
+      bodyUsed: { documentType: "Purchase Order" },
       purchaseOrder: true,
-      documentId: documentId
+      documentId: documentId,
     });
-  }
-
+  };
 
   console.log("checkConsole", value);
   return (
     <div className="chatbot-card">
-      <div
-        className="chatbot-area imageBackground"
-        ref={messageEl}
-      >
+      <div className="chatbot-area imageBackground" ref={messageEl}>
         {" "}
         <Backdrop
           sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}

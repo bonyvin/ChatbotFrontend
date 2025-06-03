@@ -51,6 +51,9 @@ export default function PromoChatbotPane() {
   const pickerRef = useRef(null);
   const [typing, setTyping] = useState(false);
   const typingTimeoutRef = useRef(null);
+  const errorMessage = "Sorry, an unexpected error occured";
+  const promoErrorMessage = "An Error occured while creating Promotion";
+  const uploadError = "An error occured while uploading";
 
   //FORM ACTIONS
   //save
@@ -470,61 +473,15 @@ export default function PromoChatbotPane() {
         clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = null;
       }
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: errorMessage, fromUser: false },
+      ]);
       setTyping(false);
       console.error("Error fetching data:", error);
     }
   };
-  // const getItemDetails = async () => {
-  //   try {
-  //     const response = await axios({
-  //       method: "get",
-  //       url: ITEMS,
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         accept: "application/json",
-  //         "Access-Control-Allow-Origin": "*",
-  //       },
-  //     });
-  //     let allItems = response.data.map((item) => item.itemId);
-  //     value.setPromoTotalItemsArray(allItems);
-  //     console.log("ITem details REsponse: ", response);
-  //   } catch (error) {
-  //     console.log("ITem details Error: ", error);
-  //   }
-  // };
-  // const getStoreDetails = async () => {
-  //   try {
-  //     const response = await axios({
-  //       method: "get",
-  //       url: STORE_LIST,
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         accept: "application/json",
-  //         "Access-Control-Allow-Origin": "*",
-  //       },
-  //     });
-  //     let storeList = response.data.map((item) => item.storeId);
-  //     value.setPromoStoreListArray(storeList);
-  //     console.log("Store details REsponse: ", response);
-  //   } catch (error) {
-  //     console.log("Store details Error: ", error);
-  //   }
-  // };
-  // useEffect(() => {
-  //   // getItemDetails();
-  //   // getStoreDetails();
-  // }, []);
-  // const sendEmail = async ({ emailUsed, documentId }) => {
-  //   await EmailPdf({
-  //     emailUsed: emailUsed,
-  //     bodyUsed: { documentType: "Promotion" },
-  //     // bodyUsed: { title: "Hello World", name: "John Doe" },
-  //     promotion: true,
-  //     documentId: documentId,
-  //   });
-  //  };
-   const sendEmail = async ({ emailUsed, documentId }) => {
-
+  const sendEmail = async ({ emailUsed, documentId }) => {
     const emailStatus = await EmailPdf({
       emailUsed: emailUsed,
       bodyUsed: { documentType: "Promotion" },
@@ -533,13 +490,16 @@ export default function PromoChatbotPane() {
     });
 
     if (emailStatus && emailStatus.success) {
-      console.log("Email sending was successful! Now calling another function...",emailStatus);
-      clearFormData(); 
+      console.log(
+        "Email sending was successful! Now calling another function...",
+        emailStatus
+      );
+      clearFormData();
     } else {
       console.log("Email sending failed or returned no status.");
       console.error("Error message:", emailStatus?.message || "Unknown error");
     }
-  }
+  };
   //create invoice details
   const promotionDetailsCreation = async () => {
     try {
@@ -576,9 +536,9 @@ export default function PromoChatbotPane() {
         text: "An Error occured while creating PO",
         isSuccessful: false,
       });
-      setMessages([
-        ...messages,
-        { text: "An Error occured while creating PO", fromUser: false },
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: promoErrorMessage, fromUser: false },
       ]);
       console.log("PO DEtails Creation Error:", error, error.data);
     }
@@ -640,9 +600,9 @@ export default function PromoChatbotPane() {
         text: "An Error occured while creating Promotion",
         isSuccessful: false,
       });
-      setMessages([
-        ...messages,
-        { text: "An Error occured while creating PO", fromUser: false },
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: promoErrorMessage, fromUser: false },
       ]);
       console.log("PO Creation Error:", error, error.data);
     }
@@ -806,155 +766,12 @@ export default function PromoChatbotPane() {
         text: "An error occured while uploading file",
         isSuccessful: false,
       });
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: uploadError, fromUser: false },
+      ]);
     }
   };
-  // const uploadInvoice = async (event) => {
-  //   let file = event.target.files[0];
-  //   console.log("Event:", event.target.files);
-  //   const formData = new FormData();
-  //   formData.append("file", file);
-  //   let fileDetails = {
-  //     status: true,
-  //     name: file?.name,
-  //     file: file,
-  //   };
-  //   setUploadLoading(true);
-  //   try {
-  //     const response = await axios({
-  //       method: "POST",
-  //       url: UPLOAD_PROMO,
-  //       headers: {
-  //         "Content-Type": "multipart/form-data",
-  //       },
-  //       data: formData,
-  //     });
-  //     console.log("upload response: ", response.data);
-  //     if (response.status === 200 || response.status === 201) {
-  //       // await clearDataApi();
-  //       //PDF VIEW
-  //       if (file && file.type === "application/pdf") {
-  //         value.setUploadedFile(fileDetails);
-  //         // value.setModalText("Invoice uploaded successfully!");
-  //         setUploadLoading(false);
-  //         value.setModalDetails({
-  //           visible: true,
-  //           text: "File uploaded successfully!",
-  //           isSuccessful: true,
-  //         });
-
-  //         setMessages((prevMessages) => [
-  //           ...prevMessages,
-  //           {
-  //             component: <PdfCard uploadedFile={fileDetails} />,
-  //             fromUser: true,
-  //             isFile: true,
-  //           },
-  //         ]);
-  //         // await handleMessageSubmit(
-  //         //   value.itemUpload.items && value.itemUpload.items
-  //         //     ? `Items ${JSON.stringify(
-  //         //         response.data.structured_data["Items"]
-  //         //       )}`
-  //         //     : value.itemUpload.excludedItems && value.itemUpload.excludedItems
-  //         //     ? `Excluded Items ${JSON.stringify(
-  //         //         response.data.structured_data["Items"]
-  //         //       )}`
-  //         //     : response.data.structured_data["Items"],
-  //         //   true
-  //         // );
-  //         // value.setItemUpload({
-  //         //   items: items,
-  //         //   excludedItems: excludedItems,
-  //         //   event: value.itemUpload.event,
-  //         // });
-  //       } else if (
-  //         file &&
-  //         (file.type ===
-  //           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
-  //           file.type === "application/vnd.ms-excel")
-  //       ) {
-  //         value.setUploadedFile(fileDetails);
-  //         setUploadLoading(false);
-  //         value.setModalDetails({
-  //           visible: true,
-  //           text: "Excel file uploaded successfully!",
-  //           isSuccessful: true,
-  //         });
-  //         console.log("items", response.data.structured_data["Items"]);
-  //         console.log("stores", response.data.structured_data["Stores"]);
-  //         if (
-  //           value.itemUpload.items ||
-  //           value.itemUpload.excludedItems ||
-  //           value.storeUpload.stores ||
-  //           value.storeUpload.excludedStores
-  //         ) {
-  //           await handleMessageSubmit(
-  //             value.itemUpload.items &&
-  //               response.data.structured_data["Items"].length > 0
-  //               ? `Items ${JSON.stringify(
-  //                   response.data.structured_data["Items"]
-  //                 )}`
-  //               : value.itemUpload.excludedItems &&
-  //                 response.data.structured_data["Items"].length > 0
-  //               ? `Excluded Items ${JSON.stringify(
-  //                   response.data.structured_data["Items"]
-  //                 )}`
-  //               : value.storeUpload.stores &&
-  //                 response.data.structured_data["Stores"].length > 0
-  //               ? `Stores ${JSON.stringify(
-  //                   response.data.structured_data["Stores"]
-  //                 )}`
-  //               : value.storeUpload.excludedStores &&
-  //                 response.data.structured_data["Stores"].length > 0
-  //               ? `Excluded Stores ${JSON.stringify(
-  //                   response.data.structured_data["Stores"]
-  //                 )}`
-  //               : null,
-  //             true
-  //           );
-  //         }
-  //         //  else if (
-  //         //   value.storeUpload.stores ||
-  //         //   value.storeUpload.excludedStores
-  //         // ) {
-  //         //   await handleMessageSubmit(
-  //         //     value.storeUpload.stores
-  //         //       ? `Stores ${JSON.stringify(
-  //         //           response.data.structured_data["Stores"]
-  //         //         )}`
-  //         //       : value.storeUpload.excludedStores
-  //         //       ? `Excluded Stores ${JSON.stringify(
-  //         //           response.data.structured_data["Stores"]
-  //         //         )}`
-  //         //       : response.data.structured_data["Stores"],
-  //         //     true
-  //         //   );
-  //         // }
-
-  //         // value.setItemUpload({
-  //         //   items: items,
-  //         //   excludedItems: excludedItems,
-  //         //   event: value.itemUpload.event,
-  //         // });
-  //       } else {
-  //         alert("Please upload a valid PDF file.");
-  //         // await clearDataApi();
-  //         value.setItemUpload({
-  //           ...value.itemUpload,
-  //           event: null,
-  //         });
-  //       }
-  //     }
-  //   } catch (error) {
-  //     setUploadLoading(false);
-  //     console.log("Upload Error:", error, error.data);
-  //     value.setModalDetails({
-  //       visible: true,
-  //       text: "An error occured while uploading file",
-  //       isSuccessful: false,
-  //     });
-  //   }
-  // };
   //clear data
   const clearDataApi = async () => {
     value.setModalVisible(true);

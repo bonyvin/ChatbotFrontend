@@ -99,15 +99,6 @@
   z-index: 5;
 }
 
-.headerGrid {
-  height: 3rem;
-  background-color: #2E333E;
-  width: 100vw;
-  justify-content: space-between;
-  display: flex;
-  flex-direction: row;
-  color: white;
-}
 
 .logoContainer {
   align-items: center;

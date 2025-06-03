@@ -90,6 +90,8 @@
   font-size: 0.7rem;
   color:rgb(96, 95, 95);
   white-space: nowrap;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 500;
 }
 
 
@@ -155,7 +157,6 @@
   /* align-items: flex-end; */
   justify-content: flex-start;
   margin: 0.5rem;
-  width: 95%;
   margin-top: 0;
   margin-bottom: 0.2rem;
 }
@@ -275,7 +276,8 @@
   overflow-y: auto;
   flex-grow: 1;
   margin: 2vh;
-  background: linear-gradient(to bottom, #ffffff, #989da8);
+  /* background: linear-gradient(to bottom, #ffffff, #989da8); */
+  background: linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.5) 100%);
   margin-left: 0;
   margin-right: 5vh;
   /* background-color: white; */

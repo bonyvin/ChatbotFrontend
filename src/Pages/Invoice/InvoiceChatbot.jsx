@@ -53,7 +53,11 @@ export default function InvoiceChatbot() {
   const [typing, setTyping] = useState(false);
   const typingTimeoutRef = useRef(null);
   const [uploadLoading, setUploadLoading] = useState(false);
-
+  const errorMessage = "Sorry, an unexpected error occured";
+  const poErrorMessage =
+    "Sorry, we couldn't find this Purchase Order Id in our database, please try another PO number";
+  const invoiceErrorMessage = "An Error occured while creating Invoice";
+  const uploadError = "An error occured while uploading";
   //FORM ACTIONS
   //save
 
@@ -490,7 +494,7 @@ export default function InvoiceChatbot() {
         setMessages((prevMessages) => [
           ...prevMessages,
           {
-            text: "Sorry, we couldn't find this Purchase Order in our database, please try another PO number",
+            text: poErrorMessage,
             fromUser: false,
           },
         ]);
@@ -769,6 +773,10 @@ export default function InvoiceChatbot() {
       }
       setTyping(false);
       //typingIndicator
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: errorMessage, fromUser: false },
+      ]);
 
       console.error("Error fetching data:", error);
     }
@@ -809,9 +817,9 @@ export default function InvoiceChatbot() {
         text: "An Error occured while creating Invoice",
         isSuccessful: false,
       });
-      setMessages([
-        ...messages,
-        { text: "An Error occured while creating Invoice", fromUser: false },
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: invoiceErrorMessage, fromUser: false },
       ]);
       console.log("Invoice DEtails Creation Error:", error, error.data);
     }
@@ -873,9 +881,9 @@ export default function InvoiceChatbot() {
         text: "An Error occured while creating Invoice",
         isSuccessful: false,
       });
-      setMessages([
-        ...messages,
-        { text: "An Error occured while creating Invoice", fromUser: false },
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: invoiceErrorMessage, fromUser: false },
       ]);
       console.log("Invoice Header Creation Error:", error, error.data);
     }
@@ -981,6 +989,10 @@ export default function InvoiceChatbot() {
         text: "An Error occured while creating Invoice",
         isSuccessful: false,
       });
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: uploadError, fromUser: false },
+      ]);
     }
   };
   //clear data

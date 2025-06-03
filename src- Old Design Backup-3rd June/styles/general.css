@@ -1,0 +1,132 @@
+.generalView {
+  margin-top: 7.25vh;
+  /* height: 90vh; */
+  margin-left: 1vw;
+  /* margin-left: 2vw; */
+}
+
+.openSans {
+  font-family: "Open Sans", sans-serif;
+}
+
+.poppins {
+  font-family: "Poppins", sans-serif;
+}
+
+.tableHeader {
+  font-family: "Poppins,sans-serif";
+  font-size: "0.6rem";
+  color: "#575F6E";
+}
+
+.labelText {
+  font-size: 0.75rem;
+  /* background-color: #2d1b1b; */
+}
+
+.generalRadio .form-check-inline {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.generalRadio {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+.form-check-inline {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.generalRadio input[type="radio"] {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-width: 0.2rem;
+  border-radius: 50%;
+  margin-right: 0.1rem;
+}
+
+.generalRadio input:checked[type="radio"] {
+  border-width: 0.1rem;
+}
+
+/* .form-check-input[type=radio] {
+      width: 1.25rem;
+      height: 1.25rem;
+      border-width: 0.1rem;
+      border-radius: 50%;
+  }
+    */
+
+/* :root {
+    --primary: #1C244B;
+  } */
+.fixedContainer {
+  position: fixed;
+  z-index: 5;
+}
+
+.headerGrid {
+  height: 7.25vh;
+  background-color: var(--primary);
+  width: 100vw;
+  justify-content: space-between;
+  display: flex;
+  flex-direction: row;
+  color: white;
+}
+
+.logoContainer {
+  align-items: center;
+  display: flex;
+  /* width: 8%; */
+  justify-content: center;
+  margin-left: 0.5rem;
+}
+
+.logoImage {
+  display: flex;
+  width: 50%;
+}
+.iconContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  /* width: 8%; */
+  justify-content: space-evenly;
+}
+
+.sideSpacer {
+  display: flex;
+  flex-grow: 1;
+  background-color: #1c244b;
+  width: 2%;
+}
+.expContainerHeader {
+  display: flex;
+  align-items: baseline; /* Align based on text baseline */
+  margin-top: 0.5rem;
+  font-family: "Varela Round", sans-serif;
+}
+
+.textStyleHeader {
+  font-weight: 700;
+  color: white;
+  font-size: 1.5rem;
+  line-height: 1; /* Optional: helps alignment be more predictable */
+}
+
+.xHeader {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-left: 0.1rem;
+  line-height: 1;
+  color: white;
+}
+.headerIcons {
+  margin-left: 0.25rem;
+  margin-right: 0.25 rem;
+  width: 1.25em;
+  height: 1.25em;
+}
