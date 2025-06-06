@@ -174,7 +174,7 @@ const ChatbotInputForm = ({
     // </form>
 
 
-    <form onSubmit={handleFormSubmit} className="chatbot-input-form">
+  <form onSubmit={handleFormSubmit} className="chatbot-input-form">
   <div className="inputBox">
     <textarea
       placeholder="Type your query here..."
@@ -186,7 +186,16 @@ const ChatbotInputForm = ({
       onKeyDown={handleKeyDown}
     />
     <div className="actionBar">
-      <Add className="actionIcon left" onClick={uploadInvoice} />
+      {/* <Add className="actionIcon left" onClick={uploadInvoice} /> */}
+      <label>
+        <input
+          type="file"
+          style={{ display: "none" }}
+          onChange={uploadInvoice}
+          onClick={(e) => (e.target.value = "")}
+        />
+        <Add className="actionIcon left" />
+      </label>
       <SendIcon className="actionIcon right" onClick={handleFormSubmit} />
     </div>
   </div>

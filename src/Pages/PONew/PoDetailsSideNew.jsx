@@ -250,7 +250,7 @@ function PoDetailsSide() {
 
         <Card
           className="generalView"
-          style={{ width: "100%", backgroundColor: "#73809A", borderRadius: "3%", borderColor: "#73809A", marginLeft: "4%", boxShadow: "2px 2px 8px rgba(66, 57, 57, 0.75)" }}
+          style={{ width: "100%", backgroundColor: "#73809A", borderRadius: "3%", borderColor: "#73809A", marginLeft: "4%", boxShadow: "2px 2px 8px rgba(66, 57, 57, 0.75)",marginTop:"2.95rem"}}
           ref={messagesEndRef}
         >
           {/* <Card ref={messagesEndRef} style={{backgroundColor:"transparent"}}> */}
@@ -458,11 +458,30 @@ function PoDetailsSide() {
                       supplierId: text,
                     })
                   }
+                  // EndComponent={
+                  //   value.supplierDetails.supplierStatus === true ? (
+                  //     <BsFillInfoCircleFill onClick={() => setSupplierPopupStatus(true)} />
+                  //   ) : null
+                  // }
                   EndComponent={
                     value.supplierDetails.supplierStatus === true ? (
-                      <BsFillInfoCircleFill onClick={() => setSupplierPopupStatus(true)} />
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          height: "100%",
+                        }}
+                      >
+                                  {" "}
+                        <BsFillInfoCircleFill
+                          onClick={() => setSupplierPopupStatus(true)}
+                          style={{ cursor: "pointer" }}
+                        />
+                                  {" "}
+                      </div>
                     ) : null
                   }
+
                 />
               </FormControl>
 

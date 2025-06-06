@@ -80,7 +80,8 @@ const ChatMessage = ({ text, fromUser, isFile = false }) => {
       ) : (
         <div style={{ marginBottom: "1rem" }}>
           <div
-            className="container openSans"
+            className="container"
+            // className="container openSans"
             style={{
               width: "100%",
               fontWeight: "700",

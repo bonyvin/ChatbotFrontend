@@ -51,6 +51,7 @@
 
 .labelText {
   font-size: 0.75rem;
+  font-family: "Montserrat,sans-sherif",
   /* background-color: #2d1b1b; */
 }
 
@@ -58,6 +59,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  font-family: "Montserrat,sans-sherif";
 }
 
 .generalRadio {
@@ -72,8 +74,8 @@
 }
 
 .generalRadio input[type="radio"] {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1rem;
+  height: 1rem;
   border-width: 0.2rem;
   border-radius: 50%;
   margin-right: 0.1rem;
@@ -105,19 +107,24 @@
   display: flex;
   /* width: 8%; */
   justify-content: center;
-  margin-left: 0.5rem;
+  margin-left: 1.2rem;
 }
 
 .logoImage {
   display: flex;
-  width: 1.8rem;
+  width: 1.5rem;
+  /* height: 1.5625rem; */
+}
+
+input[type="file" i]{
+  color:"white"
 }
 
 .iconContainer {
   display: flex;
   flex-direction: row;
   align-items: center;
-  /* width: 8%; */
+  width: 8%;
   justify-content: space-evenly;
 }
 
