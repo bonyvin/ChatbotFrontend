@@ -417,10 +417,13 @@ export default function LLMChatbotTest() {
     console.log("Input: ", input);
     const textToSend = input.trim();
     // Ensure inputFromUpload is a string if it's the primary content
-    const messageContent = textToSend || (typeof inputFromUpload === 'string' ? inputFromUpload : "");
+    const messageContent =
+      textToSend ||
+      (typeof inputFromUpload === "string" ? inputFromUpload : "");
     if (!messageContent) return; // Simplified check if there's any content to send
     // Add User Message (if applicable and not an upload-only scenario)
-    if (!inputFromUpload && textToSend) { // Only add user message if textToSend is present
+    if (!inputFromUpload && textToSend) {
+      // Only add user message if textToSend is present
       setMessages((prevMessages) => [
         ...prevMessages,
         // User messages can remain simple text objects
@@ -432,7 +435,7 @@ export default function LLMChatbotTest() {
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => setTyping(true), 1000);
     try {
-      const response = await fetch("http://localhost:8000/chat/", {
+      const response = await fetch("http://localhost:8000/promotion_chat/", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "text/plain" }, // Server should stream plain text (Markdown)
         body: JSON.stringify({
