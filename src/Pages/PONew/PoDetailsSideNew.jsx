@@ -250,7 +250,7 @@ function PoDetailsSide() {
 
         <Card
           className="generalView"
-          style={{ width: "100%", backgroundColor: "#73809A", borderRadius: "3%", borderColor: "#73809A", marginLeft: "4%", boxShadow: "2px 2px 8px rgba(66, 57, 57, 0.75)",marginTop:"2.95rem"}}
+          style={{ width: "100%", backgroundColor: "#73809A", borderRadius: "3%", borderColor: "#73809A", marginLeft: "2.3rem", boxShadow: "2px 2px 8px rgba(66, 57, 57, 0.75)",marginTop:"3.2rem"}}
           ref={messagesEndRef}
         >
           {/* <Card ref={messagesEndRef} style={{backgroundColor:"transparent"}}> */}
