@@ -16,13 +16,14 @@ const InputFieldComponent = ({
   defaultValue,
   options=[],
   editable,
+  labelColor,
   StartComponent, // New prop for start component
   EndComponent, // New prop for end component
   ...rest
 }) => {
   return (
     <Form.Group className="form-group-styled" id="formGroup">
-  <Form.Label className="form-label-styled">
+  <Form.Label className="form-label-styled" style={{color: labelColor || 'white'}}>
     {label} {required && <span className="required">*</span>}
   </Form.Label>
 

@@ -34,6 +34,10 @@
     margin-right:0.4rem;
 }
 
+.radioText{
+    font-size: 0.75rem;
+    color: #ffffff;
+}
 
 /* .custom-button svg {
   font-size: 1.1rem;

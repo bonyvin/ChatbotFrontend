@@ -23,7 +23,7 @@
 
 .form-label-styled {
   margin-bottom: 0.2rem;
-  color: #ffffff;
+  /* color: #ffffff; */
   font-family: "Montserrat", sans-serif;
   /* White label */
   font-weight: bold;
@@ -49,17 +49,12 @@
   /* White for even rows */
 }
 
-.labelText {
-  font-size: 0.75rem;
-  font-family: "Montserrat,sans-sherif",
-  /* background-color: #2d1b1b; */
-}
 
 .generalRadio .form-check-inline {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-family: "Montserrat,sans-sherif";
+  font-family: "Montserrat", sans-serif;
 }
 
 .generalRadio {

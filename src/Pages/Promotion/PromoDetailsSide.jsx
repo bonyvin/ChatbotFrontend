@@ -24,7 +24,7 @@
 // //   Grid,
 // //   Typography
 // // } from "@mui/material";
-// // import "../../styles/Overall.css"; 
+// // import "../../styles/Overall.css";
 // // // Joy UI components
 // // import {
 // //   Card,
@@ -43,7 +43,6 @@
 // // // React PDF
 
 // // // Context
-
 
 // // // Custom Components
 // // import { DynamicCutoutInput } from "../../components/DynamicCutoutInput";
@@ -91,7 +90,6 @@
 // //   const [excludedSelectedStores, setExcludedSelectedStores] =
 // //     useState(initialStoresState);
 
-
 // //   // State to control modal visibility and type ("items" or "excluded")
 // //   const [itemModalVisible, setItemModalVisible] = useState(false);
 // //   const [storeModalVisible, setStoreModalVisible] = useState(false);
@@ -101,7 +99,7 @@
 // //   const showForm = value.isActive;
 // //   const initialHierarchyTypes = hierarchyTypeOptions.filter((type) =>
 // //     value.promotionData.hierarchyType.includes(type)
-// //   ); 
+// //   );
 // // console.log("Initial Hierarchy Types:",initialHierarchyTypes);
 // //   const handleTableExpand = () => {
 // //     setTableToggle(!tableToggle);
@@ -615,7 +613,7 @@
 // //           <Card
 // //             className="generalView"
 // //             style={{ width: "100%", padding: "2rem" }}
-            
+
 // //           >
 // //             <img src={symbolBlue} style={{ width: "4.2rem" }}></img>
 // //             <div
@@ -1309,7 +1307,7 @@
 // //                     >
 // //                       {!value.storeUpload.stores && (
 // //                         // <CustomButton className="upload-btn"                        >
-                          
+
 // //                         <Button
 // //                         variant="outlined"
 // //                         endIcon={<FiUpload style={{ fontSize: "1rem" }} />}
@@ -1592,7 +1590,6 @@
 
 // // export default PromoDetailsSide;
 
-
 // // React and hooks
 // import React, { useContext, useEffect, useRef, useState } from "react";
 
@@ -1620,7 +1617,7 @@
 //   Grid,
 //   Typography
 // } from "@mui/material";
-// import "../../styles/Overall.css"; 
+// import "../../styles/Overall.css";
 // import { Box } from '@mui/material';
 // // Joy UI components
 // import {
@@ -1640,7 +1637,6 @@
 // // React PDF
 
 // // Context
-
 
 // // Custom Components
 // import { DynamicCutoutInput } from "../../components/DynamicCutoutInput";
@@ -1692,7 +1688,6 @@
 //   const [excludedSelectedStores, setExcludedSelectedStores] =
 //     useState(initialStoresState);
 
-
 //   // State to control modal visibility and type ("items" or "excluded")
 //   const [itemModalVisible, setItemModalVisible] = useState(false);
 //   const [storeModalVisible, setStoreModalVisible] = useState(false);
@@ -1702,7 +1697,7 @@
 //   const showForm = value.isActive;
 //   const initialHierarchyTypes = hierarchyTypeOptions.filter((type) =>
 //     value.promotionData.hierarchyType.includes(type)
-//   ); 
+//   );
 // console.log("Initial Hierarchy Types:",initialHierarchyTypes);
 //   const handleTableExpand = () => {
 //     setTableToggle(!tableToggle);
@@ -2220,7 +2215,7 @@
 //           <Card
 //             className="generalView"
 //             style={{ width: "100%", padding: "2rem" }}
-            
+
 //           >
 //             <img src={symbolBlue} style={{ width: "4.2rem" }}></img>
 //             <div
@@ -3257,7 +3252,7 @@
 //   Grid,
 //   Typography
 // } from "@mui/material";
-// import "../../styles/Overall.css"; 
+// import "../../styles/Overall.css";
 // // Joy UI components
 // import {
 //   Card,
@@ -3276,7 +3271,6 @@
 // // React PDF
 
 // // Context
-
 
 // // Custom Components
 // import { DynamicCutoutInput } from "../../components/DynamicCutoutInput";
@@ -3324,7 +3318,6 @@
 //   const [excludedSelectedStores, setExcludedSelectedStores] =
 //     useState(initialStoresState);
 
-
 //   // State to control modal visibility and type ("items" or "excluded")
 //   const [itemModalVisible, setItemModalVisible] = useState(false);
 //   const [storeModalVisible, setStoreModalVisible] = useState(false);
@@ -3334,7 +3327,7 @@
 //   const showForm = value.isActive;
 //   const initialHierarchyTypes = hierarchyTypeOptions.filter((type) =>
 //     value.promotionData.hierarchyType.includes(type)
-//   ); 
+//   );
 // console.log("Initial Hierarchy Types:",initialHierarchyTypes);
 //   const handleTableExpand = () => {
 //     setTableToggle(!tableToggle);
@@ -3848,7 +3841,7 @@
 //           <Card
 //             className="generalView"
 //             style={{ width: "100%", padding: "2rem" }}
-            
+
 //           >
 //             <img src={symbolBlue} style={{ width: "4.2rem" }}></img>
 //             <div
@@ -4542,7 +4535,7 @@
 //                     >
 //                       {!value.storeUpload.stores && (
 //                         // <CustomButton className="upload-btn"                        >
-                          
+
 //                         <Button
 //                         variant="outlined"
 //                         endIcon={<FiUpload style={{ fontSize: "1rem" }} />}
@@ -4825,7 +4818,6 @@
 
 // export default PromoDetailsSide;
 
-
 // React and hooks
 import React, { useContext, useEffect, useRef, useState } from "react";
 
@@ -4839,7 +4831,7 @@ import {
   ExpandLess,
   ExpandMore,
   ViewHeadline,
-  Visibility
+  Visibility,
 } from "@mui/icons-material";
 import {
   Button,
@@ -4851,10 +4843,10 @@ import {
   DialogTitle,
   FormControlLabel,
   Grid,
-  Typography
+  Typography,
 } from "@mui/material";
-import "../../styles/Overall.css"; 
-import { Box } from '@mui/material';
+import "../../styles/Overall.css";
+import { Box } from "@mui/material";
 // Joy UI components
 import {
   Card,
@@ -4864,7 +4856,7 @@ import {
   IconButton,
   Option,
   Select,
-  Stack
+  Stack,
 } from "@mui/joy";
 
 // Bootstrap components
@@ -4874,10 +4866,9 @@ import { Form } from "react-bootstrap";
 
 // Context
 
-
 // Custom Components
 import { DynamicCutoutInput } from "../../components/DynamicCutoutInput";
-import  InputFieldComponent  from "../../components/InputFieldComponent";
+import InputFieldComponent from "../../components/InputFieldComponent";
 import ItemInfoPopup from "../../components/PopupMessage/ItemInfoPopup";
 import PopUp from "../../components/PopupMessage/FormSubmissionStatusPopUp";
 import PromoChatbotPane from "./PromoChatbotPane";
@@ -4885,9 +4876,9 @@ import SupplierInfoPopUp from "../../components/PopupMessage/SupplierInfoPopUp";
 
 // React Icons
 import { FiUpload } from "react-icons/fi";
-import PreviewIcon from '@mui/icons-material/Preview';
-import SaveIcon from '@mui/icons-material/Save';
-import PublishIcon from '@mui/icons-material/Publish';
+import PreviewIcon from "@mui/icons-material/Preview";
+import SaveIcon from "@mui/icons-material/Save";
+import PublishIcon from "@mui/icons-material/Publish";
 
 // PDF Viewer
 import { PDFViewer } from "@react-pdf/renderer";
@@ -4925,7 +4916,6 @@ function PromoDetailsSide() {
   const [excludedSelectedStores, setExcludedSelectedStores] =
     useState(initialStoresState);
 
-
   // State to control modal visibility and type ("items" or "excluded")
   const [itemModalVisible, setItemModalVisible] = useState(false);
   const [storeModalVisible, setStoreModalVisible] = useState(false);
@@ -4935,8 +4925,8 @@ function PromoDetailsSide() {
   const showForm = value.isActive;
   const initialHierarchyTypes = hierarchyTypeOptions.filter((type) =>
     value.promotionData.hierarchyType.includes(type)
-  ); 
-console.log("Initial Hierarchy Types:",initialHierarchyTypes);
+  );
+  console.log("Initial Hierarchy Types:", initialHierarchyTypes);
   const handleTableExpand = () => {
     setTableToggle(!tableToggle);
   };
@@ -5001,9 +4991,8 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
     });
     value.setPromotionData({ ...value.promotionData, promotionType: type });
   };
- 
+
   const handleChangeHierarchy = (event, newValue) => {
-    
     console.log("handleChangeHierarchy  ", newValue);
     let hierarchyValue = [...newValue];
     let hierarchyArray = [...value.promotionData.hierarchyType];
@@ -5027,14 +5016,14 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
       hierarchyType: [...value.promotionData.hierarchyType, ...updatedValue],
     });
   };
- 
+
   const handleChangeDiscount = (event, newValue) => {
     value.setPromotionData({
       ...value.promotionData,
       discountType: newValue,
     });
   };
- 
+
   const handleCheckboxChange = (event) => {
     const { name, checked } = event.target;
 
@@ -5066,8 +5055,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
         itemList: newItemList,
         excludedItemList: newExcludedList,
       });
-    }
-    else if (modalType === "excluded") {
+    } else if (modalType === "excluded") {
       // USER JUST CLICKED a checkbox in the “Excluded Items” modal.
       //  → set excludedSelectedItems[name] = checked
       //  → ALSO force selectedItems[name] = false if checked === true
@@ -5095,8 +5083,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
         excludedItemList: newExcludedList,
         itemList: newItemList,
       });
-    }
-    else if (modalType === "stores") {
+    } else if (modalType === "stores") {
       // USER JUST CLICKED a checkbox in the “Stores” modal.
       setSelectedStores((prev) => ({ ...prev, [name]: checked }));
 
@@ -5120,8 +5107,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
         locationList: newLocationList,
         excludedLocationList: newExcludedStoreList,
       });
-    }
-    else if (modalType === "storesExcluded") {
+    } else if (modalType === "storesExcluded") {
       // USER JUST CLICKED a checkbox in the “Stores Excluded” modal.
       setExcludedSelectedStores((prev) => ({ ...prev, [name]: checked }));
 
@@ -5156,7 +5142,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
   const handleStoreModal = async (type) => {
     setModalType(type); // type should be "items" or "excluded"
     setStoreModalVisible(true);
-    await getStoreDetails()
+    await getStoreDetails();
   };
   const getItemDetails = async () => {
     try {
@@ -5198,7 +5184,12 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
     <Grid
       container
       component="main"
-      style={{ height: "100vh", backgroundColor: "#384B70" ,height:"auto", overflow:"visible"}}
+      style={{
+        height: "100vh",
+        backgroundColor: "#384B70",
+        height: "auto",
+        overflow: "visible",
+      }}
     >
       <Grid
         item
@@ -5244,11 +5235,12 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                             modalType === "items"
                               ? value.promotionData.itemList.includes(item)
                               : modalType === "excluded"
-                              ? value.promotionData.excludedItemList.includes(
+                                ? value.promotionData.excludedItemList.includes(
                                   item
                                 )
-                              : null
-                          }/>
+                                : null
+                          }
+                        />
                       }
                       label={item}
                     />
@@ -5294,11 +5286,12 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                             modalType === "stores"
                               ? value.promotionData.locationList.includes(item)
                               : modalType === "storesExcluded"
-                              ? value.promotionData.excludedLocationList.includes(
+                                ? value.promotionData.excludedLocationList.includes(
                                   item
                                 )
-                              : null
-                          }/>
+                                : null
+                          }
+                        />
                       }
                       label={item}
                     />
@@ -5340,8 +5333,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
               },
             }}
           >
-            <div
-              className="dialog-container">
+            <div className="dialog-container">
               {/* Use PDFViewer to allow for real-time updates */}
               <PDFViewer
                 style={{
@@ -5366,15 +5358,15 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
         <Card
           className="generalView"
           style={{
-            marginTop:"3rem",
+            marginTop: "3rem",
             width: "100%",
             backgroundColor: "#73809A",
             borderRadius: "2%",
             borderColor: "#73809A",
             marginLeft: "4%",
             boxShadow: "2px 2px 8px rgba(66, 57, 57, 0.75)",
-            marginTop:"2.95rem"}}
-
+            marginTop: "2.95rem",
+          }}
           ref={messagesEndRef}
         >
           {/* <Card ref={messagesEndRef}> */}
@@ -5408,13 +5400,19 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
           </div>
 
           <Form className="generalRadio">
-            <div style={{ display: "flex", justifyContent: "space-between" , marginLeft:"0.9rem"}}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginLeft: "0.9rem",
+              }}
+            >
               <Typography
                 style={{
                   fontSize: "0.8rem",
                   fontWeight: "600",
                   color: "white",
-                fontFamily: "Montserrat,sans-sherif",
+                  fontFamily: "Montserrat,sans-sherif",
                 }}
               >
                 Type
@@ -5435,7 +5433,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                   justifyContent: "space-between",
                   alignItems: "center",
                   flex: 1,
-                  marginLeft:"0.9rem",
+                  marginLeft: "0.9rem",
                 }}
               >
                 <Form.Check
@@ -5444,10 +5442,10 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                   name="group1"
                   type={"radio"}
                   id={`inline- -1`}
-                  className="labelText"
+                  className="radioText"
                   checked={value.typeOfPromotion.simple}
                   onChange={() => handleRadioChange("simple")}
-                  // checked={value.promotionData.invoiceType.match(/merchandise/i) }
+                // checked={value.promotionData.invoiceType.match(/merchandise/i) }
                 />
                 <Form.Check
                   inline
@@ -5456,10 +5454,10 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                   name="group1"
                   type={"radio"}
                   id={`inline- -2`}
-                  className="labelText"
+                  className="radioText"
                   checked={value.typeOfPromotion.buyXGetY}
                   onChange={() => handleRadioChange("buyXGetY")}
-                  // checked={value.promotionData.invoiceType === "Non - Merchandise"}
+                // checked={value.promotionData.invoiceType === "Non - Merchandise"}
                 />
                 <Form.Check
                   inline
@@ -5468,10 +5466,10 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                   name="group1"
                   type={"radio"}
                   id={`inline- -3`}
-                  className="labelText"
+                  className="radioText"
                   checked={value.typeOfPromotion.threshold}
                   onChange={() => handleRadioChange("threshold")}
-                  // checked={value.promotionData.invoiceType.match(/debit\s*-\s*\s*note\s*: ?(.*?)(?:,|$)/i) }
+                // checked={value.promotionData.invoiceType.match(/debit\s*-\s*\s*note\s*: ?(.*?)(?:,|$)/i) }
                 />
                 <Form.Check
                   inline
@@ -5480,7 +5478,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                   name="group1"
                   type={"radio"}
                   id={`inline- -4`}
-                  className="labelText"
+                  className="radioText"
                   // checked={value.promotionData.invoiceType === "Credit Note"}
                   checked={value.typeOfPromotion.giftWithPurchase}
                   onChange={() => handleRadioChange("giftWithPurchase")}
@@ -5491,15 +5489,15 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
           {/* </Card> */}
           {/* <Card ref={messagesEndRef}> */}
           <Box
-                        sx={{
-                          paddingLeft:"1.5rem"
-                        }}
-                      >
+            sx={{
+              paddingLeft: "1.5rem",
+            }}
+          >
             <Stack
               direction="row"
               // spacing={3}
               // sx={{ display: { xs: "none", md: "flex" }, my: 1 }}
-              sx={{ display: { xs: "none", md: "flex" }}}
+              sx={{ display: { xs: "none", md: "flex" } }}
             >
               <Stack spacing={2} sx={{ flexGrow: 1 }}>
                 <div
@@ -5510,7 +5508,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                       fontSize: "0.9rem",
                       fontWeight: "bold",
                       fontFamily: "Montserrat,sans-sherif",
-                      color:"white",
+                      color: "white",
                     }}
                   >
                     Level
@@ -5519,14 +5517,14 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                 <Stack
                   direction="row"
                   spacing={12}
-                  sx={{ alignItems: "center", width: "90%"}}
+                  sx={{ alignItems: "center", width: "90%" }}
                 >
                   <Typography
                     style={{
                       fontSize: "0.85rem",
                       fontWeight: "bold",
                       fontFamily: "Montserrat,sans-sherif",
-                      color:"white",
+                      color: "white",
                       flexDirection: "row",
                       display: "flex",
                       width: "6rem",
@@ -5536,12 +5534,13 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                   </Typography>
 
                   <FormControl sx={{ flex: 1, position: "relative" }}>
+                    <span className="form-label-styled" style={{color: 'white'}}>Type<span className="required">*</span>
+                    </span>
                     <Form.Label
                       id="custom"
                       className="position-absolute top-0 translate-middle custom"
                       style={{ zIndex: 2, padding: "0 4px" }}
-                    >
-                    </Form.Label>
+                    ></Form.Label>
                     <Select
                       multiple
                       value={initialHierarchyTypes}
@@ -5571,7 +5570,8 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                       label="Value"
                       required={true}
                       placeholder="Add Value here"
-                      value={value.promotionData.hierarchyValue}hierarchyType
+                      value={value.promotionData.hierarchyValue}
+                      hierarchyType
                       fun={(text) =>
                         value.setPromotionData({
                           ...value.promotionData,
@@ -5584,14 +5584,18 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                 <Stack
                   direction="row"
                   spacing={12}
-                  sx={{ alignItems: "center", width: "90%" ,justifyContent:"center"}}
+                  sx={{
+                    alignItems: "center",
+                    width: "90%",
+                    justifyContent: "center",
+                  }}
                 >
                   <Typography
                     style={{
                       fontSize: "0.85rem",
                       fontWeight: "bold",
                       fontFamily: "Montserrat,sans-sherif",
-                      color:"white",
+                      color: "white",
                       flexDirection: "row",
                       display: "flex",
                       width: "6rem",
@@ -5617,37 +5621,48 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                       style={{}}
                       EndComponent={
                         <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          height: "100%",
-                         marginTop:"1.5rem"
-                        }}
-                      >
-                        <Visibility
                           style={{
-                            backgroundColor: "white",
-                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            height: "100%",
+                            marginTop: "1.5rem",
                           }}
-                          onClick={() => handleItemModal("items")}
-                          id="item"
-                        ></Visibility></div>
+                        >
+                          <Visibility
+                            style={{
+                              backgroundColor: "white",
+                              cursor: "pointer",
+                            }}
+                            onClick={() => handleItemModal("items")}
+                            id="item"
+                          ></Visibility>
+                        </div>
                       }
                     />
                   </FormControl>
                   <FormControl
                     // sx={{ flex: 1, display: "flex", flexDirection: "row", alignItems:"center" }}
-                    style={{ flex: 1, display: "flex", flexDirection: "row", alignItems:"flex-end" }}
+                    style={{
+                      flex: 1,
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "flex-end",
+                      alignSelf: "flex-end"
+                    }}
                   >
                     {!value.itemUpload.items && (
                       <Button
                         variant="outlined"
-                        endIcon={<FiUpload style={{ fontSize: "1rem", color:"white" }} />}
+                        endIcon={
+                          <FiUpload
+                            style={{ fontSize: "1rem", color: "white" }}
+                          />
+                        }
                         style={{
                           fontFamily: "Monsterrat,sans-serif",
                           width: "50%",
-                          color:"white",
-                           borderColor:"white",
+                          color: "white",
+                          borderColor: "white",
                           fontSize: "0.8rem",
                           position: "relative", // Make the button the container for the file input
                           overflow: "hidden",
@@ -5692,9 +5707,9 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                             .length < 12
                             ? value.itemUpload.eventItems.target.files[0].name
                             : value.itemUpload.eventItems.target.files[0].name.substring(
-                                0,
-                                10
-                              ) + "..."}
+                              0,
+                              10
+                            ) + "..."}
                         </a>
                         <Cancel
                           onClick={() =>
@@ -5714,7 +5729,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                         width: "50%",
                         fontSize: "0.5rem",
                         display: "flex",
-                        color:"white",
+                        color: "white",
                         // borderColor:"white",
                         // justifyContent:'center',
                         alignItems: "flex-end",
@@ -5736,7 +5751,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                       fontSize: "0.85rem",
                       fontWeight: "bold",
                       fontFamily: "Montserrat,sans-sherif",
-                      color:"white",
+                      color: "white",
                       flexDirection: "row",
                       display: "flex",
                       width: "6rem",
@@ -5744,7 +5759,8 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                   >
                     Exclusions
                   </Typography>
-                  <FormControl sx={{ flex: 1 }}>
+
+                  <FormControl sx={{ flex: 1 }} >
                     <InputFieldComponent
                       label="Exclusions"
                       required={false}
@@ -5762,36 +5778,41 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                       style={{}}
                       EndComponent={
                         <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          height: "100%",
-                         marginTop:"1.5rem"
-                        }}
-                      >
-                        <Visibility
                           style={{
-                            backgroundColor: "white",
-                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            height: "100%",
+                            marginTop: "1.5rem",
                           }}
-                          onClick={() => handleItemModal("items")}
-                          id="item"
-                        ></Visibility></div>
+                        >
+                          <Visibility
+                            style={{
+                              backgroundColor: "white",
+                              cursor: "pointer",
+                            }}
+                            onClick={() => handleItemModal("items")}
+                            id="item"
+                          ></Visibility>
+                        </div>
                       }
                     />
                   </FormControl>
                   <FormControl
-                    sx={{ flex: 1, display: "flex", flexDirection: "row" }}
+                    sx={{ flex: 1, display: "flex", flexDirection: "row", bgcolor: "#73809A", alignSelf: "flex-end" }}
                   >
                     {!value.itemUpload.excludedItems && (
                       <Button
                         variant="outlined"
-                        endIcon={<FiUpload style={{ fontSize: "1rem",color:"white" }} />}
+                        endIcon={
+                          <FiUpload
+                            style={{ fontSize: "1rem", color: "white" }}
+                          />
+                        }
                         style={{
                           fontFamily: "Monsterrat,sans-serif",
                           width: "50%",
-                          color:"white",
-                          borderColor:"white",
+                          color: "white",
+                          borderColor: "white",
                           fontSize: "0.8rem",
                           position: "relative", // Make the button the container for the file input
                           overflow: "hidden",
@@ -5827,7 +5848,8 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                       <div style={{ display: "flex" }}>
                         <a
                           href={URL.createObjectURL(
-                            value.itemUpload.eventExcludedItems.target.files[0]
+                            value.itemUpload.eventExcludedItems.target
+                              .files[0]
                           )}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -5835,11 +5857,11 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                           {value.itemUpload.eventExcludedItems.target.files[0]
                             .name.length < 12
                             ? value.itemUpload.eventExcludedItems.target
-                                .files[0].name
+                              .files[0].name
                             : value.itemUpload.eventExcludedItems.target.files[0].name.substring(
-                                0,
-                                10
-                              ) + "..."}
+                              0,
+                              10
+                            ) + "..."}
                         </a>
                         <Cancel
                           onClick={() =>
@@ -5859,7 +5881,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                         width: "50%",
                         fontSize: "0.5rem",
                         display: "flex",
-                        color:"white",
+                        color: "white",
                         // justifyContent:'center',
                         alignItems: "flex-end",
                         padding: "0.25rem",
@@ -5872,9 +5894,10 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                 </Stack>
               </Stack>
             </Stack>
-          {/* </Card> */}
+            {/* </Card> */}
           </Box>
-          <Card ref={messagesEndRef}>
+          {/* <Card ref={messagesEndRef}> */}
+          <div ref={messagesEndRef} style={{ marginLeft: "1.5rem" }}>
             <div
               style={{
                 display: "flex",
@@ -5953,7 +5976,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                       </Select>
                     </FormControl>
                     <FormControl sx={{ flex: 1 }}>
-                      <DynamicCutoutInput
+                      <InputFieldComponent
                         label="Discount Amount"
                         required={true}
                         placeholder="Add Amount here"
@@ -5985,7 +6008,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                       Date<span style={{ color: "red" }}>*</span>
                     </Typography>
                     <FormControl sx={{ flex: 1 }}>
-                      <DynamicCutoutInput
+                      <InputFieldComponent
                         label="Start Date"
                         required={true}
                         placeholder="Choose start date"
@@ -5997,7 +6020,7 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                             startDate: text,
                           })
                         }
-                        style={{}}
+                        labelColor={"gray"}
                       />
                     </FormControl>
                     <FormControl sx={{ flex: 1 }}>
@@ -6115,11 +6138,11 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                             {value.storeUpload.eventStores.target.files[0].name
                               .length < 12
                               ? value.storeUpload.eventStores.target.files[0]
-                                  .name
+                                .name
                               : value.storeUpload.eventStores.target.files[0].name.substring(
-                                  0,
-                                  10
-                                ) + "..."}
+                                0,
+                                10
+                              ) + "..."}
                           </a>
                           <Cancel
                             onClick={() =>
@@ -6134,16 +6157,16 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                       )}
                       <div
                         className="upload-div"
-                        // style={{
-                        //   fontFamily: "Poppins,sans-serif",
-                        //   width: "50%",
-                        //   fontSize: "0.5rem",
-                        //   display: "flex",
-                        //   // justifyContent:'center',
-                        //   alignItems: "flex-end",
-                        //   padding: "0.25rem",
-                        //   paddingLeft: "0.5rem",
-                        // }}
+                      // style={{
+                      //   fontFamily: "Poppins,sans-serif",
+                      //   width: "50%",
+                      //   fontSize: "0.5rem",
+                      //   display: "flex",
+                      //   // justifyContent:'center',
+                      //   alignItems: "flex-end",
+                      //   padding: "0.25rem",
+                      //   paddingLeft: "0.5rem",
+                      // }}
                       >
                         Only Excel files allowed
                       </div>
@@ -6250,11 +6273,11 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                             {value.storeUpload.eventExcludedStores.target
                               .files[0].name.length < 12
                               ? value.storeUpload.eventExcludedStores.target
-                                  .files[0].name
+                                .files[0].name
                               : value.storeUpload.eventExcludedStores.target.files[0].name.substring(
-                                  0,
-                                  10
-                                ) + "..."}
+                                0,
+                                10
+                              ) + "..."}
                           </a>
                           <Cancel
                             onClick={() =>
@@ -6269,16 +6292,16 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                       )}
                       <div
                         className="upload-div"
-                        // style={{
-                        //   fontFamily: "Poppins,sans-serif",
-                        //   width: "50%",
-                        //   fontSize: "0.5rem",
-                        //   display: "flex",
-                        //   // justifyContent:'center',
-                        //   alignItems: "flex-end",
-                        //   padding: "0.25rem",
-                        //   paddingLeft: "0.5rem",
-                        // }}
+                      // style={{
+                      //   fontFamily: "Poppins,sans-serif",
+                      //   width: "50%",
+                      //   fontSize: "0.5rem",
+                      //   display: "flex",
+                      //   // justifyContent:'center',
+                      //   alignItems: "flex-end",
+                      //   padding: "0.25rem",
+                      //   paddingLeft: "0.5rem",
+                      // }}
                       >
                         Only Excel files allowed
                       </div>
@@ -6287,23 +6310,24 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
                 </Stack>
               </Stack>
             )}
-          </Card>
+          </div>
+          {/* </Card> */}
           <CardOverflow
-                      sx={{ borderTop: "1px solid", borderColor: "divider" }}
-                      style={{
-                        flexGrow: 1,
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        paddingBottom: "0.75rem",
-                      }}
-                    >
-                      <CardActions
-                        sx={{
-                          justifyContent: "center",
-                          marginLeft: "1rem",
-                          marginRight: "1rem",
-                        }}
-                      >
+            sx={{ borderTop: "1px solid", borderColor: "divider" }}
+            style={{
+              flexGrow: 1,
+              display: "flex",
+              justifyContent: "flex-end",
+              paddingBottom: "0.75rem",
+            }}
+          >
+            <CardActions
+              sx={{
+                justifyContent: "center",
+                marginLeft: "1rem",
+                marginRight: "1rem",
+              }}
+            >
               <CustomButton
                 onClick={() => value.setFormSave((prevState) => !prevState)}
               >
@@ -6353,6 +6377,3 @@ console.log("Initial Hierarchy Types:",initialHierarchyTypes);
 }
 
 export default PromoDetailsSide;
-
-
-
