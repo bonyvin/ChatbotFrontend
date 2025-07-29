@@ -38,7 +38,49 @@
     font-size: 0.75rem;
     color: #ffffff;
 }
-
+.promotion-detail-text{
+    font-size: 0.85rem;
+    /* font-weight: bold; */
+    font-weight: 500;
+    font-family: "Montserrat", sans-serif;
+    color: white;
+    flex-direction: row;
+    display: flex;
+    width: 6rem;
+    margin-top: 0.9rem;
+}
+/* .upload-btn {
+    font-family: "Montserrat", sans-serif;
+    width: 50%;
+    font-size: 0.8rem;
+    position: relative; 
+    overflow: hidden;
+    cursor: pointer;
+    margin-top: 0.1rem;
+    border-color: white;
+    color: white;
+} */
+.upload-btn-info{
+    font-family: "Montserrat", sans-serif;
+    width: 50%;
+    font-size: 0.5rem;
+    display: flex;
+    color: white;
+    /* border-color: white; */
+    /* justify-content: center; */
+    align-items: flex-end;
+    padding: 0.25rem;
+    padding-left: 0.5rem;
+}
+.upload-input{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
 /* .custom-button svg {
   font-size: 1.1rem;
   color: #7b61ff; 

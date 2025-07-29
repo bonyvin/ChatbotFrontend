@@ -5404,7 +5404,8 @@ function PromoDetailsSide() {
               style={{
                 display: "flex",
                 justifyContent: "space-between",
-                marginLeft: "0.9rem",
+                // marginLeft: "0.9rem",
+                // paddingLeft: "1.5rem",
               }}
             >
               <Typography
@@ -5433,7 +5434,7 @@ function PromoDetailsSide() {
                   justifyContent: "space-between",
                   alignItems: "center",
                   flex: 1,
-                  marginLeft: "0.9rem",
+                  // marginLeft: "0.9rem",
                 }}
               >
                 <Form.Check
@@ -5519,23 +5520,14 @@ function PromoDetailsSide() {
                   spacing={12}
                   sx={{ alignItems: "center", width: "90%" }}
                 >
-                  <Typography
-                    style={{
-                      fontSize: "0.85rem",
-                      fontWeight: "bold",
-                      fontFamily: "Montserrat,sans-sherif",
-                      color: "white",
-                      flexDirection: "row",
-                      display: "flex",
-                      width: "6rem",
-                      marginTop:'0.9rem'
-                    }}
-                  >
-                    Hierarchy<span style={{ color: "red" }}>*</span>
-                  </Typography>
+
+                  <div
+                    className="promotion-detail-text"
+                  >Hierarchy<span style={{ color: "red" }}>*</span></div>
+
 
                   <FormControl sx={{ flex: 1, position: "relative" }}>
-                    <span className="form-label-styled" style={{color: 'white'}}>Type<span className="required">*</span>
+                    <span className="form-label-styled" style={{ color: 'white' }}>Type<span className="required">*</span>
                     </span>
                     <Select
                       multiple
@@ -5586,21 +5578,9 @@ function PromoDetailsSide() {
                     justifyContent: "center",
                   }}
                 >
-                  <Typography
-                    style={{
-                      fontSize: "0.85rem",
-                      fontWeight: "bold",
-                      fontFamily: "Montserrat,sans-sherif",
-                      color: "white",
-                      flexDirection: "row",
-                      display: "flex",
-                      width: "6rem",
-                                            marginTop:'0.9rem'
-
-                    }}
-                  >
-                    Item<span style={{ color: "red" }}>*</span>
-                  </Typography>
+                  <div
+                    className="promotion-detail-text"
+                  >Item<span style={{ color: "red" }}>*</span></div>
                   <FormControl sx={{ flex: 1 }}>
                     <InputFieldComponent
                       label="Item Type"
@@ -5661,10 +5641,12 @@ function PromoDetailsSide() {
                           width: "50%",
                           color: "white",
                           borderColor: "white",
-                          fontSize: "0.8rem",
+                          // fontSize: "0.8rem",
                           position: "relative", // Make the button the container for the file input
                           overflow: "hidden",
                           cursor: "pointer",
+                          margin: "0.1rem",
+                          borderColor: "white"
                         }}
                       >
                         Upload
@@ -5672,15 +5654,7 @@ function PromoDetailsSide() {
                         <input
                           type="file"
                           accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-                          style={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            width: "100%",
-                            height: "100%",
-                            opacity: 0,
-                            cursor: "pointer", // Ensures the input behaves like a button
-                          }}
+                          className="upload-input"
                           onChange={(e) =>
                             value.setItemUpload({
                               ...value.itemUpload,
@@ -5722,18 +5696,7 @@ function PromoDetailsSide() {
                     )}
 
                     <div
-                      style={{
-                        fontFamily: "Monsterrat,sans-serif",
-                        width: "50%",
-                        fontSize: "0.5rem",
-                        display: "flex",
-                        color: "white",
-                        // borderColor:"white",
-                        // justifyContent:'center',
-                        alignItems: "flex-end",
-                        padding: "0.25rem",
-                        paddingLeft: "0.5rem",
-                      }}
+                      className="upload-btn-info"
                     >
                       Only Excel files allowed
                     </div>
@@ -5744,21 +5707,11 @@ function PromoDetailsSide() {
                   spacing={12}
                   sx={{ alignItems: "center", width: "90%" }}
                 >
-                  <Typography
-                    style={{
-                      fontSize: "0.85rem",
-                      fontWeight: "bold",
-                      fontFamily: "Montserrat,sans-sherif",
-                      color: "white",
-                      flexDirection: "row",
-                      display: "flex",
-                      width: "6rem",
-                                            marginTop:'0.9rem'
-
-                    }}
+                  <div
+                    className="promotion-detail-text"
                   >
                     Exclusions
-                  </Typography>
+                  </div>
 
                   <FormControl sx={{ flex: 1 }} >
                     <InputFieldComponent
@@ -5798,7 +5751,7 @@ function PromoDetailsSide() {
                     />
                   </FormControl>
                   <FormControl
-                    sx={{ flex: 1, display: "flex", flexDirection: "row", bgcolor: "#73809A", alignSelf: "flex-end" }}
+                    sx={{ flex: 1, display: "flex", flexDirection: "row",alignSelf: "flex-end" }}
                   >
                     {!value.itemUpload.excludedItems && (
                       <Button
@@ -5813,10 +5766,12 @@ function PromoDetailsSide() {
                           width: "50%",
                           color: "white",
                           borderColor: "white",
-                          fontSize: "0.8rem",
+                          // fontSize: "0.8rem",
                           position: "relative", // Make the button the container for the file input
                           overflow: "hidden",
                           cursor: "pointer",
+                          margin: "0.1rem",
+                          borderColor: "white"
                         }}
                       >
                         Upload
@@ -5824,15 +5779,7 @@ function PromoDetailsSide() {
                         <input
                           type="file"
                           accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-                          style={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            width: "100%",
-                            height: "100%",
-                            opacity: 0,
-                            cursor: "pointer", // Ensures the input behaves like a button
-                          }}
+                          className="upload-input"
                           onChange={(e) =>
                             value.setItemUpload({
                               ...value.itemUpload,
@@ -5875,18 +5822,7 @@ function PromoDetailsSide() {
                       </div>
                     )}
                     <div
-                      // className="upload-div"
-                      style={{
-                        fontFamily: "Poppins,sans-serif",
-                        width: "50%",
-                        fontSize: "0.5rem",
-                        display: "flex",
-                        color: "white",
-                        // justifyContent:'center',
-                        alignItems: "flex-end",
-                        padding: "0.25rem",
-                        paddingLeft: "0.5rem",
-                      }}
+                      className="upload-btn-info"
                     >
                       Only Excel files allowed
                     </div>
@@ -5906,15 +5842,16 @@ function PromoDetailsSide() {
               }}
             >
               <Typography
-                style={{
-                  fontSize: "0.8rem",
-                  fontWeight: "600",
-                  fontFamily: "Poppins,sans-sherif",
-                }}
+                                    style={{
+                      fontSize: "0.9rem",
+                      fontWeight: "bold",
+                      fontFamily: "Montserrat,sans-sherif",
+                      color: "white",
+                    }}
               >
                 Discount Details
               </Typography>
-              <IconButton aria-label="exp" onClick={handleTableExpand}>
+              <IconButton aria-label="exp" onClick={handleTableExpand} style={{color: "white",backgroundColor:'#ffffff14'}}>
                 {tableToggle ? <ExpandLess /> : <ExpandMore />}
               </IconButton>
             </div>
@@ -5931,20 +5868,11 @@ function PromoDetailsSide() {
                     spacing={12}
                     sx={{ alignItems: "center", width: "90%" }}
                   >
-                    <Typography
-                      style={{
-                        fontSize: "0.75rem",
-                        fontWeight: "600",
-                        fontFamily: "Poppins,sans-sherif",
-                        flexDirection: "row",
-                        display: "flex",
-                        width: "6rem",
-                      }}
-                    >
-                      Discount<span style={{ color: "red" }}>*</span>
-                    </Typography>
+                    <div
+                    className="promotion-detail-text"
+                  > Discount<span style={{ color: "red" }}>*</span></div>
                     <FormControl sx={{ flex: 1, position: "relative" }}>
-                      <Form.Label
+                      {/* <Form.Label
                         id="custom"
                         className="position-absolute top-0 translate-middle custom"
                         style={{
@@ -5956,7 +5884,9 @@ function PromoDetailsSide() {
                           Discount Type
                         </span>
                         <div style={{ color: "red", zIndex: 2 }}>{"*"}</div>
-                      </Form.Label>
+                      </Form.Label> */}
+                      <span className="form-label-styled" style={{ color: 'white' }}>Discount Type<span className="required">*</span>
+                      </span>
                       <Select
                         labelId="demo-simple-select-label"
                         id="demo-simple-select"
@@ -5995,18 +5925,9 @@ function PromoDetailsSide() {
                     spacing={12}
                     sx={{ alignItems: "center", width: "90%" }}
                   >
-                    <Typography
-                      style={{
-                        fontSize: "0.75rem",
-                        fontWeight: "600",
-                        fontFamily: "Poppins,sans-sherif",
-                        flexDirection: "row",
-                        display: "flex",
-                        width: "6rem",
-                      }}
-                    >
-                      Date<span style={{ color: "red" }}>*</span>
-                    </Typography>
+                    <div
+                    className="promotion-detail-text"
+                  >Date<span style={{ color: "red" }}>*</span></div>
                     <FormControl sx={{ flex: 1 }}>
                       <InputFieldComponent
                         label="Start Date"
@@ -6020,11 +5941,10 @@ function PromoDetailsSide() {
                             startDate: text,
                           })
                         }
-                        labelColor={"gray"}
                       />
                     </FormControl>
                     <FormControl sx={{ flex: 1 }}>
-                      <DynamicCutoutInput
+                      <InputFieldComponent
                         type="date"
                         label="End Date"
                         required={true}
@@ -6044,20 +5964,11 @@ function PromoDetailsSide() {
                     spacing={12}
                     sx={{ alignItems: "center", width: "90%" }}
                   >
-                    <Typography
-                      style={{
-                        fontSize: "0.75rem",
-                        fontWeight: "600",
-                        fontFamily: "Poppins,sans-sherif",
-                        flexDirection: "row",
-                        display: "flex",
-                        width: "6rem",
-                      }}
-                    >
-                      Location<span style={{ color: "red" }}>*</span>
-                    </Typography>
+                    <div
+                    className="promotion-detail-text"
+                  >Location<span style={{ color: "red" }}>*</span></div>
                     <FormControl sx={{ flex: 1 }}>
-                      <DynamicCutoutInput
+                      <InputFieldComponent
                         label="Location"
                         required={true}
                         placeholder="Add Store IDs"
@@ -6072,19 +5983,27 @@ function PromoDetailsSide() {
                           })
                         }
                         EndComponent={
-                          <Visibility
+                          <div
                             style={{
-                              backgroundColor: "white",
-                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              height: "100%",
+                              marginTop: "1.5rem",
                             }}
-                            onClick={() => handleStoreModal("stores")}
-                            id="stores"
-                          ></Visibility>
+                          >
+                            <Visibility
+                              style={{
+                                backgroundColor: "white",
+                                cursor: "pointer",
+                              }}
+                              onClick={() => handleStoreModal("stores")}
+                              id="stores"
+                            ></Visibility></div>
                         }
                       />
                     </FormControl>
                     <FormControl
-                      sx={{ flex: 1, display: "flex", flexDirection: "row" }}
+                      sx={{ flex: 1, display: "flex", flexDirection: "row",alignSelf: "flex-end" }}
                     >
                       {!value.storeUpload.stores && (
                         // <CustomButton className="upload-btn"                        >
@@ -6092,29 +6011,24 @@ function PromoDetailsSide() {
                         <Button
                           variant="outlined"
                           endIcon={<FiUpload style={{ fontSize: "1rem" }} />}
-                          style={{
-                            fontFamily: "Poppins,sans-serif",
-                            width: "50%",
-                            fontSize: "0.8rem",
-                            position: "relative", // Make the button the container for the file input
-                            overflow: "hidden",
-                            cursor: "pointer",
-                          }}
+                        style={{
+                          fontFamily: "Monsterrat,sans-serif",
+                          width: "50%",
+                          color: "white",
+                          borderColor: "white",
+                          // fontSize: "0.8rem",
+                          position: "relative", // Make the button the container for the file input
+                          overflow: "hidden",
+                          cursor: "pointer",
+                          margin: "0.1rem",
+                          borderColor: "white"
+                        }}
                         >
                           Upload
                           <input
-                            className="file-upload-input"
                             type="file"
+                            className="upload-input"
                             accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-                            // style={{
-                            //   position: "absolute",
-                            //   top: 0,
-                            //   left: 0,
-                            //   width: "100%",
-                            //   height: "100%",
-                            //   opacity: 0,
-                            //   cursor: "pointer", // Ensures the input behaves like a button
-                            // }}
                             onChange={(e) =>
                               value.setStoreUpload({
                                 ...value.storeUpload,
@@ -6155,18 +6069,7 @@ function PromoDetailsSide() {
                           />
                         </div>
                       )}
-                      <div
-                        className="upload-div"
-                      // style={{
-                      //   fontFamily: "Poppins,sans-serif",
-                      //   width: "50%",
-                      //   fontSize: "0.5rem",
-                      //   display: "flex",
-                      //   // justifyContent:'center',
-                      //   alignItems: "flex-end",
-                      //   padding: "0.25rem",
-                      //   paddingLeft: "0.5rem",
-                      // }}
+                      <div className="upload-btn-info"
                       >
                         Only Excel files allowed
                       </div>
@@ -6177,20 +6080,11 @@ function PromoDetailsSide() {
                     spacing={12}
                     sx={{ alignItems: "center", width: "90%" }}
                   >
-                    <Typography
-                      style={{
-                        fontSize: "0.75rem",
-                        fontWeight: "600",
-                        fontFamily: "Poppins,sans-sherif",
-                        flexDirection: "row",
-                        display: "flex",
-                        width: "6rem",
-                      }}
-                    >
-                      Exclusions
-                    </Typography>
+                    <div
+                    className="promotion-detail-text"
+                  >Exclusions<span style={{ color: "red" }}>*</span></div>
                     <FormControl sx={{ flex: 1 }}>
-                      <DynamicCutoutInput
+                      <InputFieldComponent
                         label="Exclusions"
                         required={false}
                         placeholder="Add Exclusions"
@@ -6205,50 +6099,60 @@ function PromoDetailsSide() {
                           })
                         }
                         EndComponent={
-                          <Visibility
+                          <div
                             style={{
-                              backgroundColor: "white",
-                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              height: "100%",
+                              marginTop: "1.5rem",
                             }}
-                            onClick={() => handleStoreModal("storesExcluded")}
-                            id="storesExcluded"
-                          ></Visibility>
+                          >
+                            <Visibility
+                              style={{
+                                backgroundColor: "white",
+                                cursor: "pointer",
+                              }}
+                              onClick={() => handleStoreModal("storesExcluded")}
+                              id="storesExcluded"
+                            ></Visibility></div>
                         }
                         style={{}}
                       />
                     </FormControl>
                     <FormControl
-                      sx={{ flex: 1, display: "flex", flexDirection: "row" }}
+                      style={{
+                        flex: 1,
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "flex-end",
+                        alignSelf: "flex-end"
+                      }}
                     >
                       {!value.storeUpload.excludedStores && (
                         // <CustomButton className="upload-btn"
                         // >
                         <Button
                           variant="outlined"
-                          endIcon={<FiUpload style={{ fontSize: "1rem" }} />}
+                          endIcon={<FiUpload style={{ fontSize: "1rem", color: "white" }}
+                          />}
                           style={{
-                            fontFamily: "Poppins,sans-serif",
+                            fontFamily: "Monsterrat,sans-serif",
                             width: "50%",
-                            fontSize: "0.8rem",
+                            color: "white",
+                            borderColor: "white",
+                            // fontSize: "0.8rem",
                             position: "relative", // Make the button the container for the file input
                             overflow: "hidden",
                             cursor: "pointer",
+                            margin: "0.1rem",
+                            borderColor: "white"
                           }}
                         >
                           Upload
                           <input
-                            className="file-upload-input"
                             type="file"
                             accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-                            // style={{
-                            //   position: "absolute",
-                            //   top: 0,
-                            //   left: 0,
-                            //   width: "100%",
-                            //   height: "100%",
-                            //   opacity: 0,
-                            //   cursor: "pointer", // Ensures the input behaves like a button
-                            // }}
+                            className="upload-input"
                             onChange={(e) =>
                               value.setStoreUpload({
                                 ...value.storeUpload,
@@ -6291,17 +6195,7 @@ function PromoDetailsSide() {
                         </div>
                       )}
                       <div
-                        className="upload-div"
-                      // style={{
-                      //   fontFamily: "Poppins,sans-serif",
-                      //   width: "50%",
-                      //   fontSize: "0.5rem",
-                      //   display: "flex",
-                      //   // justifyContent:'center',
-                      //   alignItems: "flex-end",
-                      //   padding: "0.25rem",
-                      //   paddingLeft: "0.5rem",
-                      // }}
+                        className="upload-btn-info"
                       >
                         Only Excel files allowed
                       </div>
@@ -6313,7 +6207,7 @@ function PromoDetailsSide() {
           </div>
           {/* </Card> */}
           <CardOverflow
-            sx={{ borderTop: "1px solid", borderColor: "divider" }}
+            sx={{ borderTop: "1px solid", borderColor: "#e5e5e5" }}
             style={{
               flexGrow: 1,
               display: "flex",

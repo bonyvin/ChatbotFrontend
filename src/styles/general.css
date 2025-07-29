@@ -60,8 +60,9 @@
 }
 
 .generalRadio {
-  margin-top: 0.25rem;
-  margin-bottom: 0.25rem;
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+    padding-left: 1.5rem;
 }
 
 .form-check-inline {
