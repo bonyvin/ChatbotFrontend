@@ -5528,6 +5528,7 @@ function PromoDetailsSide() {
                       flexDirection: "row",
                       display: "flex",
                       width: "6rem",
+                      marginTop:'0.9rem'
                     }}
                   >
                     Hierarchy<span style={{ color: "red" }}>*</span>
@@ -5536,11 +5537,6 @@ function PromoDetailsSide() {
                   <FormControl sx={{ flex: 1, position: "relative" }}>
                     <span className="form-label-styled" style={{color: 'white'}}>Type<span className="required">*</span>
                     </span>
-                    <Form.Label
-                      id="custom"
-                      className="position-absolute top-0 translate-middle custom"
-                      style={{ zIndex: 2, padding: "0 4px" }}
-                    ></Form.Label>
                     <Select
                       multiple
                       value={initialHierarchyTypes}
@@ -5599,6 +5595,8 @@ function PromoDetailsSide() {
                       flexDirection: "row",
                       display: "flex",
                       width: "6rem",
+                                            marginTop:'0.9rem'
+
                     }}
                   >
                     Item<span style={{ color: "red" }}>*</span>
@@ -5755,6 +5753,8 @@ function PromoDetailsSide() {
                       flexDirection: "row",
                       display: "flex",
                       width: "6rem",
+                                            marginTop:'0.9rem'
+
                     }}
                   >
                     Exclusions

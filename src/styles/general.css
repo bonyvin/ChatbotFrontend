@@ -22,12 +22,14 @@
 }
 
 .form-label-styled {
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.1rem;
+  /* margin-bottom: 0.2rem; */
   /* color: #ffffff; */
   font-family: "Montserrat", sans-serif;
   /* White label */
   font-weight: bold;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
+  /* font-size: 0.9rem; */
 }
 
 .input-with-icons::placeholder {
