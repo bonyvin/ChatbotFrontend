@@ -5185,10 +5185,14 @@ function PromoDetailsSide() {
       container
       component="main"
       style={{
-        height: "100vh",
+        // height: "100vh",
+        // backgroundColor: "#384B70",
+        // height: "auto",
+        // overflow: "visible",
+        minHeight: "100vh",
         backgroundColor: "#384B70",
-        height: "auto",
-        overflow: "visible",
+        // height: "auto",
+        overflow: "auto",
       }}
     >
       <Grid
@@ -5358,14 +5362,14 @@ function PromoDetailsSide() {
         <Card
           className="generalView"
           style={{
-            marginTop: "3rem",
+            
             width: "100%",
             backgroundColor: "#73809A",
-            borderRadius: "2%",
+            borderRadius: "1.6vw",
             borderColor: "#73809A",
-            marginLeft: "4%",
+            marginLeft: "3.5%",
             boxShadow: "2px 2px 8px rgba(66, 57, 57, 0.75)",
-            marginTop: "2.95rem",
+            marginTop: "3rem",
           }}
           ref={messagesEndRef}
         >
@@ -5554,7 +5558,8 @@ function PromoDetailsSide() {
                     </Select>
                   </FormControl>
                   <FormControl sx={{ flex: 1 }}>
-                    <InputFieldComponent
+                    {/* <InputFieldComponent  */}
+                   <InputFieldComponent  style={{margin: "0.1rem"}}
                       label="Value"
                       required={true}
                       placeholder="Add Value here"

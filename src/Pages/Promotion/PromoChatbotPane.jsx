@@ -1799,13 +1799,6 @@ export default function PromoChatbotPane() {
         </Backdrop>
         <Box
           className="chat-Message-Box"
-          // style={{
-          //   display: "flex",
-          //   flex: 1,
-          //   flexDirection: "column ",
-          //   padding: 2,
-          //   justifyContent: "flex-end",
-          // }}
         >
           {messages.map((message, index) => (
             <div
@@ -1824,72 +1817,6 @@ export default function PromoChatbotPane() {
             <TypingIndicatorComponent scrollToBottom={scrollToBottom} />
           )}
         </Box>
-
-        {/* <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleMessageSubmit(input);
-              }}
-              id="form1"
-              className="chatbot-input-form"
-            >
-              <label className="paneIcon">
-                <input
-                  type="file"
-                  style={{ display: "none" }}
-                  onChange={(e) => uploadInvoice(e)}
-                  onClick={(event) => (event.target.value = "")}
-                />
-                <Add className="paneIcon" />
-              </label>
-              <Smiley
-                className="paneIcon"
-                onClick={() => setPickerVisible(!isPickerVisible)} // Toggle emoji picker visibility
-              />
-                    <div
-                style={{
-                  position: "relative",
-                  display: "inline-block",
-                  width: "100%",
-                }}
-              >
-                <input
-                  id="inputValue"
-                  type="text"
-                  placeholder="Type a message..."
-                  value={input}
-                  onChange={(e) => {
-                    e.preventDefault();
-                    setInput(e.target.value);
-                  }}
-                  style={{
-                    margin: "0.5rem",
-                    height: "2rem",
-                    paddingRight: "3rem", // Ensure there's space for the mic icon
-                    width: "90%", // Ensure the input fills the container
-                  }}
-                />
-                      <MicIcon
-                  style={{
-                    position: "absolute",
-                    right: "2rem", // Position it at the very end
-                    top: "50%",
-                    transform: "translateY(-50%)", // Center the icon vertically
-                    cursor: "pointer",
-                  }}
-                  onClick={() => {
-                    // Handle microphone click event, like starting a recording
-                    console.log("Mic icon clicked");
-                  }}
-                />
-              </div>
-      
-              <SendIcon 
-                className="paneIcon"
-                onClick={() => handleMessageSubmit(input)}
-              />
-              <i className="fa fa-paper-plane-o" aria-hidden="true"></i>
-            </form>  */}
         <ChatbotInputForm
           input={input}
           setInput={setInput}

@@ -1573,6 +1573,7 @@ function InvoiceDetailsSide() {
               display: "flex",
               flexDirection: "row",
               alignItems: "center",
+              width:"96.5%"
 
             }}>
               <Paper sx={{ width: "100%" }}>
