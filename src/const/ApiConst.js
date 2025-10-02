@@ -52,6 +52,8 @@ export const UPLOAD_PO = API_URL + "/uploadPo/";
 
 export const NEW_FILE = API_URL + "/filenew";
 
+
+
 // export const UPLOAD_SUPPLIER_DOC=(supplierId,docConfigId,docNumber)=>
 
 //   `${API_URL}/v1/suppliers/doc/upload/${supplierId}/${docConfigId}?docNumber=${encodeURIComponent(docNumber)}`

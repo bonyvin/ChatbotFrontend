@@ -5530,7 +5530,7 @@ function PromoDetailsSide() {
                   >Hierarchy<span style={{ color: "red" }}>*</span></div>
 
 
-                  <FormControl sx={{ flex: 1, position: "relative" }}>
+                  <FormControl sx={{ flex: 1,alignSelf:'flex-end'  }}>
                     <span className="form-label-styled" style={{ color: 'white' }}>Type<span className="required">*</span>
                     </span>
                     <Select
@@ -5557,9 +5557,9 @@ function PromoDetailsSide() {
                       ))}
                     </Select>
                   </FormControl>
-                  <FormControl sx={{ flex: 1 }}>
+                  <FormControl sx={{ flex: 1, position: "relative" }}>
                     {/* <InputFieldComponent  */}
-                   <InputFieldComponent  style={{margin: "0.1rem"}}
+                   <InputFieldComponent
                       label="Value"
                       required={true}
                       placeholder="Add Value here"
@@ -5650,7 +5650,7 @@ function PromoDetailsSide() {
                           position: "relative", // Make the button the container for the file input
                           overflow: "hidden",
                           cursor: "pointer",
-                          margin: "0.1rem",
+                          // margin: "0.1rem",
                           borderColor: "white"
                         }}
                       >
@@ -5775,7 +5775,7 @@ function PromoDetailsSide() {
                           position: "relative", // Make the button the container for the file input
                           overflow: "hidden",
                           cursor: "pointer",
-                          margin: "0.1rem",
+                          // margin: "0.1rem",
                           borderColor: "white"
                         }}
                       >
@@ -5876,7 +5876,7 @@ function PromoDetailsSide() {
                     <div
                     className="promotion-detail-text"
                   > Discount<span style={{ color: "red" }}>*</span></div>
-                    <FormControl sx={{ flex: 1, position: "relative" }}>
+                    <FormControl sx={{ flex: 1,alignSelf:'flex-end'   }}>
                       {/* <Form.Label
                         id="custom"
                         className="position-absolute top-0 translate-middle custom"
@@ -5972,7 +5972,7 @@ function PromoDetailsSide() {
                     <div
                     className="promotion-detail-text"
                   >Location<span style={{ color: "red" }}>*</span></div>
-                    <FormControl sx={{ flex: 1 }}>
+                    <FormControl sx={{ flex: 1}}>
                       <InputFieldComponent
                         label="Location"
                         required={true}
@@ -6025,7 +6025,7 @@ function PromoDetailsSide() {
                           position: "relative", // Make the button the container for the file input
                           overflow: "hidden",
                           cursor: "pointer",
-                          margin: "0.1rem",
+                          // margin: "0.1rem",
                           borderColor: "white"
                         }}
                         >
@@ -6149,7 +6149,7 @@ function PromoDetailsSide() {
                             position: "relative", // Make the button the container for the file input
                             overflow: "hidden",
                             cursor: "pointer",
-                            margin: "0.1rem",
+                            // margin: "0.1rem",
                             borderColor: "white"
                           }}
                         >

@@ -22,7 +22,8 @@ const InputFieldComponent = ({
   ...rest
 }) => {
   return (
-    <Form.Group className="form-group-styled" id="formGroup">
+    <Form.Group   id="formGroup">
+    {/* <Form.Group className="form-group-styled" id="formGroup"> */}
   <Form.Label className="form-label-styled" style={{color: labelColor || 'white'}}>
     {label} {required && <span className="required">*</span>}
   </Form.Label>

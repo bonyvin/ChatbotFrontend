@@ -45,53 +45,65 @@ export default function LLMChatbotTest() {
     let promotionType = getTrueValueKey(value.typeOfPromotion);
     let savedData = `
       ${promotionType ? `Promotion Type: ${promotionType},` : ""}
-      ${value.promotionData.hierarchyType
-        ? `Hierarchy Type: ${value.promotionData.hierarchyType},`
-        : ""
+      ${
+        value.promotionData.hierarchyType
+          ? `Hierarchy Type: ${value.promotionData.hierarchyType},`
+          : ""
       }
-      ${value.promotionData.hierarchyValue
-        ? `Hierarchy Value: ${value.promotionData.hierarchyValue},`
-        : ""
+      ${
+        value.promotionData.hierarchyValue
+          ? `Hierarchy Value: ${value.promotionData.hierarchyValue},`
+          : ""
       }
-      ${value.promotionData.brand
-        ? `Hierarchy Brand: ${value.promotionData.brand},`
-        : ""
+      ${
+        value.promotionData.brand
+          ? `Hierarchy Brand: ${value.promotionData.brand},`
+          : ""
       }
-      ${value.promotionData.itemList
-        ? `Item List: ${value.promotionData.itemList},`
-        : ""
+      ${
+        value.promotionData.itemList
+          ? `Item List: ${value.promotionData.itemList},`
+          : ""
       }
-      ${value.promotionData.excludedItemList
-        ? `Excluded Item List: ${value.promotionData.excludedItemList},`
-        : ""
+      ${
+        value.promotionData.excludedItemList
+          ? `Excluded Item List: ${value.promotionData.excludedItemList},`
+          : ""
       }
-      ${value.promotionData.discountType
-        ? `Discount Type: ${value.promotionData.discountType},`
-        : ""
+      ${
+        value.promotionData.discountType
+          ? `Discount Type: ${value.promotionData.discountType},`
+          : ""
       }
-      ${value.promotionData.discountValue
-        ? `Discount Value: ${value.promotionData.discountValue},`
-        : ""
+      ${
+        value.promotionData.discountValue
+          ? `Discount Value: ${value.promotionData.discountValue},`
+          : ""
       }
-      ${value.promotionData.startDate
-        ? `Start Date: ${value.promotionData.startDate},`
-        : ""
+      ${
+        value.promotionData.startDate
+          ? `Start Date: ${value.promotionData.startDate},`
+          : ""
       }
-      ${value.promotionData.endDate
-        ? `End Date: ${value.promotionData.endDate},`
-        : ""
+      ${
+        value.promotionData.endDate
+          ? `End Date: ${value.promotionData.endDate},`
+          : ""
       }
-      ${value.promotionData.discountValue
-        ? `Discount Value: ${value.promotionData.discountValue},`
-        : ""
+      ${
+        value.promotionData.discountValue
+          ? `Discount Value: ${value.promotionData.discountValue},`
+          : ""
       }
-      ${value.promotionData.locationList
-        ? `Location List: ${value.promotionData.locationList},`
-        : ""
+      ${
+        value.promotionData.locationList
+          ? `Location List: ${value.promotionData.locationList},`
+          : ""
       }
-      ${value.promotionData.excludedLocationList
-        ? `Excluded Location List: ${value.promotionData.excludedLocationList},`
-        : ""
+      ${
+        value.promotionData.excludedLocationList
+          ? `Excluded Location List: ${value.promotionData.excludedLocationList},`
+          : ""
       }
     `;
     await handleMessageSubmit(savedData);
@@ -101,6 +113,7 @@ export default function LLMChatbotTest() {
   useEffect(() => {
     value.setPromotionCounterId(`PROMO${value.promotionCounter}`);
   }, [value.promotionCounter]);
+
   const submitFormData = async () => {
     // await handleMessageSubmit("Please submit the data provided");
     await promotionHeaderCreation();
@@ -176,7 +189,7 @@ export default function LLMChatbotTest() {
     const hasChangedStore =
       prevStoreUpload.current.stores != value.storeUpload.stores ||
       prevStoreUpload.current.excludedStores !=
-      value.storeUpload.excludedStores;
+        value.storeUpload.excludedStores;
     if (
       hasChanged &&
       (value.itemUpload.eventItems != null ||
@@ -240,87 +253,67 @@ export default function LLMChatbotTest() {
   };
   // console.log("Type select:",typeSelection("Simple"))
   //EXTRACTING FIELD DATA FROM BACKEND
+  // Modified promotionCheck to handle snake_case keys inside extracted_details
   const promotionCheck = useCallback(
-    async (invoiceObject) => {
+    async (dataObject) => {
+      // If the object has 'extracted_details', use it
+      const invoiceObject = dataObject.extracted_details || dataObject;
+      console.log("Inside Promotion Check", invoiceObject);
       let updatedPromotionData = { ...value.promotionData };
-      let supplierStatus = false;
-      for (const key of Object.keys(invoiceObject)) {
-        console.log("Obect  : ", invoiceObject);
-        if (invoiceObject[key] !== null) {
-          switch (key) {
-            case "Hierarchy Type":
-              updatedPromotionData.hierarchyType = invoiceObject[key];
-              break;
-            case "Hierarchy Value":
-              updatedPromotionData.hierarchyValue = invoiceObject[key];
-              break;
-            case "Brand":
-              updatedPromotionData.brand = invoiceObject[key];
-              break;
-            case "Items":
-              // Check if the value is an array, if not, convert it to one
-              updatedPromotionData.itemList = Array.isArray(invoiceObject[key])
-                ? invoiceObject[key]
-                : [invoiceObject[key]];
-              break;
-            case "Excluded Items":
-              // Check if the value is an array, if not, convert it to one
-              updatedPromotionData.excludedItemList = Array.isArray(
-                invoiceObject[key]
-              )
-                ? invoiceObject[key]
-                : [invoiceObject[key]];
-              break;
-            case "Discount Type":
-              updatedPromotionData.discountType = invoiceObject[key];
-              break;
-            case "Discount Value":
-              updatedPromotionData.discountValue = invoiceObject[key];
-              break;
-            case "Start Date":
-              updatedPromotionData.startDate = formatDate(invoiceObject[key]);
-              break;
-            case "End Date":
-              updatedPromotionData.endDate = formatDate(invoiceObject[key]);
-              break;
-            case "Stores":
-              updatedPromotionData.locationList = Array.isArray(
-                invoiceObject[key]
-              )
-                ? invoiceObject[key]
-                : [invoiceObject[key]];
-              break;
-            case "Excluded Stores":
-              updatedPromotionData.excludedLocationList = Array.isArray(
-                invoiceObject[key]
-              )
-                ? invoiceObject[key]
-                : [invoiceObject[key]];
-              break;
-            case "Promotion Type":
-              updatedPromotionData.promotionType = invoiceObject[key];
-              await typeSelection(invoiceObject[key]);
-              console.log("Type Selection parameter: ", invoiceObject[key]);
-              break;
-            // case "Supplier ID":
-            //   supplierStatus = await getSupplierDetails(invoiceObject[key]); // Wait for the update
-          }
+      if (invoiceObject) {
+        // Map snake_case keys to camelCase keys in promotionData
+        if (invoiceObject.promotion_type !== undefined)
+          updatedPromotionData.promotionType = invoiceObject.promotion_type;
+        if (invoiceObject.hierarchy_type !== undefined)
+          updatedPromotionData.hierarchyType = invoiceObject.hierarchy_type;
+        if (invoiceObject.hierarchy_value !== undefined)
+          updatedPromotionData.hierarchyValue = invoiceObject.hierarchy_value;
+        if (invoiceObject.brand !== undefined)
+          updatedPromotionData.brand = invoiceObject.brand;
+        if (invoiceObject.items !== undefined)
+          updatedPromotionData.itemList = Array.isArray(invoiceObject.items)
+            ? invoiceObject.items
+            : [invoiceObject.items];
+        if (invoiceObject.excluded_items !== undefined)
+          updatedPromotionData.excludedItemList = Array.isArray(
+            invoiceObject.excluded_items
+          )
+            ? invoiceObject.excluded_items
+            : [invoiceObject.excluded_items];
+        if (invoiceObject.discount_type !== undefined)
+          updatedPromotionData.discountType = invoiceObject.discount_type;
+        if (invoiceObject.discount_value !== undefined)
+          updatedPromotionData.discountValue = invoiceObject.discount_value;
+        if (invoiceObject.start_date !== undefined)
+          updatedPromotionData.startDate = formatDate(invoiceObject.start_date);
+        if (invoiceObject.end_date !== undefined)
+          updatedPromotionData.endDate = formatDate(invoiceObject.end_date);
+        if (invoiceObject.stores !== undefined)
+          updatedPromotionData.locationList = Array.isArray(
+            invoiceObject.stores
+          )
+            ? invoiceObject.stores
+            : [invoiceObject.stores];
+        if (invoiceObject.excluded_stores !== undefined)
+          updatedPromotionData.excludedLocationList = Array.isArray(
+            invoiceObject.excluded_stores
+          )
+            ? invoiceObject.excluded_stores
+            : [invoiceObject.excluded_stores];
+        // Type selection for promotion_type
+        if (invoiceObject.promotion_type !== undefined) {
+          await typeSelection(invoiceObject.promotion_type);
+          console.log(
+            "Type Selection parameter: ",
+            invoiceObject.promotion_type
+          );
         }
       }
-      //   dispatch({
-      //     type: "UPDATE_PO_DATA",
-      //     payload: updatedPromotionData,
-      //   });
       value.setPromotionData(updatedPromotionData);
       console.log("Final Invoice Data:  ", updatedPromotionData);
-      return true; // Return true or false for further processing
-      //   return supplierStatus; // Return true or false for further processing
+      return true;
     },
-    [
-      //   updateItemDetails,
-      // purchaseOrderData,
-      value.promotionData,
-    ]
+    [value.promotionData]
   );
   //API CALLS
   // const handleMessageSubmit = async (input, inputFromUpload) => {
@@ -413,6 +406,44 @@ export default function LLMChatbotTest() {
   //     ]);
   //   }
   // };
+  const [extractedDetails, setExtractedDetails] = useState(null);
+  const [userIntent, setUserIntent] = useState(null);
+
+  const getPromotionDetails = async (threadId = "admin") => {
+    try {
+      const response = await fetch(
+        `http://localhost:8000/promotion_extract_details/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ thread_id: threadId, message: "" }), // or message if needed
+        }
+      );
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch promotion details: ${response.status} ${response.statusText}`
+        );
+      }
+      const data = await response.json();
+      console.log("Promotion Details Response New Function:", data);
+      // Update your state as needed
+      setExtractedDetails(data.extracted_details);
+      setUserIntent(data.user_intent);
+      console.log("Data User Intent: ",data.user_intent)
+      if (data.user_intent && data.user_intent.intent == "Submission") {
+        value.setPromotionCounter((prevCounter) => prevCounter + 1);
+        await promotionHeaderCreation();
+      }
+      await promotionCheck(data);
+      return data;
+    } catch (error) {
+      console.error("Error fetching promotion details:", error);
+      throw error;
+    }
+  };
   const handleMessageSubmit = async (input, inputFromUpload) => {
     console.log("Input: ", input);
     const textToSend = input.trim();
@@ -468,43 +499,104 @@ export default function LLMChatbotTest() {
           text: <ReactMarkdown>{initialMarkdownString}</ReactMarkdown>,
         },
       ]);
-      // --- Process Stream ---
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let done = false;
-      console.log("Starting stream reading loop...");
+      let sseBuffer = ""; // Buffer for SSE lines
+
+      // CHANGE: Create a dedicated SSE parser
+      const createSSEParser = () => {
+        let buffer = "";
+        return (chunk) => {
+          buffer += chunk;
+          const events = [];
+          let eventEnd;
+
+          while ((eventEnd = buffer.indexOf("\n\n")) !== -1) {
+            const eventData = buffer.slice(0, eventEnd);
+            buffer = buffer.slice(eventEnd + 2);
+
+            let eventName = "message";
+            let data = "";
+
+            eventData.split("\n").forEach((line) => {
+              if (line.startsWith("event:")) {
+                eventName = line.replace("event:", "").trim();
+              } else if (line.startsWith("data:")) {
+                data += line.replace("data:", "").trim();
+              }
+            });
+
+            if (data) events.push({ type: eventName, data });
+          }
+          return events;
+        };
+      };
+
+      const parseSSE = createSSEParser();
+      let buffer = "";
+
       while (!done) {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
-        console.log("Reader Read:", { value, done });
+
         if (value) {
-          const chunkStr = decoder.decode(value, { stream: !done });
-          console.log("Decoded Chunk:", chunkStr);
-          if (chunkStr) {
-            console.log("Attempting to update state with chunk:", chunkStr);
-            setMessages((prevMessages) =>
-              prevMessages.map((msg) => {
-                // Ensure this is the bot message we intend to update
-                if (msg.key === botMessageKey && !msg.fromUser) {
-                  const newRawMarkdown = (msg.rawMarkdown || "") + chunkStr;
-                  return {
-                    ...msg,
-                    rawMarkdown: newRawMarkdown,
-                    // Update the 'text' field with a new ReactMarkdown component
-                    text: <ReactMarkdown>{newRawMarkdown}</ReactMarkdown>,
-                  };
-                }
-                return msg;
-              })
-            );
-          } else {
-            console.log("Decoded chunk is empty, not updating state.");
+          const chunk = decoder.decode(value, { stream: true });
+          buffer += chunk;
+
+          // Process complete events
+          const events = parseSSE(chunk);
+
+          for (const event of events) {
+            if (event.type === "extracted_details") {
+              try {
+                const extracted = JSON.parse(event.data);
+                console.log("Extracted Details:", extracted);
+                setExtractedDetails(extracted.extracted_details);
+                setUserIntent(extracted.user_intent);
+              } catch (err) {
+                console.error("JSON parse error:", err);
+              }
+            } else if (event.type === "message") {
+              // Handle text chunks
+              setMessages((prev) =>
+                prev.map((msg) =>
+                  msg.key === botMessageKey
+                    ? {
+                        ...msg,
+                        rawMarkdown: (msg.rawMarkdown || "") + event.data,
+                        text: (
+                          <ReactMarkdown>
+                            {msg.rawMarkdown + event.data}
+                          </ReactMarkdown>
+                        ),
+                      }
+                    : msg
+                )
+              );
+            }
           }
-        } else if (done) {
-          console.log("Stream finished (done is true, no more values).");
         }
       }
+
+      // CHANGE: Process any remaining buffer
+      if (buffer) {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.key === botMessageKey
+              ? {
+                  ...msg,
+                  rawMarkdown: (msg.rawMarkdown || "") + buffer,
+                  text: (
+                    <ReactMarkdown>{msg.rawMarkdown + buffer}</ReactMarkdown>
+                  ),
+                }
+              : msg
+          )
+        );
+      }
       console.log("Finished stream reading loop.");
+      await getPromotionDetails("admin");
     } catch (error) {
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = null;
@@ -522,6 +614,115 @@ export default function LLMChatbotTest() {
       ]);
     }
   };
+  // const handleMessageSubmit = async (input, inputFromUpload) => {
+  //   console.log("Input: ", input);
+  //   const textToSend = input.trim();
+  //   // Ensure inputFromUpload is a string if it's the primary content
+  //   const messageContent =
+  //     textToSend ||
+  //     (typeof inputFromUpload === "string" ? inputFromUpload : "");
+  //   if (!messageContent) return; // Simplified check if there's any content to send
+  //   // Add User Message (if applicable and not an upload-only scenario)
+  //   if (!inputFromUpload && textToSend) {
+  //     // Only add user message if textToSend is present
+  //     setMessages((prevMessages) => [
+  //       ...prevMessages,
+  //       // User messages can remain simple text objects
+  //       { text: textToSend, fromUser: true, key: `user-${Date.now()}` },
+  //     ]);
+  //     setInput("");
+  //   }
+  //   // Start Typing Indicator
+  //   if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+  //   typingTimeoutRef.current = setTimeout(() => setTyping(true), 1000);
+  //   try {
+  //     const response = await fetch("http://localhost:8000/promotion_chat/", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json", Accept: "text/plain" }, // Server should stream plain text (Markdown)
+  //       body: JSON.stringify({
+  //         thread_id: "admin",
+  //         message: messageContent, // Use the prepared message content
+  //       }),
+  //     });
+  //     // Stop Typing Indicator
+  //     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+  //     typingTimeoutRef.current = null;
+  //     setTyping(false);
+  //     if (!response.ok) {
+  //       const errorBody = await response.text();
+  //       console.error("Server Error Body:", errorBody);
+  //       throw new Error(
+  //         `Failed to fetch data: ${response.status} ${response.statusText}`
+  //       );
+  //     }
+  //     // Add Initial Bot Message Placeholder
+  //     const botMessageKey = `bot-${Date.now()}`;
+  //     const initialMarkdownString = "";
+  //     setMessages((prevMessages) => [
+  //       ...prevMessages,
+  //       {
+  //         key: botMessageKey,
+  //         fromUser: false,
+  //         // Store the raw Markdown string for accumulation
+  //         rawMarkdown: initialMarkdownString,
+  //         // The 'text' field will hold the ReactMarkdown component
+  //         text: <ReactMarkdown>{initialMarkdownString}</ReactMarkdown>,
+  //       },
+  //     ]);
+  //     // --- Process Stream ---
+  //     const reader = response.body.getReader();
+  //     const decoder = new TextDecoder();
+  //     let done = false;
+  //     console.log("Starting stream reading loop...");
+  //     while (!done) {
+  //       const { value, done: doneReading } = await reader.read();
+  //       done = doneReading;
+  //       console.log("Reader Read:", { value, done });
+  //       if (value) {
+  //         const chunkStr = decoder.decode(value, { stream: !done });
+  //         console.log("Decoded Chunk:", chunkStr);
+  //         if (chunkStr) {
+  //           console.log("Attempting to update state with chunk:", chunkStr);
+  //           setMessages((prevMessages) =>
+  //             prevMessages.map((msg) => {
+  //               // Ensure this is the bot message we intend to update
+  //               if (msg.key === botMessageKey && !msg.fromUser) {
+  //                 const newRawMarkdown = (msg.rawMarkdown || "") + chunkStr;
+  //                 return {
+  //                   ...msg,
+  //                   rawMarkdown: newRawMarkdown,
+  //                   // Update the 'text' field with a new ReactMarkdown component
+  //                   text: <ReactMarkdown>{newRawMarkdown}</ReactMarkdown>,
+  //                 };
+  //               }
+  //               return msg;
+  //             })
+  //           );
+  //         } else {
+  //           console.log("Decoded chunk is empty, not updating state.");
+  //         }
+  //       } else if (done) {
+  //         console.log("Stream finished (done is true, no more values).");
+  //       }
+  //     }
+  //     console.log("Finished stream reading loop.");
+  //   } catch (error) {
+  //     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+  //     typingTimeoutRef.current = null;
+  //     setTyping(false);
+  //     console.error("Error fetching or processing stream:", error);
+  //     setMessages((prevMessages) => [
+  //       ...prevMessages,
+  //       {
+  //         // Error messages can also be simple text or styled differently
+  //         text: `Error: ${error.message}`,
+  //         fromUser: false,
+  //         isError: true,
+  //         key: `error-${Date.now()}`,
+  //       },
+  //     ]);
+  //   }
+  // };
   const getItemDetails = async () => {
     try {
       const response = await axios({
@@ -700,7 +901,8 @@ export default function LLMChatbotTest() {
                       ([subKey, subValue]) =>
                         `${subKey
                           .replace(/_/g, " ")
-                          .replace(/\b\w/g, (char) => char.toUpperCase())}: ${subValue ?? "N/A"
+                          .replace(/\b\w/g, (char) => char.toUpperCase())}: ${
+                          subValue ?? "N/A"
                         }`
                     )
                     .join(", ")
@@ -711,8 +913,9 @@ export default function LLMChatbotTest() {
           // Handle normal key-value pairs
           return `${key
             .replace(/_/g, " ")
-            .replace(/\b\w/g, (char) => char.toUpperCase())}: ${value ?? "N/A"
-            }`;
+            .replace(/\b\w/g, (char) => char.toUpperCase())}: ${
+            value ?? "N/A"
+          }`;
         }
       })
       .join("\n");
@@ -801,24 +1004,24 @@ export default function LLMChatbotTest() {
               value.itemUpload.items &&
                 response.data.structured_data["Items"].length > 0
                 ? `Items ${JSON.stringify(
-                  response.data.structured_data["Items"]
-                )}`
-                : value.itemUpload.excludedItems &&
-                  response.data.structured_data["Items"].length > 0
-                  ? `Excluded Items ${JSON.stringify(
                     response.data.structured_data["Items"]
                   )}`
-                  : value.storeUpload.stores &&
-                    response.data.structured_data["Stores"].length > 0
-                    ? `Stores ${JSON.stringify(
-                      response.data.structured_data["Stores"]
-                    )}`
-                    : value.storeUpload.excludedStores &&
-                      response.data.structured_data["Stores"].length > 0
-                      ? `Excluded Stores ${JSON.stringify(
-                        response.data.structured_data["Stores"]
-                      )}`
-                      : null,
+                : value.itemUpload.excludedItems &&
+                  response.data.structured_data["Items"].length > 0
+                ? `Excluded Items ${JSON.stringify(
+                    response.data.structured_data["Items"]
+                  )}`
+                : value.storeUpload.stores &&
+                  response.data.structured_data["Stores"].length > 0
+                ? `Stores ${JSON.stringify(
+                    response.data.structured_data["Stores"]
+                  )}`
+                : value.storeUpload.excludedStores &&
+                  response.data.structured_data["Stores"].length > 0
+                ? `Excluded Stores ${JSON.stringify(
+                    response.data.structured_data["Stores"]
+                  )}`
+                : null,
               true
             );
           }
