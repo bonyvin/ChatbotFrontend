@@ -21,6 +21,82 @@ import ChatMessage from "../ChatMessage/ChatMessage";
 import TypingIndicatorComponent from "../ChatMessage/TypingIndicatorComponent";
 import ReactMarkdown from "react-markdown";
 
+
+// WebSocket hook for managing connection
+const useWebSocket = (threadId) => {
+  const [socket, setSocket] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const reconnectTimeoutRef = useRef(null);
+  const reconnectAttemptsRef = useRef(0);
+  const MAX_RECONNECT_ATTEMPTS = 5;
+
+  useEffect(() => {
+    const connectWebSocket = () => {
+      const ws = new WebSocket(`ws://localhost:8000/ws/promotion_chat/${threadId}`);
+
+      ws.onopen = () => {
+        console.log('WebSocket connected');
+        setIsConnected(true);
+        setSocket(ws);
+        reconnectAttemptsRef.current = 0;
+      };
+
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+
+      ws.onclose = (event) => {
+        console.log('WebSocket closed:', event.code, event.reason);
+        setIsConnected(false);
+        setSocket(null);
+
+        // Attempt reconnection with exponential backoff
+        if (reconnectAttemptsRef.current < MAX_RECONNECT_ATTEMPTS) {
+          const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000);
+          console.log(`Reconnecting in ${delay}ms...`);
+          
+          reconnectTimeoutRef.current = setTimeout(() => {
+            reconnectAttemptsRef.current++;
+            connectWebSocket();
+          }, delay);
+        } else {
+          console.error('Max reconnection attempts reached');
+        }
+      };
+
+      return ws;
+    };
+
+    const ws = connectWebSocket();
+
+    // Cleanup on unmount
+    return () => {
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
+      if (ws) {
+        ws.close();
+      }
+    };
+  }, [threadId]);
+
+  // Heartbeat mechanism
+  useEffect(() => {
+    if (!socket || !isConnected) return;
+
+    const pingInterval = setInterval(() => {
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ type: 'ping' }));
+      }
+    }, 30000); // Ping every 30 seconds
+
+    return () => clearInterval(pingInterval);
+  }, [socket, isConnected]);
+
+  return { socket, isConnected };
+};
+
+
 export default function LLMChatbotTest() {
   const [messages, setMessages] = useState([]);
   const value = useContext(AuthContext);
@@ -221,6 +297,97 @@ export default function LLMChatbotTest() {
       prevStoreUpload.current = value.storeUpload;
     }
   }, [value.itemUpload, value.storeUpload]);
+
+   const threadId = 'admin'; // Your thread ID
+  const { socket, isConnected } = useWebSocket(threadId);
+
+  // Setup WebSocket message handler
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        console.log('Received WebSocket message:', data);
+
+        switch (data.type) {
+          case 'ack':
+            console.log('Message acknowledged:', data.message);
+            break;
+
+          case 'stream_chunk':
+            // Update the last bot message with streaming content
+            setMessages((prevMessages) => {
+              const lastMessage = prevMessages[prevMessages.length - 1];
+              
+              if (lastMessage && !lastMessage.fromUser) {
+                // Append to existing bot message
+                return [
+                  ...prevMessages.slice(0, -1),
+                  { ...lastMessage, text: lastMessage.text + data.content }
+                ];
+              } else {
+                // Create new bot message
+                return [
+                  ...prevMessages,
+                  { 
+                    text: data.content, 
+                    fromUser: false, 
+                    key: `bot-${Date.now()}` 
+                  }
+                ];
+              }
+            });
+
+            // Stop typing indicator on first chunk
+            if (typingTimeoutRef.current) {
+              clearTimeout(typingTimeoutRef.current);
+              typingTimeoutRef.current = null;
+            }
+            setTyping(false);
+            break;
+
+          case 'extracted_details':
+            console.log('Extracted details:', data.extracted_details);
+            console.log('User intent:', data.user_intent);
+            setExtractedDetails({
+              details: data.extracted_details,
+              intent: data.user_intent
+            });
+            break;
+
+          case 'stream_complete':
+            console.log('Stream complete. Full response:', data.full_response);
+            setTyping(false);
+            break;
+
+          case 'error':
+            console.error('Server error:', data.message);
+            setTyping(false);
+            setMessages((prevMessages) => [
+              ...prevMessages,
+              {
+                text: `Error: ${data.message}`,
+                fromUser: false,
+                isError: true,
+                key: `error-${Date.now()}`
+              }
+            ]);
+            break;
+
+          case 'pong':
+            console.log('Heartbeat pong received');
+            break;
+
+          default:
+            console.warn('Unknown message type:', data.type);
+        }
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
+    };
+  }, [socket]);
+
   //DATE FORMATTING
   function formatDate(date) {
     const regex = /^(\d{2})[\/-](\d{2})[\/-](\d{4})$/;
@@ -321,7 +488,8 @@ export default function LLMChatbotTest() {
   const getPromotionDetails = async (threadId = "admin") => {
     try {
       const response = await fetch(
-        `http://localhost:8000/promotion_extract_details/`,
+        // `http://localhost:8000/promotion_extract_details/`,
+        `http://localhost:8000/promotion_extract_details_agentic/`,
         {
           method: "POST",
           headers: {
@@ -364,97 +532,160 @@ export default function LLMChatbotTest() {
     }
   };
 
+  // const handleMessageSubmit = async (input, inputFromUpload) => {
+  //   console.log("Input: ", input);
+  //   const textToSend = input.trim();
+  //   if (!textToSend && !inputFromUpload) return;
+  //   // Add User Message (if applicable)
+  //   if (!inputFromUpload) {
+  //     setMessages((prevMessages) => [
+  //       ...prevMessages,
+  //       { text: textToSend, fromUser: true, key: `user-${Date.now()}` },
+  //     ]);
+  //     setInput("");
+  //   }
+  //   // Start Typing Indicator
+  //   if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+  //   typingTimeoutRef.current = setTimeout(() => setTyping(true), 1000);
+  //   try {
+  //     // const response = await fetch("http://localhost:8000/promotion_chat/", {
+  //     const response = await fetch("http://localhost:8000/promotion_chat_agentic/", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json", Accept: "text/plain" },
+  //       body: JSON.stringify({
+  //         thread_id: "admin",
+  //         message: textToSend || inputFromUpload,
+  //       }),
+  //     });
+  //     // Stop Typing Indicator
+  //     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+  //     typingTimeoutRef.current = null;
+  //     setTyping(false);
+  //     if (!response.ok) {
+  //       const errorBody = await response.text();
+  //       console.error("Server Error Body:", errorBody);
+  //       throw new Error(
+  //         `Failed to fetch data: ${response.status} ${response.statusText}`
+  //       );
+  //     }
+  //     // Add Initial Bot Message Placeholder
+  //     const botMessageKey = `bot-${Date.now()}`;
+  //     setMessages((prevMessages) => [
+  //       ...prevMessages,
+  //       { text: "", fromUser: false, key: botMessageKey },
+  //     ]);
+  //     // --- Process Stream ---
+  //     const reader = response.body.getReader();
+  //     const decoder = new TextDecoder();
+  //     let done = false;
+  //     console.log("Starting stream reading loop..."); // Log loop start
+  //     while (!done) {
+  //       const { value, done: doneReading } = await reader.read();
+  //       done = doneReading;
+  //       // !!! ADD LOGS HERE !!!
+  //       console.log("Reader Read:", { value, done }); // Log raw reader output
+  //       if (value) {
+  //         // Check if value (Uint8Array) exists
+  //         const chunkStr = decoder.decode(value, { stream: !done });
+  //         // !!! ADD LOG HERE !!!
+  //         console.log("Decoded Chunk:", chunkStr); // Log the decoded string
+  //         if (chunkStr) {
+  //           // !!! ADD LOG HERE !!!
+  //           console.log("Attempting to update state with chunk:", chunkStr);
+  //           setMessages((prevMessages) =>
+  //             prevMessages.map((msg) =>
+  //               msg.key === botMessageKey
+  //                 ? { ...msg, text: msg.text + chunkStr }
+  //                 : msg
+  //             )
+  //           );
+  //         } else {
+  //           console.log("Decoded chunk is empty, not updating state.");
+  //         }
+  //       } else if (done) {
+  //         console.log("Stream finished (done is true, no more values).");
+  //       }
+  //     }
+  //     console.log("Finished stream reading loop."); // Log loop end
+  //     await getPromotionDetails("admin");
+  //   } catch (error) {
+  //     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+  //     typingTimeoutRef.current = null;
+  //     setTyping(false);
+  //     console.error("Error fetching or processing stream:", error);
+  //     setMessages((prevMessages) => [
+  //       ...prevMessages,
+  //       {
+  //         text: `Error: ${error.message}`,
+  //         fromUser: false,
+  //         isError: true,
+  //         key: `error-${Date.now()}`,
+  //       },
+  //     ]);
+  //   }
+  // };
+  
   const handleMessageSubmit = async (input, inputFromUpload) => {
-    console.log("Input: ", input);
+    console.log('Input:', input);
     const textToSend = input.trim();
+    
     if (!textToSend && !inputFromUpload) return;
-    // Add User Message (if applicable)
+    
+    if (!isConnected || !socket) {
+      console.error('WebSocket not connected');
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          text: 'Error: Not connected to server. Please refresh the page.',
+          fromUser: false,
+          isError: true,
+          key: `error-${Date.now()}`
+        }
+      ]);
+      return;
+    }
+
+    // Add user message
     if (!inputFromUpload) {
       setMessages((prevMessages) => [
         ...prevMessages,
-        { text: textToSend, fromUser: true, key: `user-${Date.now()}` },
+        { text: textToSend, fromUser: true, key: `user-${Date.now()}` }
       ]);
-      setInput("");
+      setInput('');
     }
-    // Start Typing Indicator
+
+    // Start typing indicator
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    typingTimeoutRef.current = setTimeout(() => setTyping(true), 1000);
+    typingTimeoutRef.current = setTimeout(() => setTyping(true), 500);
+
     try {
-      const response = await fetch("http://localhost:8000/promotion_chat/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "text/plain" },
-        body: JSON.stringify({
-          thread_id: "admin",
-          message: textToSend || inputFromUpload,
-        }),
-      });
-      // Stop Typing Indicator
-      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-      typingTimeoutRef.current = null;
-      setTyping(false);
-      if (!response.ok) {
-        const errorBody = await response.text();
-        console.error("Server Error Body:", errorBody);
-        throw new Error(
-          `Failed to fetch data: ${response.status} ${response.statusText}`
-        );
-      }
-      // Add Initial Bot Message Placeholder
-      const botMessageKey = `bot-${Date.now()}`;
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { text: "", fromUser: false, key: botMessageKey },
-      ]);
-      // --- Process Stream ---
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let done = false;
-      console.log("Starting stream reading loop..."); // Log loop start
-      while (!done) {
-        const { value, done: doneReading } = await reader.read();
-        done = doneReading;
-        // !!! ADD LOGS HERE !!!
-        console.log("Reader Read:", { value, done }); // Log raw reader output
-        if (value) {
-          // Check if value (Uint8Array) exists
-          const chunkStr = decoder.decode(value, { stream: !done });
-          // !!! ADD LOG HERE !!!
-          console.log("Decoded Chunk:", chunkStr); // Log the decoded string
-          if (chunkStr) {
-            // !!! ADD LOG HERE !!!
-            console.log("Attempting to update state with chunk:", chunkStr);
-            setMessages((prevMessages) =>
-              prevMessages.map((msg) =>
-                msg.key === botMessageKey
-                  ? { ...msg, text: msg.text + chunkStr }
-                  : msg
-              )
-            );
-          } else {
-            console.log("Decoded chunk is empty, not updating state.");
-          }
-        } else if (done) {
-          console.log("Stream finished (done is true, no more values).");
-        }
-      }
-      console.log("Finished stream reading loop."); // Log loop end
-      await getPromotionDetails("admin");
+      // Send message via WebSocket
+      socket.send(JSON.stringify({
+        type: 'message',
+        content: textToSend || inputFromUpload,
+        thread_id: threadId
+      }));
+
+      console.log('Message sent via WebSocket');
     } catch (error) {
+      console.error('Error sending WebSocket message:', error);
+      
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = null;
       setTyping(false);
-      console.error("Error fetching or processing stream:", error);
+      
       setMessages((prevMessages) => [
         ...prevMessages,
         {
           text: `Error: ${error.message}`,
           fromUser: false,
           isError: true,
-          key: `error-${Date.now()}`,
-        },
+          key: `error-${Date.now()}`
+        }
       ]);
     }
   };
+
   const [extractedDetails, setExtractedDetails] = useState(null);
   const [userIntent, setUserIntent] = useState(null);
 

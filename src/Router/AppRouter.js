@@ -15,6 +15,7 @@ import PoDetailsSideNew from "../Pages/PONew/PoDetailsSideNew";
 import PromoDetailsSide from "../Pages/Promotion/PromoDetailsSide";
 import ItemCreationDetailsSide from "../Pages/ItemCreation/ItemCreationDetailsSide";
 import LLMDetailsSide from "../components/LLMTest/LLMDetailsSide";
+import ItemDetailsSide from "../Pages/ItemCreation/ItemDetailsSide";
 
 
 const AppRouter = () => {
@@ -27,7 +28,7 @@ const AppRouter = () => {
         <Route path="/poChatbot" element={<PoDetailsSide/>} />
         <Route path="/poNew" element={<PoDetailsSideNew/>} />
         <Route path="/promoChatbot" element={<PromoDetailsSide/>}/>
-        <Route path="/itemChatbot" element ={<ItemCreationDetailsSide/>}/>
+        <Route path="/itemChatbot" element ={<ItemDetailsSide/>}/>
         <Route path="/llmtest" element={<LLMDetailsSide/>}/>
         {/* <Route path="/llmtest" element={<LLMChatbotTest/>}/> */}
 

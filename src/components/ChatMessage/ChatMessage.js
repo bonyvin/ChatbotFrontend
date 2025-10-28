@@ -1,7 +1,7 @@
 import React from "react";
 import user from "../../images/user.png";
 import symbolBlue from "../../images/symbolBlue.png";
-
+import ReactMarkdown from "react-markdown";
 import "../../styles/general.css";
 
 const ChatMessage = ({ text, fromUser, isFile = false }) => {
@@ -13,34 +13,6 @@ const ChatMessage = ({ text, fromUser, isFile = false }) => {
   });
 
   return (
-    // <div className={`chat-message-row ${fromUser ? 'user' : 'bot'}`}>
-    //   {fromUser ? (
-    //     <>
-    //       <div className="avatar-label user-label">
-    //         You
-    //         <img src={user} className="avatar" />
-    //       </div>
-    //       <div className="message-container">
-    //         <div className={isFile ? "message-file user-file" : "message-bubble user-bubble"}>
-    //           {text}
-    //         </div>
-    //       </div>
-    //     </>
-    //   ) : (
-    //     <>
-    //       <div className="avatar-label bot-label">
-    //         <img src={symbolBlue} className="avatar" />
-    //         ExpX Engine
-    //       </div>
-    //       <div className="message-container">
-    //         <div className={isFile ? "message-file bot-file" : "message-bubble bot-bubble"}>
-    //           {text}
-    //         </div>
-    //       </div>
-    //     </>
-    //   )}
-    // </div>
-
     <>
       {fromUser === true ? (
         <div style={{ marginBottom: "1rem" }}>
@@ -72,7 +44,7 @@ const ChatMessage = ({ text, fromUser, isFile = false }) => {
               <div
                 className={`message-bubble user`}
               >
-                {text}
+                <ReactMarkdown>{text}</ReactMarkdown>
               </div>
             )}
           </div>
@@ -110,7 +82,7 @@ const ChatMessage = ({ text, fromUser, isFile = false }) => {
               <div
                 className={`message-bubble-bot bot`}
               >
-                {text}
+                <ReactMarkdown>{text}</ReactMarkdown>
               </div>
             )}
           </div>
