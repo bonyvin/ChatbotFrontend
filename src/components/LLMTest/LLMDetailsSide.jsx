@@ -69,6 +69,7 @@ import CustomButton from "../CustomButton/CustomButton.js";
 import { ITEMS, STORE_LIST } from "../../const/ApiConst.js";
 import axios from "axios";
 import LLMChatbotTest from "./LLMChatbotTest.jsx";
+import LLMChatbotTestAgentic from "./LLMChatbotTestAgentic.jsx";
 
 export default function LLMDetailsSide() {
   const messagesEndRef = useRef(null);
@@ -1451,7 +1452,8 @@ export default function LLMDetailsSide() {
       style={{ width: "100%" }}
       ref={messagesEndRef}
     > */}
-        <LLMChatbotTest />
+        {/* <LLMChatbotTest /> */}
+        <LLMChatbotTestAgentic />
       </Grid>
     </Grid>
   );

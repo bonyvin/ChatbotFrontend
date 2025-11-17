@@ -16,6 +16,8 @@ import PromoDetailsSide from "../Pages/Promotion/PromoDetailsSide";
 import ItemCreationDetailsSide from "../Pages/ItemCreation/ItemCreationDetailsSide";
 import LLMDetailsSide from "../components/LLMTest/LLMDetailsSide";
 import ItemDetailsSide from "../Pages/ItemCreation/ItemDetailsSide";
+import WebSocketTest from "../components/LLMTest/WebSocketTest";
+import LLMChatbotTestAgentic from "../components/LLMTest/LLMChatbotTestAgentic";
 
 
 const AppRouter = () => {
@@ -30,6 +32,8 @@ const AppRouter = () => {
         <Route path="/promoChatbot" element={<PromoDetailsSide/>}/>
         <Route path="/itemChatbot" element ={<ItemDetailsSide/>}/>
         <Route path="/llmtest" element={<LLMDetailsSide/>}/>
+        <Route path="/wsllm" element={<WebSocketTest/>}/>
+        <Route path="/agentic" element={<LLMChatbotTestAgentic/>}/>
         {/* <Route path="/llmtest" element={<LLMChatbotTest/>}/> */}
 
       </Routes>

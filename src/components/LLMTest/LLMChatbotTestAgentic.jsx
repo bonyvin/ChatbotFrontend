@@ -21,83 +21,15 @@ import ChatMessage from "../ChatMessage/ChatMessage";
 import TypingIndicatorComponent from "../ChatMessage/TypingIndicatorComponent";
 import ReactMarkdown from "react-markdown";
 
+function uuidv4() {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
 
-// WebSocket hook for managing connection
-const useWebSocket = (threadId) => {
-  const [socket, setSocket] = useState(null);
-  const [isConnected, setIsConnected] = useState(false);
-  const reconnectTimeoutRef = useRef(null);
-  const reconnectAttemptsRef = useRef(0);
-  const MAX_RECONNECT_ATTEMPTS = 5;
-
-  useEffect(() => {
-    const connectWebSocket = () => {
-      const ws = new WebSocket(`ws://localhost:8000/ws/promotion_chat/${threadId}`);
-
-      ws.onopen = () => {
-        console.log('WebSocket connected');
-        setIsConnected(true);
-        setSocket(ws);
-        reconnectAttemptsRef.current = 0;
-      };
-
-      ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-      };
-
-      ws.onclose = (event) => {
-        console.log('WebSocket closed:', event.code, event.reason);
-        setIsConnected(false);
-        setSocket(null);
-
-        // Attempt reconnection with exponential backoff
-        if (reconnectAttemptsRef.current < MAX_RECONNECT_ATTEMPTS) {
-          const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000);
-          console.log(`Reconnecting in ${delay}ms...`);
-          
-          reconnectTimeoutRef.current = setTimeout(() => {
-            reconnectAttemptsRef.current++;
-            connectWebSocket();
-          }, delay);
-        } else {
-          console.error('Max reconnection attempts reached');
-        }
-      };
-
-      return ws;
-    };
-
-    const ws = connectWebSocket();
-
-    // Cleanup on unmount
-    return () => {
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
-      if (ws) {
-        ws.close();
-      }
-    };
-  }, [threadId]);
-
-  // Heartbeat mechanism
-  useEffect(() => {
-    if (!socket || !isConnected) return;
-
-    const pingInterval = setInterval(() => {
-      if (socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({ type: 'ping' }));
-      }
-    }, 30000); // Ping every 30 seconds
-
-    return () => clearInterval(pingInterval);
-  }, [socket, isConnected]);
-
-  return { socket, isConnected };
-};
-
-
-export default function LLMChatbotTest() {
+export default function LLMChatbotTestAgentic() {
   const [messages, setMessages] = useState([]);
   const value = useContext(AuthContext);
   const [itemsArray, setItemsArray] = useState();
@@ -114,6 +46,167 @@ export default function LLMChatbotTest() {
   const pickerRef = useRef(null);
   const [typing, setTyping] = useState(false);
   const typingTimeoutRef = useRef(null);
+  const [connected, setConnected] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [threadId, setThreadId] = useState(() => uuidv4()); // session-level thread id (optional)
+  const [allowConcurrentRuns, setAllowConcurrentRuns] = useState(false);
+
+  const wsRef = useRef(null);
+  const hostRef = useRef({}); // stores reconnect/backoff state
+  hostRef.current.shouldReconnect = true;
+  hostRef.current.retries = 0;
+
+  const outgoingQueueRef = useRef([]); // if socket down, queue messages
+  const messagesEndRef = useRef(null);
+  const containerRef = useRef(null);
+
+  const PORT = 8000;
+  const WS_PATH = "/ws/promotion_chat";
+
+  // --- Connect function with exponential backoff ---
+  const connect = () => {
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const host = window.location.hostname || "localhost";
+    const url = `${protocol}//${host}:${PORT}${WS_PATH}`;
+
+    const ws = new WebSocket(url);
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      console.log("ws open");
+      hostRef.current.retries = 0;
+      setConnected(true);
+
+      // flush queued messages
+      if (outgoingQueueRef.current.length > 0) {
+        outgoingQueueRef.current.forEach((m) => ws.send(m));
+        outgoingQueueRef.current = [];
+      }
+    };
+
+    ws.onmessage = (evt) => {
+      let msg;
+      try {
+        msg = JSON.parse(evt.data);
+      } catch (err) {
+        console.error("Invalid WS message (non-JSON):", evt.data);
+        return;
+      }
+
+      // Handle different message types from backend
+      if (msg.type === "token") {
+        const tokenText = String(msg.text ?? "");
+        setMessages((prev) => {
+          const last = prev[prev.length - 1];
+          // key={index}
+          // text={message.text ? message.text : message.component}
+          // fromUser={message.fromUser}
+          // isFile={message.isFile}
+          if (last && last.fromUser === false && last.streaming) {
+            // if (last && last.role === "bot" && last.fromUser === message.fromUser && last.streaming) {
+            const copy = [...prev];
+            copy[copy.length - 1] = { ...last, text: last.text + tokenText };
+            return copy;
+          }
+          return [
+            ...prev,
+            { fromUser: false, text: tokenText, streaming: true, id: uuidv4() },
+          ];
+        });
+        setIsStreaming(true);
+      } else if (msg.type === "event") {
+        // Extract text from event data
+        const data = msg.data;
+        let text = "";
+
+        if (typeof data === "string") {
+          text = data;
+        } else if (data && typeof data === "object") {
+          // Try to extract text from various possible fields
+          text =
+            data.text || data.content || data.message || JSON.stringify(data);
+        } else {
+          text = String(data ?? "");
+        }
+
+        if (text) {
+          setMessages((prev) => {
+            const last = prev[prev.length - 1];
+            if (last && last.fromUser === false && last.streaming) {
+              const copy = [...prev];
+              copy[copy.length - 1] = { ...last, text: last.text + text };
+              return copy;
+            }
+            return [
+              ...prev,
+              { fromUser: false, text, streaming: true, id: uuidv4() },
+            ];
+          });
+          setIsStreaming(true);
+        }
+      } else if (msg.type === "done") {
+        setMessages((prev) => {
+          const last = prev[prev.length - 1];
+          if (last && last.fromUser === false && last.streaming) {
+            const copy = [...prev];
+            copy[copy.length - 1] = { ...last, streaming: false };
+            return copy;
+          }
+          return prev;
+        });
+        setIsStreaming(false);
+      } else if (msg.type === "error") {
+        const detail = msg.detail ?? "Unknown error from server";
+        setMessages((prev) => [
+          ...prev,
+          {
+            fromUser: false,
+            text: `Error: ${detail}`,
+            streaming: false,
+            id: uuidv4(),
+          },
+        ]);
+        setIsStreaming(false);
+      } else {
+        // Unknown message type
+        console.warn("Unknown message type:", msg);
+      }
+
+      scrollToBottom();
+    };
+
+    ws.onclose = (e) => {
+      console.log("ws closed", e);
+      setConnected(false);
+      if (hostRef.current.shouldReconnect) {
+        const nextRetry = Math.min(
+          30_000,
+          500 * Math.pow(2, hostRef.current.retries)
+        );
+        hostRef.current.retries += 1;
+        console.log(`Reconnecting in ${nextRetry}ms`);
+        setTimeout(() => connect(), nextRetry);
+      }
+    };
+
+    ws.onerror = (e) => {
+      console.error("ws error", e);
+    };
+  };
+
+  useEffect(() => {
+    hostRef.current.shouldReconnect = true;
+    connect();
+
+    return () => {
+      hostRef.current.shouldReconnect = false;
+      try {
+        wsRef.current && wsRef.current.close();
+      } catch (err) {}
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   //FORM ACTIONS
   //save
   const saveFormData = async () => {
@@ -184,7 +277,7 @@ export default function LLMChatbotTest() {
           : ""
       }
     `;
-    await handleMessageSubmit(savedData);
+    // await handleMessageSubmit(savedData);
     value.setFormSave((prevState) => !prevState);
   };
   //submit
@@ -298,96 +391,6 @@ export default function LLMChatbotTest() {
     }
   }, [value.itemUpload, value.storeUpload]);
 
-   const threadId = 'admin'; // Your thread ID
-  const { socket, isConnected } = useWebSocket(threadId);
-
-  // Setup WebSocket message handler
-  useEffect(() => {
-    if (!socket) return;
-
-    socket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        console.log('Received WebSocket message:', data);
-
-        switch (data.type) {
-          case 'ack':
-            console.log('Message acknowledged:', data.message);
-            break;
-
-          case 'stream_chunk':
-            // Update the last bot message with streaming content
-            setMessages((prevMessages) => {
-              const lastMessage = prevMessages[prevMessages.length - 1];
-              
-              if (lastMessage && !lastMessage.fromUser) {
-                // Append to existing bot message
-                return [
-                  ...prevMessages.slice(0, -1),
-                  { ...lastMessage, text: lastMessage.text + data.content }
-                ];
-              } else {
-                // Create new bot message
-                return [
-                  ...prevMessages,
-                  { 
-                    text: data.content, 
-                    fromUser: false, 
-                    key: `bot-${Date.now()}` 
-                  }
-                ];
-              }
-            });
-
-            // Stop typing indicator on first chunk
-            if (typingTimeoutRef.current) {
-              clearTimeout(typingTimeoutRef.current);
-              typingTimeoutRef.current = null;
-            }
-            setTyping(false);
-            break;
-
-          case 'extracted_details':
-            console.log('Extracted details:', data.extracted_details);
-            console.log('User intent:', data.user_intent);
-            setExtractedDetails({
-              details: data.extracted_details,
-              intent: data.user_intent
-            });
-            break;
-
-          case 'stream_complete':
-            console.log('Stream complete. Full response:', data.full_response);
-            setTyping(false);
-            break;
-
-          case 'error':
-            console.error('Server error:', data.message);
-            setTyping(false);
-            setMessages((prevMessages) => [
-              ...prevMessages,
-              {
-                text: `Error: ${data.message}`,
-                fromUser: false,
-                isError: true,
-                key: `error-${Date.now()}`
-              }
-            ]);
-            break;
-
-          case 'pong':
-            console.log('Heartbeat pong received');
-            break;
-
-          default:
-            console.warn('Unknown message type:', data.type);
-        }
-      } catch (error) {
-        console.error('Error parsing WebSocket message:', error);
-      }
-    };
-  }, [socket]);
-
   //DATE FORMATTING
   function formatDate(date) {
     const regex = /^(\d{2})[\/-](\d{2})[\/-](\d{4})$/;
@@ -485,8 +488,9 @@ export default function LLMChatbotTest() {
     [value.promotionData]
   );
   //API CALLS
-  const getPromotionDetails = async (threadId = "admin") => {
+  const getPromotionDetails = async (threadId,message) => {
     try {
+      console.log("Inside get promotion details function");
       const response = await fetch(
         // `http://localhost:8000/promotion_extract_details/`,
         `http://localhost:8000/promotion_extract_details_agentic/`,
@@ -496,7 +500,7 @@ export default function LLMChatbotTest() {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-          body: JSON.stringify({ thread_id: threadId, message: "" }), // or message if needed
+          body: JSON.stringify({ thread_id: threadId, message: message }), // or message if needed
         }
       );
       if (!response.ok) {
@@ -532,11 +536,151 @@ export default function LLMChatbotTest() {
     }
   };
 
+  const sendMessage = async (text = null) => {
+    const messageText = (text ?? input).trim();
+    if (!messageText) return;
+
+    if (isStreaming && !allowConcurrentRuns) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          fromUser: false,
+          text: "Please wait for current response to finish.",
+          streaming: false,
+          id: uuidv4(),
+        },
+      ]);
+      setInput("");
+      return;
+    }
+
+    setMessages((prev) => [
+      ...prev,
+      { fromUser: true, text: messageText, id: uuidv4() },
+    ]);
+    setInput("");
+
+    const outgoing = JSON.stringify({
+      message: messageText,
+      thread_id: threadId,
+    });
+
+    // Attach a temporary WS listener that accumulates the streaming response
+    // and calls promotionCheck with the combined response when the stream is done.
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      let buffer = "";
+      const listener = async (evt) => {
+        let msg;
+        try {
+          msg = JSON.parse(evt.data);
+        } catch (err) {
+          // ignore non-json frames
+          return;
+        }
+
+        if (msg.type === "token") {
+          buffer += String(msg.text ?? "");
+        } else if (msg.type === "event") {
+          const data = msg.data;
+          let text = "";
+          if (typeof data === "string") {
+            text = data;
+          } else if (data && typeof data === "object") {
+            text =
+              data.text || data.content || data.message || JSON.stringify(data);
+          } else if (msg.type === "extraction") {
+            // Handle extract type messages
+            console.log("Extract message received in sendMessage:", msg.data);
+            await promotionCheck(msg.data.extracted_details);
+          } else {
+            text = String(data ?? "");
+          }
+          buffer += text;
+        } else if (msg.type === "done") {
+          // Stream finished — try to parse buffer as JSON, else pass as raw text
+          try {
+            const parsed = JSON.parse(buffer);
+            console.log("Parsed buffer as JSON:", parsed);
+            // await promotionCheck(parsed);
+            // await getPromotionDetails(threadId,parsed);
+          } catch (err) {
+            // If buffer isn't valid JSON, pass it as extracted_details string
+            console.log("Passing buffer as raw text", buffer);
+            // await promotionCheck({ extracted_details: buffer });
+            // await getPromotionDetails(threadId,buffer);
+          }
+          // cleanup listener
+          try {
+            wsRef.current.removeEventListener("message", listener);
+          } catch (e) {
+            /* ignore */
+          }
+        }
+      };
+
+      try {
+        wsRef.current.addEventListener("message", listener);
+        try {
+          wsRef.current.send(outgoing);
+          setIsStreaming(true);
+        } catch (err) {
+          console.error("Send failed, queueing", err);
+          outgoingQueueRef.current.push(outgoing);
+          try {
+            wsRef.current.removeEventListener("message", listener);
+          } catch (e) {
+            /* ignore */
+          }
+        }
+      } catch (err) {
+        // fallback if addEventListener isn't available
+        try {
+          wsRef.current.send(outgoing);
+          setIsStreaming(true);
+        } catch (err2) {
+          console.error("Send failed, queueing", err2);
+          outgoingQueueRef.current.push(outgoing);
+        }
+      }
+    } else {
+      // queue the outgoing message and attempt reconnect
+      outgoingQueueRef.current.push(outgoing);
+      setMessages((prev) => [
+        ...prev,
+        {
+          fromUser: false,
+          text: "Message queued — connecting to server...",
+          streaming: false,
+          id: uuidv4(),
+        },
+      ]);
+      if (!connected) {
+        connect();
+      }
+    }
+  };
+
   // const handleMessageSubmit = async (input, inputFromUpload) => {
-  //   console.log("Input: ", input);
+  //   console.log("Input:", input);
   //   const textToSend = input.trim();
+
   //   if (!textToSend && !inputFromUpload) return;
-  //   // Add User Message (if applicable)
+
+  //   if (!isConnected || !socket) {
+  //     console.error("WebSocket not connected");
+  //     setMessages((prevMessages) => [
+  //       ...prevMessages,
+  //       {
+  //         text: "Error: Not connected to server. Please refresh the page.",
+  //         fromUser: false,
+  //         isError: true,
+  //         key: `error-${Date.now()}`,
+  //       },
+  //     ]);
+  //     return;
+  //   }
+
+  //   // Add user message
   //   if (!inputFromUpload) {
   //     setMessages((prevMessages) => [
   //       ...prevMessages,
@@ -544,75 +688,29 @@ export default function LLMChatbotTest() {
   //     ]);
   //     setInput("");
   //   }
-  //   // Start Typing Indicator
+
+  //   // Start typing indicator
   //   if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-  //   typingTimeoutRef.current = setTimeout(() => setTyping(true), 1000);
+  //   typingTimeoutRef.current = setTimeout(() => setTyping(true), 500);
+
   //   try {
-  //     // const response = await fetch("http://localhost:8000/promotion_chat/", {
-  //     const response = await fetch("http://localhost:8000/promotion_chat_agentic/", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json", Accept: "text/plain" },
-  //       body: JSON.stringify({
-  //         thread_id: "admin",
-  //         message: textToSend || inputFromUpload,
-  //       }),
-  //     });
-  //     // Stop Typing Indicator
-  //     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-  //     typingTimeoutRef.current = null;
-  //     setTyping(false);
-  //     if (!response.ok) {
-  //       const errorBody = await response.text();
-  //       console.error("Server Error Body:", errorBody);
-  //       throw new Error(
-  //         `Failed to fetch data: ${response.status} ${response.statusText}`
-  //       );
-  //     }
-  //     // Add Initial Bot Message Placeholder
-  //     const botMessageKey = `bot-${Date.now()}`;
-  //     setMessages((prevMessages) => [
-  //       ...prevMessages,
-  //       { text: "", fromUser: false, key: botMessageKey },
-  //     ]);
-  //     // --- Process Stream ---
-  //     const reader = response.body.getReader();
-  //     const decoder = new TextDecoder();
-  //     let done = false;
-  //     console.log("Starting stream reading loop..."); // Log loop start
-  //     while (!done) {
-  //       const { value, done: doneReading } = await reader.read();
-  //       done = doneReading;
-  //       // !!! ADD LOGS HERE !!!
-  //       console.log("Reader Read:", { value, done }); // Log raw reader output
-  //       if (value) {
-  //         // Check if value (Uint8Array) exists
-  //         const chunkStr = decoder.decode(value, { stream: !done });
-  //         // !!! ADD LOG HERE !!!
-  //         console.log("Decoded Chunk:", chunkStr); // Log the decoded string
-  //         if (chunkStr) {
-  //           // !!! ADD LOG HERE !!!
-  //           console.log("Attempting to update state with chunk:", chunkStr);
-  //           setMessages((prevMessages) =>
-  //             prevMessages.map((msg) =>
-  //               msg.key === botMessageKey
-  //                 ? { ...msg, text: msg.text + chunkStr }
-  //                 : msg
-  //             )
-  //           );
-  //         } else {
-  //           console.log("Decoded chunk is empty, not updating state.");
-  //         }
-  //       } else if (done) {
-  //         console.log("Stream finished (done is true, no more values).");
-  //       }
-  //     }
-  //     console.log("Finished stream reading loop."); // Log loop end
-  //     await getPromotionDetails("admin");
+  //     // Send message via WebSocket
+  //     socket.send(
+  //       JSON.stringify({
+  //         type: "message",
+  //         content: textToSend || inputFromUpload,
+  //         thread_id: threadId,
+  //       })
+  //     );
+
+  //     console.log("Message sent via WebSocket");
   //   } catch (error) {
+  //     console.error("Error sending WebSocket message:", error);
+
   //     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
   //     typingTimeoutRef.current = null;
   //     setTyping(false);
-  //     console.error("Error fetching or processing stream:", error);
+
   //     setMessages((prevMessages) => [
   //       ...prevMessages,
   //       {
@@ -624,67 +722,6 @@ export default function LLMChatbotTest() {
   //     ]);
   //   }
   // };
-  
-  const handleMessageSubmit = async (input, inputFromUpload) => {
-    console.log('Input:', input);
-    const textToSend = input.trim();
-    
-    if (!textToSend && !inputFromUpload) return;
-    
-    if (!isConnected || !socket) {
-      console.error('WebSocket not connected');
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          text: 'Error: Not connected to server. Please refresh the page.',
-          fromUser: false,
-          isError: true,
-          key: `error-${Date.now()}`
-        }
-      ]);
-      return;
-    }
-
-    // Add user message
-    if (!inputFromUpload) {
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { text: textToSend, fromUser: true, key: `user-${Date.now()}` }
-      ]);
-      setInput('');
-    }
-
-    // Start typing indicator
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    typingTimeoutRef.current = setTimeout(() => setTyping(true), 500);
-
-    try {
-      // Send message via WebSocket
-      socket.send(JSON.stringify({
-        type: 'message',
-        content: textToSend || inputFromUpload,
-        thread_id: threadId
-      }));
-
-      console.log('Message sent via WebSocket');
-    } catch (error) {
-      console.error('Error sending WebSocket message:', error);
-      
-      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-      typingTimeoutRef.current = null;
-      setTyping(false);
-      
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          text: `Error: ${error.message}`,
-          fromUser: false,
-          isError: true,
-          key: `error-${Date.now()}`
-        }
-      ]);
-    }
-  };
 
   const [extractedDetails, setExtractedDetails] = useState(null);
   const [userIntent, setUserIntent] = useState(null);
@@ -896,115 +933,6 @@ export default function LLMChatbotTest() {
       });
     }
   };
-  // const handleMessageSubmit = async (input, inputFromUpload) => {
-  //   console.log("Input: ", input);
-  //   const textToSend = input.trim();
-  //   // Ensure inputFromUpload is a string if it's the primary content
-  //   const messageContent =
-  //     textToSend ||
-  //     (typeof inputFromUpload === "string" ? inputFromUpload : "");
-  //   if (!messageContent) return; // Simplified check if there's any content to send
-  //   // Add User Message (if applicable and not an upload-only scenario)
-  //   if (!inputFromUpload && textToSend) {
-  //     // Only add user message if textToSend is present
-  //     setMessages((prevMessages) => [
-  //       ...prevMessages,
-  //       // User messages can remain simple text objects
-  //       { text: textToSend, fromUser: true, key: `user-${Date.now()}` },
-  //     ]);
-  //     setInput("");
-  //   }
-  //   // Start Typing Indicator
-  //   if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-  //   typingTimeoutRef.current = setTimeout(() => setTyping(true), 1000);
-  //   try {
-  //     const response = await fetch("http://localhost:8000/promotion_chat/", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json", Accept: "text/plain" }, // Server should stream plain text (Markdown)
-  //       body: JSON.stringify({
-  //         thread_id: "admin",
-  //         message: messageContent, // Use the prepared message content
-  //       }),
-  //     });
-  //     // Stop Typing Indicator
-  //     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-  //     typingTimeoutRef.current = null;
-  //     setTyping(false);
-  //     if (!response.ok) {
-  //       const errorBody = await response.text();
-  //       console.error("Server Error Body:", errorBody);
-  //       throw new Error(
-  //         `Failed to fetch data: ${response.status} ${response.statusText}`
-  //       );
-  //     }
-  //     // Add Initial Bot Message Placeholder
-  //     const botMessageKey = `bot-${Date.now()}`;
-  //     const initialMarkdownString = "";
-  //     setMessages((prevMessages) => [
-  //       ...prevMessages,
-  //       {
-  //         key: botMessageKey,
-  //         fromUser: false,
-  //         // Store the raw Markdown string for accumulation
-  //         rawMarkdown: initialMarkdownString,
-  //         // The 'text' field will hold the ReactMarkdown component
-  //         text: <ReactMarkdown>{initialMarkdownString}</ReactMarkdown>,
-  //       },
-  //     ]);
-  //     // --- Process Stream ---
-  //     const reader = response.body.getReader();
-  //     const decoder = new TextDecoder();
-  //     let done = false;
-  //     console.log("Starting stream reading loop...");
-  //     while (!done) {
-  //       const { value, done: doneReading } = await reader.read();
-  //       done = doneReading;
-  //       console.log("Reader Read:", { value, done });
-  //       if (value) {
-  //         const chunkStr = decoder.decode(value, { stream: !done });
-  //         console.log("Decoded Chunk:", chunkStr);
-  //         if (chunkStr) {
-  //           console.log("Attempting to update state with chunk:", chunkStr);
-  //           setMessages((prevMessages) =>
-  //             prevMessages.map((msg) => {
-  //               // Ensure this is the bot message we intend to update
-  //               if (msg.key === botMessageKey && !msg.fromUser) {
-  //                 const newRawMarkdown = (msg.rawMarkdown || "") + chunkStr;
-  //                 return {
-  //                   ...msg,
-  //                   rawMarkdown: newRawMarkdown,
-  //                   // Update the 'text' field with a new ReactMarkdown component
-  //                   text: <ReactMarkdown>{newRawMarkdown}</ReactMarkdown>,
-  //                 };
-  //               }
-  //               return msg;
-  //             })
-  //           );
-  //         } else {
-  //           console.log("Decoded chunk is empty, not updating state.");
-  //         }
-  //       } else if (done) {
-  //         console.log("Stream finished (done is true, no more values).");
-  //       }
-  //     }
-  //     console.log("Finished stream reading loop.");
-  //   } catch (error) {
-  //     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-  //     typingTimeoutRef.current = null;
-  //     setTyping(false);
-  //     console.error("Error fetching or processing stream:", error);
-  //     setMessages((prevMessages) => [
-  //       ...prevMessages,
-  //       {
-  //         // Error messages can also be simple text or styled differently
-  //         text: `Error: ${error.message}`,
-  //         fromUser: false,
-  //         isError: true,
-  //         key: `error-${Date.now()}`,
-  //       },
-  //     ]);
-  //   }
-  // };
   const getItemDetails = async () => {
     try {
       const response = await axios({
@@ -1282,30 +1210,30 @@ export default function LLMChatbotTest() {
             value.storeUpload.stores ||
             value.storeUpload.excludedStores
           ) {
-            await handleMessageSubmit(
-              value.itemUpload.items &&
-                response.data.structured_data["Items"].length > 0
-                ? `Items ${JSON.stringify(
-                    response.data.structured_data["Items"]
-                  )}`
-                : value.itemUpload.excludedItems &&
-                  response.data.structured_data["Items"].length > 0
-                ? `Excluded Items ${JSON.stringify(
-                    response.data.structured_data["Items"]
-                  )}`
-                : value.storeUpload.stores &&
-                  response.data.structured_data["Stores"].length > 0
-                ? `Stores ${JSON.stringify(
-                    response.data.structured_data["Stores"]
-                  )}`
-                : value.storeUpload.excludedStores &&
-                  response.data.structured_data["Stores"].length > 0
-                ? `Excluded Stores ${JSON.stringify(
-                    response.data.structured_data["Stores"]
-                  )}`
-                : null,
-              true
-            );
+            // await handleMessageSubmit(
+            //   value.itemUpload.items &&
+            //     response.data.structured_data["Items"].length > 0
+            //     ? `Items ${JSON.stringify(
+            //         response.data.structured_data["Items"]
+            //       )}`
+            //     : value.itemUpload.excludedItems &&
+            //       response.data.structured_data["Items"].length > 0
+            //     ? `Excluded Items ${JSON.stringify(
+            //         response.data.structured_data["Items"]
+            //       )}`
+            //     : value.storeUpload.stores &&
+            //       response.data.structured_data["Stores"].length > 0
+            //     ? `Stores ${JSON.stringify(
+            //         response.data.structured_data["Stores"]
+            //       )}`
+            //     : value.storeUpload.excludedStores &&
+            //       response.data.structured_data["Stores"].length > 0
+            //     ? `Excluded Stores ${JSON.stringify(
+            //         response.data.structured_data["Stores"]
+            //       )}`
+            //     : null,
+            //   true
+            // );
           }
           //  else if (
           //   value.storeUpload.stores ||
@@ -1417,7 +1345,7 @@ export default function LLMChatbotTest() {
       <ChatbotInputForm
         input={input}
         setInput={setInput}
-        handleMessageSubmit={handleMessageSubmit}
+        handleMessageSubmit={sendMessage}
         uploadInvoice={uploadInvoice}
         isPickerVisible={isPickerVisible}
         setPickerVisible={setPickerVisible}
