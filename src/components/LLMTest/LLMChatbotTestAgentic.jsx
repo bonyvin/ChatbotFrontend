@@ -488,7 +488,7 @@ export default function LLMChatbotTestAgentic() {
     [value.promotionData]
   );
   //API CALLS
-  const getPromotionDetails = async (threadId,message) => {
+  const getPromotionDetails = async (threadId, message) => {
     try {
       console.log("Inside get promotion details function");
       const response = await fetch(
@@ -536,6 +536,193 @@ export default function LLMChatbotTestAgentic() {
     }
   };
 
+  // const sendMessage = async (text = null) => {
+  //   const messageText = (text ?? input).trim();
+  //   if (!messageText) return;
+
+  //   if (isStreaming && !allowConcurrentRuns) {
+  //     setMessages((prev) => [
+  //       ...prev,
+  //       {
+  //         fromUser: false,
+  //         text: "Please wait for current response to finish.",
+  //         streaming: false,
+  //         id: uuidv4(),
+  //       },
+  //     ]);
+  //     setInput("");
+  //     return;
+  //   }
+
+  //   setMessages((prev) => [
+  //     ...prev,
+  //     { fromUser: true, text: messageText, id: uuidv4() },
+  //   ]);
+  //   setInput("");
+
+  //   const outgoing = JSON.stringify({
+  //     message: messageText,
+  //     thread_id: threadId,
+  //   });
+
+  //   // Attach a temporary WS listener that accumulates the streaming response
+  //   // and calls promotionCheck with the combined response when the stream is done.
+  //   if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+  //     let buffer = "";
+  //     const listener = async (evt) => {
+  //       let msg;
+  //       try {
+  //         msg = JSON.parse(evt.data);
+  //       } catch (err) {
+  //         // ignore non-json frames
+  //         return;
+  //       }
+
+  //       if (msg.type === "token") {
+  //         buffer += String(msg.text ?? "");
+  //       } else if (msg.type === "event") {
+  //         const data = msg.data;
+  //         let text = "";
+  //         if (typeof data === "string") {
+  //           text = data;
+  //         } else if (data && typeof data === "object") {
+  //           text =
+  //             data.text || data.content || data.message || JSON.stringify(data);
+  //         } else if (msg.type === "extraction") {
+  //           // Handle extract type messages
+  //           console.log("Extract message received in sendMessage:", msg.data);
+  //           await promotionCheck(msg.data.extracted_details);
+  //         } else {
+  //           text = String(data ?? "");
+  //         }
+  //         buffer += text;
+  //       } else if (msg.type === "done") {
+  //         // Stream finished — try to parse buffer as JSON, else pass as raw text
+  //         try {
+  //           const parsed = JSON.parse(buffer);
+  //           console.log("Parsed buffer as JSON:", parsed);
+  //           // await promotionCheck(parsed);
+  //           // await getPromotionDetails(threadId,parsed);
+  //         } catch (err) {
+  //           // If buffer isn't valid JSON, pass it as extracted_details string
+  //           console.log("Passing buffer as raw text", buffer);
+  //           // await promotionCheck({ extracted_details: buffer });
+  //           // await getPromotionDetails(threadId,buffer);
+  //         }
+  //         // cleanup listener
+  //         try {
+  //           wsRef.current.removeEventListener("message", listener);
+  //         } catch (e) {
+  //           /* ignore */
+  //         }
+  //       }
+  //     };
+
+  //     try {
+  //       wsRef.current.addEventListener("message", listener);
+  //       try {
+  //         wsRef.current.send(outgoing);
+  //         setIsStreaming(true);
+  //       } catch (err) {
+  //         console.error("Send failed, queueing", err);
+  //         outgoingQueueRef.current.push(outgoing);
+  //         try {
+  //           wsRef.current.removeEventListener("message", listener);
+  //         } catch (e) {
+  //           /* ignore */
+  //         }
+  //       }
+  //     } catch (err) {
+  //       // fallback if addEventListener isn't available
+  //       try {
+  //         wsRef.current.send(outgoing);
+  //         setIsStreaming(true);
+  //       } catch (err2) {
+  //         console.error("Send failed, queueing", err2);
+  //         outgoingQueueRef.current.push(outgoing);
+  //       }
+  //     }
+  //   } else {
+  //     // queue the outgoing message and attempt reconnect
+  //     outgoingQueueRef.current.push(outgoing);
+  //     setMessages((prev) => [
+  //       ...prev,
+  //       {
+  //         fromUser: false,
+  //         text: "Message queued — connecting to server...",
+  //         streaming: false,
+  //         id: uuidv4(),
+  //       },
+  //     ]);
+  //     if (!connected) {
+  //       connect();
+  //     }
+  //   }
+  // };
+
+  // const handleMessageSubmit = async (input, inputFromUpload) => {
+  //   console.log("Input:", input);
+  //   const textToSend = input.trim();
+
+  //   if (!textToSend && !inputFromUpload) return;
+
+  //   if (!isConnected || !socket) {
+  //     console.error("WebSocket not connected");
+  //     setMessages((prevMessages) => [
+  //       ...prevMessages,
+  //       {
+  //         text: "Error: Not connected to server. Please refresh the page.",
+  //         fromUser: false,
+  //         isError: true,
+  //         key: `error-${Date.now()}`,
+  //       },
+  //     ]);
+  //     return;
+  //   }
+
+  //   // Add user message
+  //   if (!inputFromUpload) {
+  //     setMessages((prevMessages) => [
+  //       ...prevMessages,
+  //       { text: textToSend, fromUser: true, key: `user-${Date.now()}` },
+  //     ]);
+  //     setInput("");
+  //   }
+
+  //   // Start typing indicator
+  //   if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+  //   typingTimeoutRef.current = setTimeout(() => setTyping(true), 500);
+
+  //   try {
+  //     // Send message via WebSocket
+  //     socket.send(
+  //       JSON.stringify({
+  //         type: "message",
+  //         content: textToSend || inputFromUpload,
+  //         thread_id: threadId,
+  //       })
+  //     );
+
+  //     console.log("Message sent via WebSocket");
+  //   } catch (error) {
+  //     console.error("Error sending WebSocket message:", error);
+
+  //     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+  //     typingTimeoutRef.current = null;
+  //     setTyping(false);
+
+  //     setMessages((prevMessages) => [
+  //       ...prevMessages,
+  //       {
+  //         text: `Error: ${error.message}`,
+  //         fromUser: false,
+  //         isError: true,
+  //         key: `error-${Date.now()}`,
+  //       },
+  //     ]);
+  //   }
+  // };
+
   const sendMessage = async (text = null) => {
     const messageText = (text ?? input).trim();
     if (!messageText) return;
@@ -574,42 +761,46 @@ export default function LLMChatbotTestAgentic() {
         try {
           msg = JSON.parse(evt.data);
         } catch (err) {
-          // ignore non-json frames
           return;
         }
 
         if (msg.type === "token") {
           buffer += String(msg.text ?? "");
+        } else if (msg.type === "extraction") {
+          // **NEW: Handle extraction data immediately**
+          console.log("Received extraction data:", msg.data);
+          await promotionCheck(msg.data.extracted_details);
+          setExtractedDetails(msg.data.extracted_details);
+          setUserIntent(msg.data.user_intent);
+
+          // Handle submission intent
+          if (msg.data.user_intent?.intent === "Submission") {
+            value.setPromotionCounter((prevCounter) => prevCounter + 1);
+            await promotionHeaderCreation();
+          }
+
+          // Handle email
+          const email = msg.data.extracted_details?.email;
+          if (email) {
+            console.log("Sending email to:", email);
+            await sendEmail({
+              emailUsed: email,
+              documentId: `PROMO${value.promotionCounter - 1}`,
+            });
+          }
         } else if (msg.type === "event") {
           const data = msg.data;
-          let text = "";
-          if (typeof data === "string") {
-            text = data;
-          } else if (data && typeof data === "object") {
-            text =
-              data.text || data.content || data.message || JSON.stringify(data);
-          } else if (msg.type === "extraction") {
-            // Handle extract type messages
-            console.log("Extract message received in sendMessage:", msg.data);
-            await promotionCheck(msg.data.extracted_details);
-          } else {
-            text = String(data ?? "");
-          }
+          let text =
+            typeof data === "string"
+              ? data
+              : data?.text ||
+                data?.content ||
+                data?.message ||
+                JSON.stringify(data);
           buffer += text;
         } else if (msg.type === "done") {
-          // Stream finished — try to parse buffer as JSON, else pass as raw text
-          try {
-            const parsed = JSON.parse(buffer);
-            console.log("Parsed buffer as JSON:", parsed);
-            // await promotionCheck(parsed);
-            // await getPromotionDetails(threadId,parsed);
-          } catch (err) {
-            // If buffer isn't valid JSON, pass it as extracted_details string
-            console.log("Passing buffer as raw text", buffer);
-            // await promotionCheck({ extracted_details: buffer });
-            // await getPromotionDetails(threadId,buffer);
-          }
-          // cleanup listener
+          // Stream finished - cleanup
+          console.log("Stream complete");
           try {
             wsRef.current.removeEventListener("message", listener);
           } catch (e) {

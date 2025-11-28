@@ -18,6 +18,7 @@ import LLMDetailsSide from "../components/LLMTest/LLMDetailsSide";
 import ItemDetailsSide from "../Pages/ItemCreation/ItemDetailsSide";
 import WebSocketTest from "../components/LLMTest/WebSocketTest";
 import LLMChatbotTestAgentic from "../components/LLMTest/LLMChatbotTestAgentic";
+import OracleTest from "../components/LLMTest/OracleTest";
 
 
 const AppRouter = () => {
@@ -34,6 +35,7 @@ const AppRouter = () => {
         <Route path="/llmtest" element={<LLMDetailsSide/>}/>
         <Route path="/wsllm" element={<WebSocketTest/>}/>
         <Route path="/agentic" element={<LLMChatbotTestAgentic/>}/>
+        <Route path="/testApp" element={<OracleTest/>}/>
         {/* <Route path="/llmtest" element={<LLMChatbotTest/>}/> */}
 
       </Routes>

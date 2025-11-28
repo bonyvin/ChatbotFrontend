@@ -362,6 +362,9 @@ export default function LLMDetailsSide() {
     } catch (error) {
       console.log("Store details Error: ", error);
     }
+    const saveButton=()=>{
+      
+    }
   };
   return (
     <Grid
