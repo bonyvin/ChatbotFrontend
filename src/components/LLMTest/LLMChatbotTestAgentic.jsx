@@ -50,7 +50,9 @@ export default function LLMChatbotTestAgentic() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [threadId, setThreadId] = useState(() => uuidv4()); // session-level thread id (optional)
   const [allowConcurrentRuns, setAllowConcurrentRuns] = useState(false);
-
+  const [extractedDetails, setExtractedDetails] = useState(null);
+  const [userIntent, setUserIntent] = useState(null);
+  
   const wsRef = useRef(null);
   const hostRef = useRef({}); // stores reconnect/backoff state
   hostRef.current.shouldReconnect = true;
@@ -914,8 +916,7 @@ export default function LLMChatbotTestAgentic() {
   //   }
   // };
 
-  const [extractedDetails, setExtractedDetails] = useState(null);
-  const [userIntent, setUserIntent] = useState(null);
+
 
   // const handleMessageSubmit = async (input, inputFromUpload) => {
   //   console.log("Input: ", input);

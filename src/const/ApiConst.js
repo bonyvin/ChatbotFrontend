@@ -28,7 +28,8 @@ export const CLEAR_DATA = API_URL + "/clearData";
 
 export const CLEAR_DATA_NEW = API_URL + "/clearDataNew";
 
-export const CHAT = API_URL + "/chat";
+export const CHAT = API_URL + "/purchase_order_chat_agentic";
+// export const CHAT = API_URL + "/chat";
 
 export const PROMO_CHAT = API_URL + "/promo-chat";
 

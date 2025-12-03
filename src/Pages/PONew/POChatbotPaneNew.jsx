@@ -34,6 +34,14 @@ import {
 import EmailPdf from "../../components/PDF Generation/EmailPdf";
 import { BorderColor } from "@mui/icons-material";
 
+function uuidv4() {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 export default function POChatbotPane() {
   const [messages, setMessages] = useState([]);
   const value = useContext(AuthContext);
@@ -60,7 +68,275 @@ export default function POChatbotPane() {
   const poErrorMessage = "An Error occured while creating Purchase Order";
   const uploadError = "An error occured while uploading";
   const emailError = "An error occured while sending email";
+  const [connected, setConnected] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [threadId, setThreadId] = useState(() => uuidv4()); // session-level thread id (optional)
+  const [allowConcurrentRuns, setAllowConcurrentRuns] = useState(false);
+  const [extractedDetails, setExtractedDetails] = useState(null);
+  const [userIntent, setUserIntent] = useState(null);
 
+  const wsRef = useRef(null);
+  const hostRef = useRef({}); // stores reconnect/backoff state
+  hostRef.current.shouldReconnect = true;
+  hostRef.current.retries = 0;
+
+  const outgoingQueueRef = useRef([]); // if socket down, queue messages
+  const messagesEndRef = useRef(null);
+  const containerRef = useRef(null);
+
+  const PORT = 8000;
+  const WS_PATH = "/ws/purchase_order_chat";
+
+  // --- Connect function with exponential backoff ---
+  const connect = () => {
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const host = window.location.hostname || "localhost";
+    const url = `${protocol}//${host}:${PORT}${WS_PATH}`;
+
+    const ws = new WebSocket(url);
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      console.log("ws open");
+      hostRef.current.retries = 0;
+      setConnected(true);
+
+      // flush queued messages
+      if (outgoingQueueRef.current.length > 0) {
+        outgoingQueueRef.current.forEach((m) => ws.send(m));
+        outgoingQueueRef.current = [];
+      }
+    };
+
+    // ws.onmessage = (evt) => {
+    //   let msg;
+    //   try {
+    //     msg = JSON.parse(evt.data);
+    //   } catch (err) {
+    //     console.error("Invalid WS message (non-JSON):", evt.data);
+    //     return;
+    //   }
+
+    //   // Handle different message types from backend
+    //   if (msg.type === "token") {
+    //     const tokenText = String(msg.text ?? "");
+    //     setMessages((prev) => {
+    //       const last = prev[prev.length - 1];
+    //       // key={index}
+    //       // text={message.text ? message.text : message.component}
+    //       // fromUser={message.fromUser}
+    //       // isFile={message.isFile}
+    //       if (last && last.fromUser === false && last.streaming) {
+    //         // if (last && last.role === "bot" && last.fromUser === message.fromUser && last.streaming) {
+    //         const copy = [...prev];
+    //         copy[copy.length - 1] = { ...last, text: last.text + tokenText };
+    //         return copy;
+    //       }
+    //       return [
+    //         ...prev,
+    //         { fromUser: false, text: tokenText, streaming: true, id: uuidv4() },
+    //       ];
+    //     });
+    //     setIsStreaming(true);
+    //   } else if (msg.type === "event") {
+    //     // Extract text from event data
+    //     const data = msg.data;
+    //     let text = "";
+
+    //     if (typeof data === "string") {
+    //       text = data;
+    //     } else if (data && typeof data === "object") {
+    //       // Try to extract text from various possible fields
+    //       text =
+    //         data.text || data.content || data.message || JSON.stringify(data);
+    //     } else {
+    //       text = String(data ?? "");
+    //     }
+
+    //     if (text) {
+    //       setMessages((prev) => {
+    //         const last = prev[prev.length - 1];
+    //         if (last && last.fromUser === false && last.streaming) {
+    //           const copy = [...prev];
+    //           copy[copy.length - 1] = { ...last, text: last.text + text };
+    //           return copy;
+    //         }
+    //         return [
+    //           ...prev,
+    //           { fromUser: false, text, streaming: true, id: uuidv4() },
+    //         ];
+    //       });
+    //       setIsStreaming(true);
+    //     }
+    //   } else if (msg.type === "done") {
+    //     setMessages((prev) => {
+    //       const last = prev[prev.length - 1];
+    //       if (last && last.fromUser === false && last.streaming) {
+    //         const copy = [...prev];
+    //         copy[copy.length - 1] = { ...last, streaming: false };
+    //         return copy;
+    //       }
+    //       return prev;
+    //     });
+    //     setIsStreaming(false);
+    //   } else if (msg.type === "error") {
+    //     const detail = msg.detail ?? "Unknown error from server";
+    //     setMessages((prev) => [
+    //       ...prev,
+    //       {
+    //         fromUser: false,
+    //         text: `Error: ${detail}`,
+    //         streaming: false,
+    //         id: uuidv4(),
+    //       },
+    //     ]);
+    //     setIsStreaming(false);
+    //   } else {
+    //     // Unknown message type
+    //     console.warn("Unknown message type:", msg);
+    //   }
+
+    //   scrollToBottom();
+    // };
+
+    ws.onmessage = (evt) => {
+      let msg;
+      try {
+        msg = JSON.parse(evt.data);
+      } catch (err) {
+        console.error("Invalid WS message (non-JSON):", evt.data);
+        return;
+      }
+
+      // Handle different message types from backend
+      if (msg.type === "token") {
+        const tokenText = String(msg.text ?? "");
+        setMessages((prev) => {
+          const last = prev[prev.length - 1];
+          if (last && last.fromUser === false && last.streaming) {
+            const copy = [...prev];
+            copy[copy.length - 1] = { ...last, text: last.text + tokenText };
+            return copy;
+          }
+          return [
+            ...prev,
+            { fromUser: false, text: tokenText, streaming: true, id: uuidv4() },
+          ];
+        });
+        setIsStreaming(true);
+      } else if (msg.type === "event") {
+        // Extract text from event data
+        const data = msg.data;
+        let text = "";
+
+        if (typeof data === "string") {
+          text = data;
+        } else if (data && typeof data === "object") {
+          text =
+            data.text || data.content || data.message || JSON.stringify(data);
+        } else {
+          text = String(data ?? "");
+        }
+
+        if (text) {
+          setMessages((prev) => {
+            const last = prev[prev.length - 1];
+            if (last && last.fromUser === false && last.streaming) {
+              const copy = [...prev];
+              copy[copy.length - 1] = { ...last, text: last.text + text };
+              return copy;
+            }
+            return [
+              ...prev,
+              { fromUser: false, text, streaming: true, id: uuidv4() },
+            ];
+          });
+          setIsStreaming(true);
+        }
+      } else if (msg.type === "done") {
+        setMessages((prev) => {
+          const last = prev[prev.length - 1];
+          if (last && last.fromUser === false && last.streaming) {
+            const copy = [...prev];
+            copy[copy.length - 1] = { ...last, streaming: false };
+            return copy;
+          }
+          return prev;
+        });
+        setIsStreaming(false);
+      } else if (msg.type === "error") {
+        const detail = msg.detail ?? "Unknown error from server";
+        setMessages((prev) => [
+          ...prev,
+          {
+            fromUser: false,
+            text: `Error: ${detail}`,
+            streaming: false,
+            id: uuidv4(),
+          },
+        ]);
+        setIsStreaming(false);
+      } else if (msg.type === "extraction") {
+        // Handle extraction message
+        const { extracted_details, user_intent } = msg.data;
+        console.log(
+          "Extraction data received:",
+          extracted_details,
+          user_intent
+        );
+
+        // You can process the extracted details and update the UI as needed
+        // setMessages((prev) => [
+        //   ...prev,
+        //   {
+        //     fromUser: false,
+        //     text: `Extracted Details: ${JSON.stringify(extracted_details)}`,
+        //     id: uuidv4(),
+        //   },
+        //   {
+        //     fromUser: false,
+        //     text: `User Intent: ${JSON.stringify(user_intent)}`,
+        //     id: uuidv4(),
+        //   },
+        // ]);
+      } else {
+        // Unknown message type
+        console.warn("Unknown message type:", msg);
+      }
+
+      scrollToBottom();
+    };
+    ws.onclose = (e) => {
+      console.log("ws closed", e);
+      setConnected(false);
+      if (hostRef.current.shouldReconnect) {
+        const nextRetry = Math.min(
+          30_000,
+          500 * Math.pow(2, hostRef.current.retries)
+        );
+        hostRef.current.retries += 1;
+        console.log(`Reconnecting in ${nextRetry}ms`);
+        setTimeout(() => connect(), nextRetry);
+      }
+    };
+
+    ws.onerror = (e) => {
+      console.error("ws error", e);
+    };
+  };
+
+  useEffect(() => {
+    hostRef.current.shouldReconnect = true;
+    connect();
+
+    return () => {
+      hostRef.current.shouldReconnect = false;
+      try {
+        wsRef.current && wsRef.current.close();
+      } catch (err) {}
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   //FORM ACTIONS
   //save
@@ -79,7 +355,8 @@ export default function POChatbotPane() {
       }
      
     `;
-    await handleMessageSubmit(savedData);
+    await sendMessage(savedData);
+    // await handleMessageSubmit(savedData);
     value.setFormSave((prevState) => !prevState);
   };
   //submit
@@ -87,7 +364,8 @@ export default function POChatbotPane() {
     value.setPoCounterId(`PO${value.poCounter}`);
   }, [value.poCounter]);
   const submitFormData = async () => {
-    await handleMessageSubmit("Please submit the data provided");
+    await sendMessage("Please submit the data provided");
+    // await handleMessageSubmit("Please submit the data provided");
   };
   //clear
   const clearFormData = () => {
@@ -136,6 +414,7 @@ export default function POChatbotPane() {
   };
   useEffect(() => {
     scrollToBottom();
+    // updateItemDetails(value.purchaseOrderData);
   }, [messages, typingTimeoutRef]);
   //EMOJI PICKER
   const handleEmojiSelect = (emoji) => {
@@ -202,7 +481,7 @@ export default function POChatbotPane() {
               leadTime: response.data.lead_time,
               supplierStatus: true,
             }));
-            await supplierRiskApi(id);
+            // await supplierRiskApi(id);
             return true; // Return boolean for further processing
           } else {
             console.log("False Supplier Details");
@@ -260,284 +539,621 @@ export default function POChatbotPane() {
   };
 
   //ITEM AND QUANTITY UPDATES
-  const updateItemDetails = useCallback(
-    (invoiceDatafromConversation) => {
-      if (!invoiceDatafromConversation) {
-        console.log("Nothing");
-        return;
-      }
-      console.log("Here");
 
-      const itemsArray = invoiceDatafromConversation.map((item) => ({
-        itemId: item["Item ID"] || "",
-        itemQuantity: parseInt(item["Quantity"] || "0"),
-        itemDescription: item["Item Description"] || "",
-        itemCost: parseFloat(item["Cost Per Unit"] || "0"),
-      }));
-      const allEntriesAreNullLike = invoiceDatafromConversation.every(item => {
-        if (item === null || item === undefined) {
-          return true; // Item itself is null or undefined
-        }
-        if (typeof item === 'object') {
-          // For an object, check if all its values are null.
-          // Note: Object.values({}) is [], and [].every() is true.
-          // So, an empty object {} will be considered "null-like" by this logic.
-          return Object.values(item).every(value => value === null);
-        }
-        // If item is a primitive type other than null/undefined (e.g., a non-empty string, a number)
-        // it's not considered "null-like" in this context, so the array isn't "all null-like".
-        return false;
-      });
+  // const updateItemDetails = useCallback(
+  //   (invoiceDatafromConversation) => {
+  //     if (!invoiceDatafromConversation) {
+  //       console.log("Nothing");
+  //       return;
+  //     }
+  //     console.log("Here");
 
-      if (allEntriesAreNullLike) {
-        console.log("The items array is empty, or all items within it are null, undefined, or objects with all-null properties. Halting further item processing.");
-        return; // Exit the updateItemDetails function
-      }
+  //     const itemsArray = invoiceDatafromConversation.map((item) => ({
+  //       itemId: item["Item ID"] || "",
+  //       itemQuantity: parseInt(item["Quantity"] || "0"),
+  //       itemDescription: item["Item Description"] || "",
+  //       itemCost: parseFloat(item["Cost Per Unit"] || "0"),
+  //     }));
+  //     const allEntriesAreNullLike = invoiceDatafromConversation.every(item => {
+  //       if (item === null || item === undefined) {
+  //         return true; // Item itself is null or undefined
+  //       }
+  //       if (typeof item === 'object') {
+  //         // For an object, check if all its values are null.
+  //         // Note: Object.values({}) is [], and [].every() is true.
+  //         // So, an empty object {} will be considered "null-like" by this logic.
+  //         return Object.values(item).every(value => value === null);
+  //       }
+  //       // If item is a primitive type other than null/undefined (e.g., a non-empty string, a number)
+  //       // it's not considered "null-like" in this context, so the array isn't "all null-like".
+  //       return false;
+  //     });
 
-      // Extracting separate arrays for state updates
-      const itemIds = itemsArray.map((item) => item.itemId);
-      const itemQuantities = itemsArray.map((item) => item.itemQuantity);
-      const itemCosts = itemsArray.map((item) => item.itemCost);
-      const itemDescriptions = itemsArray.map((item) => item.itemDescription);
-      const tempDictionary = {};
+  //     if (allEntriesAreNullLike) {
+  //       console.log("The items array is empty, or all items within it are null, undefined, or objects with all-null properties. Halting further item processing.");
+  //       return; // Exit the updateItemDetails function
+  //     }
 
-      itemsArray.forEach((item) => {
-        tempDictionary[item.itemId] = {
-          itemQuantity: item.itemQuantity || 0,
-          itemCost: item.itemCost || 0,
-          // itemDescription: item.itemDescription || "",
-        };
-      });
-      const newItems = Object.keys(tempDictionary).map((itemId) => ({
-        itemId,
-        itemQuantity: tempDictionary[itemId].itemQuantity,
-        itemCost: tempDictionary[itemId].itemCost,
-        itemDescription: `Item ${itemId}`,
-        // itemDescription: tempDictionary[itemId].itemDescription,
-      }));
-      console.log(
-        "item array,tempdict,newitems: ",
-        itemsArray,
-        tempDictionary,
-        newItems
-      );
-      // Merge updates and new items
-      // value.setPurchaseItemDetails([...newItems]);
-      value.setPurchaseItemDetails([...newItems]);
-    },
-    [value.purchaseItemDetails]
-    // [value.purchaseItemDetails, value.invoiceDatafromConversation]
-  );
+  //     // Extracting separate arrays for state updates
+  //     const itemIds = itemsArray.map((item) => item.itemId);
+  //     const itemQuantities = itemsArray.map((item) => item.itemQuantity);
+  //     const itemCosts = itemsArray.map((item) => item.itemCost);
+  //     const itemDescriptions = itemsArray.map((item) => item.itemDescription);
+  //     const tempDictionary = {};
+
+  //     itemsArray.forEach((item) => {
+  //       tempDictionary[item.itemId] = {
+  //         itemQuantity: item.itemQuantity || 0,
+  //         itemCost: item.itemCost || 0,
+  //         // itemDescription: item.itemDescription || "",
+  //       };
+  //     });
+  //     const newItems = Object.keys(tempDictionary).map((itemId) => ({
+  //       itemId,
+  //       itemQuantity: tempDictionary[itemId].itemQuantity,
+  //       itemCost: tempDictionary[itemId].itemCost,
+  //       itemDescription: `Item ${itemId}`,
+  //       // itemDescription: tempDictionary[itemId].itemDescription,
+  //     }));
+  //     console.log(
+  //       "item array,tempdict,newitems: ",
+  //       itemsArray,
+  //       tempDictionary,
+  //       newItems
+  //     );
+  //     // Merge updates and new items
+  //     // value.setPurchaseItemDetails([...newItems]);
+  //     value.setPurchaseItemDetails([...newItems]);
+  //   },
+  //   [value.purchaseItemDetails]
+  //   // [value.purchaseItemDetails, value.invoiceDatafromConversation]
+  // );
 
   //EXTRACTING FIELD DATA FROM BACKEND
+  // const poCheck2 = useCallback(
+  //   async (poObject) => {
+  //     let updatedPurchaseOrderData = { ...value.purchaseOrderData };
+  //     let supplierStatus = false;
+  //     for (const key of Object.keys(poObject)) {
+  //       console.log("Obect  : ", poObject);
+  //       if (poObject[key] !== null) {
+  //         switch (key) {
+  //           // case "PO Number":
+  //           //   updatedPurchaseOrderData.poNumber = poObject[key];
+  //           //   break;
+  //           case "Estimated Delivery Date":
+  //             updatedPurchaseOrderData.estDeliveryDate = formatDate(
+  //               poObject[key]
+  //             );
+  //             break;
+  //           case "Total Quantity":
+  //             updatedPurchaseOrderData.totalQuantity = poObject[key];
+  //             break;
+  //           case "Total Cost":
+  //             updatedPurchaseOrderData.totalCost = poObject[key];
+  //             break;
+  //           case "Total Tax":
+  //             updatedPurchaseOrderData.totalTax = poObject[key];
+  //             break;
+  //           case "Items":
+  //             updatedPurchaseOrderData.items = poObject[key];
+  //             updateItemDetails(poObject[key]);
+  //             break;
+  //           case "Supplier ID":
+  //             // updatedPurchaseOrderData.supplierId = poObject[key];
+  //             // supplierStatus = await getSupplierDetails(poObject[key]); // Get true/false status
+  //             // console.log("Supplier Status:", supplierStatus);
+  //             // break;
+  //             supplierStatus = await getSupplierDetails(poObject[key]); // Wait for the update
+  //           // await new Promise((resolve) => setTimeout(resolve, 100)); // Small delay for state update
+  //           // console.log("Updated Supplier ID (After Await):", value.supplierDetails.supplierId);
+  //           // break;
+  //         }
+  //       }
+  //     }
+  //     dispatch({
+  //       type: "UPDATE_PO_DATA",
+  //       payload: updatedPurchaseOrderData,
+  //     });
+
+  //     console.log("Final Invoice Data:  ", updatedPurchaseOrderData);
+  //     return supplierStatus; // Return true or false for further processing
+  //   },
+  //   [
+  //     getSupplierDetails,
+  //     updateItemDetails,
+  //     purchaseOrderData,
+  //     value.supplierDetails,
+  //   ]
+  // );
   const poCheck2 = useCallback(
     async (poObject) => {
-      let updatedPurchaseOrderData = { ...value.purchaseOrderData };
+      let updatedPurchaseOrderData = { ...value?.purchaseOrderData };
       let supplierStatus = false;
+
       for (const key of Object.keys(poObject)) {
-        console.log("Obect  : ", poObject);
         if (poObject[key] !== null) {
           switch (key) {
-            // case "PO Number":
-            //   updatedPurchaseOrderData.poNumber = poObject[key];
-            //   break;
-            case "Estimated Delivery Date":
+            case "supplier_id":
+              supplierStatus = await getSupplierDetails(poObject[key]);
+              break;
+
+            case "estimated_delivery_date":
               updatedPurchaseOrderData.estDeliveryDate = formatDate(
                 poObject[key]
               );
               break;
-            case "Total Quantity":
+
+            case "total_quantity":
               updatedPurchaseOrderData.totalQuantity = poObject[key];
               break;
-            case "Total Cost":
+
+            case "total_cost":
               updatedPurchaseOrderData.totalCost = poObject[key];
               break;
-            case "Total Tax":
+
+            case "total_tax":
               updatedPurchaseOrderData.totalTax = poObject[key];
               break;
-            case "Items":
+
+            case "items":
               updatedPurchaseOrderData.items = poObject[key];
-              updateItemDetails(poObject[key]);
+              
+              // Optimized inline item details processing
+              if (poObject[key] && Array.isArray(poObject[key])) {
+                const itemsData = poObject[key];
+                
+                // Early exit if all items are null-like
+                const hasValidItems = itemsData.some(item => 
+                  item && typeof item === 'object' && 
+                  Object.values(item).some(val => val !== null)
+                );
+                
+                if (hasValidItems) {
+                  const itemsArray = itemsData.map((item) => ({
+                    itemId: item?.item_id || "",
+                    itemQuantity: parseInt(item?.quantity || "0"),
+                    itemDescription: item?.item_description || "",
+                    itemCost: parseFloat(item?.cost_per_unit || "0"),
+                  }));
+
+                  const newItems = itemsArray.map((item) => ({
+                    itemId: item.itemId,
+                    itemQuantity: item.itemQuantity || 0,
+                    itemCost: item.itemCost || 0,
+                    itemDescription: item.itemDescription || `Item ${item.itemId}`,
+                  }));
+
+                  value.setPurchaseItemDetails(newItems);
+                }
+              }
               break;
-            case "Supplier ID":
-              // updatedPurchaseOrderData.supplierId = poObject[key];
-              // supplierStatus = await getSupplierDetails(poObject[key]); // Get true/false status
-              // console.log("Supplier Status:", supplierStatus);
-              // break;
-              supplierStatus = await getSupplierDetails(poObject[key]); // Wait for the update
-            // await new Promise((resolve) => setTimeout(resolve, 100)); // Small delay for state update
-            // console.log("Updated Supplier ID (After Await):", value.supplierDetails.supplierId);
-            // break;
+
+            case "email":
+              updatedPurchaseOrderData.email = poObject[key];
+              break;
           }
         }
       }
+
       dispatch({
         type: "UPDATE_PO_DATA",
         payload: updatedPurchaseOrderData,
       });
 
-      console.log("Final Invoice Data:  ", updatedPurchaseOrderData);
-      return supplierStatus; // Return true or false for further processing
+      console.log("Final PO Data: ", updatedPurchaseOrderData);
+      return supplierStatus;
     },
-    [
-      getSupplierDetails,
-      updateItemDetails,
-      purchaseOrderData,
-      value.supplierDetails,
-    ]
+    [getSupplierDetails, purchaseOrderData, value.supplierDetails, dispatch]
   );
-  //API CALLS
-   const handleMessageSubmit = async (input, inputFromUpload) => {
-     if (!input.trim()) return;
-     setMessages((prevMessages) => {
-       const newMessages = inputFromUpload
-         ? [...prevMessages] // Do not add any new message for inputFromUpload
-         : [...prevMessages, { text: input, fromUser: true }];
- 
-       if (!inputFromUpload) {
-         setInput(""); // Clear input if it's not from an upload
-       }
-       return newMessages;
-     });
-     setInput("");
-     typingTimeoutRef.current = setTimeout(() => {
-       setTyping(true);
-     }, 1500);
- 
-     try {
-       const response = await axios.post(
-         CHAT, // API endpoint
-         {
-           user_id: "admin", // The user_id value
-           message: input, // The message value
-         },
-         {
-           headers: { "Content-Type": "application/json" }, // Content-Type header
-         }
-       );
-       const uploadText =
-         "Here is what I could extract from the uploaded document: \n";
-       if (response.status === 200 || response.status === 201) {
-         const poCheckStatus = await poCheck2(response.data.po_json);
-         console.log("Inv check status: ", poCheckStatus);
-         value.setPurchaseOrderApiRes(response.data);
-         console.log("Data response", response.data);
-         const uploadText =
-           "Here is what I could extract from the uploaded document: \n";
-         console.log(
-           "response.data.po_json",
-           response.data.po_json["Supplier ID"]
-         );
-         if (
-           // value.supplierDetails.supplierId === "" &&
-           response.data.po_json["Supplier ID"] === undefined ||
-           response.data.po_json["Supplier ID"] === "" ||
-           response.data.po_json["Supplier ID"] === null
-         ) {
-           console.log("Empty Supplier Id");
-           const formattedConversation = response.data.chat_history["admin"]
-             .slice(-1)
-             .map((text, index) => (
-               <ReactMarkdown key={index} className={"botText"}>
-                 {inputFromUpload ? uploadText + text.slice(5) : text.slice(5)}
-               </ReactMarkdown>
-             ));
-           setMessages((prevMessages) => [
-             ...prevMessages,
-             { text: formattedConversation, fromUser: false },
-           ]);
-           // }
-           console.log(
-             "Submission Status inside HMS",
-             response.data.submissionStatus
-           );
-           const email = response.data.po_email;
-           if (email) {
-             console.log("Inside Email: ", email, value.poCounter - 1);
-             await sendEmail({
-               emailUsed: email,
-               documentId: `PO${value.poCounter - 1}`,
-             });
-           }
-           if (response.data.submissionStatus == "submitted") {
-             // let newPoCounter=value.PoCounter+1
-             // value.setPoCounter(newPoCounter);
-             // value.setPoCounterId(`PO${newPoCounter}`);
-             value.setPoCounter((prevCounter) => prevCounter + 1);
-             await poHeaderCreation();
-             // }
-           } else {
-             value.setModalVisible(false);
-           }
-         } else {
-           if (poCheckStatus) {
-             const formattedConversation = response.data.chat_history["admin"]
-               .slice(-1)
-               .map((text, index) => (
-                 <ReactMarkdown key={index} className={"botText"}>
-                   {inputFromUpload ? uploadText + text.slice(5) : text.slice(5)}
-                 </ReactMarkdown>
-               ));
-             console.log(
-               "Submission Status inside HMS",
-               response.data.submissionStatus
-             );
-             setMessages((prevMessages) => [
-               ...prevMessages,
-               { text: formattedConversation, fromUser: false },
-             ]);
-             if (response.data.submissionStatus == "submitted") {
-               // let newPoCounter=value.PoCounter+1
-               // value.setPoCounter(newPoCounter);
-               // value.setPoCounterId(`PO${newPoCounter}`);
-               value.setPoCounter((prevCounter) => prevCounter + 1);
-               await poHeaderCreation();
-               // }
-             } else {
-               value.setModalVisible(false);
-             }
-             const email = response.data.po_email;
-             if (email) {
-               console.log("Inside Email: ", email, value.poCounter - 1);
-               await sendEmail({
-                 emailUsed: email,
-                 documentId: `PO${value.poCounter - 1}`,
-               });
-             }
-           } else {
-             console.log("poCheckStatus:FALSEEEEEEEEEEEEEEEEEEEEE");
-           }
-         }
-         if (typingTimeoutRef.current) {
-           clearTimeout(typingTimeoutRef.current);
-           typingTimeoutRef.current = null;
-         }
-         setTyping(false);
-       }
- 
-       if (response.data.test_model_reply === "Creation") {
-         value.setIsActive(true);
-       } else if (response.data.test_model_reply === "Fetch") {
-         value.setIsActive(false);
-         // await getInvoiceDetails("INV498");
-       } else if (response.data.submissionStatus === "submitted") {
-         value.setIsActive(false);
-       }
-     } catch (error) {
-       console.error("Error fetching data:", error);
-       if (typingTimeoutRef.current) {
-         clearTimeout(typingTimeoutRef.current);
-         typingTimeoutRef.current = null;
-       }
-       setMessages((prevMessages) => [
-        ...prevMessages,
-        { text: errorMessage, fromUser: false },
-      ]);
-       setTyping(false);
-     }
-   };
-  //create po details
+  //     const updateItemDetails = useCallback(
+  //     (invoiceDatafromConversation) => {
+  //       if (!invoiceDatafromConversation) {
+  //         console.log("Nothing");
+  //         return;
+  //       }
+  //       console.log("Here");
 
+  //       const itemsArray = invoiceDatafromConversation.map((item) => ({
+  //         itemId: item["item_id"] || "",
+  //         itemQuantity: parseInt(item["quantity"] || "0"),
+  //         itemDescription: item["item_description"] || "",
+  //         itemCost: parseFloat(item["cost_per_unit"] || "0"),
+  //       }));
+  //       const allEntriesAreNullLike = invoiceDatafromConversation.every(item => {
+  //         if (item === null || item === undefined) {
+  //           return true; // Item itself is null or undefined
+  //         }
+  //         if (typeof item === 'object') {
+  //           // For an object, check if all its values are null.
+  //           // Note: Object.values({}) is [], and [].every() is true.
+  //           // So, an empty object {} will be considered "null-like" by this logic.
+  //           return Object.values(item).every(value => value === null);
+  //         }
+  //         // If item is a primitive type other than null/undefined (e.g., a non-empty string, a number)
+  //         // it's not considered "null-like" in this context, so the array isn't "all null-like".
+  //         return false;
+  //       });
+
+  //       if (allEntriesAreNullLike) {
+  //         console.log("The items array is empty, or all items within it are null, undefined, or objects with all-null properties. Halting further item processing.");
+  //         return; // Exit the updateItemDetails function
+  //       }
+
+  //       // Extracting separate arrays for state updates
+  //       const itemIds = itemsArray.map((item) => item.itemId);
+  //       const itemQuantities = itemsArray.map((item) => item.itemQuantity);
+  //       const itemCosts = itemsArray.map((item) => item.itemCost);
+  //       const itemDescriptions = itemsArray.map((item) => item.itemDescription);
+  //       const tempDictionary = {};
+
+  //       itemsArray.forEach((item) => {
+  //         tempDictionary[item.itemId] = {
+  //           itemQuantity: item.itemQuantity || 0,
+  //           itemCost: item.itemCost || 0,
+  //           // itemDescription: item.itemDescription || "",
+  //         };
+  //       });
+  //       const newItems = Object.keys(tempDictionary).map((itemId) => ({
+  //         itemId,
+  //         itemQuantity: tempDictionary[itemId].itemQuantity,
+  //         itemCost: tempDictionary[itemId].itemCost,
+  //         itemDescription: `Item ${itemId}`,
+  //         // itemDescription: tempDictionary[itemId].itemDescription,
+  //       }));
+  //       console.log(
+  //         "item array,tempdict,newitems: ",
+  //         itemsArray,
+  //         tempDictionary,
+  //         newItems
+  //       );
+  //       // Merge updates and new items
+  //       // value.setPurchaseItemDetails([...newItems]);
+  //       value.setPurchaseItemDetails([...newItems]);
+  //     },
+  //     [value.purchaseItemDetails]
+  //     // [value.purchaseItemDetails, value.invoiceDatafromConversation]
+  //   );
+  //   const poCheck2 = useCallback(
+  //     async (poObject) => {
+  //         let updatedPurchaseOrderData = { ...value?.purchaseOrderData };
+  //         let supplierStatus = false;
+  //         for (const key of Object.keys(poObject)) {
+  //             console.log("Obect : ", poObject);
+  //             // NOTE: The check should likely be for 'null' and 'undefined',
+  //             // but keeping 'poObject[key] !== null' as in the original code for now.
+  //             // However, for the 'supplier_id' key in your object, the value is "null" (a string),
+  //             // which will pass the '!== null' check. I've left the original check.
+
+  //             if (poObject[key] !== null) {
+  //                 switch (key) {
+  //                     case "supplier_id": // Updated Key
+  //                         // updatedPurchaseOrderData.supplierId = poObject[key];
+  //                         supplierStatus = await getSupplierDetails(poObject[key]); // Wait for the update
+  //                         // console.log("Supplier Status:", supplierStatus);
+  //                         // await new Promise((resolve) => setTimeout(resolve, 100)); // Small delay for state update
+  //                         // console.log("Updated Supplier ID (After Await):", value.supplierDetails.supplierId);
+  //                         break;
+  //                     case "estimated_delivery_date": // Updated Key
+  //                         updatedPurchaseOrderData.estDeliveryDate = formatDate(
+  //                             poObject[key]
+  //                         );
+  //                         break;
+  //                     case "total_quantity": // Updated Key
+  //                         updatedPurchaseOrderData.totalQuantity = poObject[key];
+  //                         break;
+  //                     case "total_cost": // Updated Key
+  //                         updatedPurchaseOrderData.totalCost = poObject[key];
+  //                         break;
+  //                     case "total_tax": // Updated Key
+  //                         updatedPurchaseOrderData.totalTax = poObject[key];
+  //                         break;
+  //                     case "items": // Updated Key
+  //                         updatedPurchaseOrderData.items = poObject[key];
+  //                         updateItemDetails(poObject[key]);
+  //                         break;
+  //                     case "email": // New Key added
+  //                         updatedPurchaseOrderData.email = poObject[key];
+  //                         break;
+  //                     // Note: If you had a 'poNumber' case, you'd add it here if the key exists in poObject
+  //                 }
+  //             }
+  //         }
+  //         dispatch({
+  //             type: "UPDATE_PO_DATA",
+  //             payload: updatedPurchaseOrderData,
+  //         });
+
+  //         console.log("Final PO Data: ", updatedPurchaseOrderData);
+  //         return supplierStatus; // Return true or false for further processing
+  //     },
+  //     [
+  //         getSupplierDetails,
+  //         updateItemDetails,
+  //         purchaseOrderData,
+  //         value.supplierDetails,
+  //         // Add dispatch and formatDate/value.purchaseOrderData/poCheck2 dependencies if ESLint requires them
+  //     ]
+  // );
+  //API CALLS
+  //  const handleMessageSubmit = async (input, inputFromUpload) => {
+  //    if (!input.trim()) return;
+  //    setMessages((prevMessages) => {
+  //      const newMessages = inputFromUpload
+  //        ? [...prevMessages] // Do not add any new message for inputFromUpload
+  //        : [...prevMessages, { text: input, fromUser: true }];
+
+  //      if (!inputFromUpload) {
+  //        setInput(""); // Clear input if it's not from an upload
+  //      }
+  //      return newMessages;
+  //    });
+  //    setInput("");
+  //    typingTimeoutRef.current = setTimeout(() => {
+  //      setTyping(true);
+  //    }, 1500);
+
+  //    try {
+  //      const response = await axios.post(
+  //        CHAT, // API endpoint
+  //        {
+  //          user_id: "admin", // The user_id value
+  //          message: input, // The message value
+  //        },
+  //        {
+  //          headers: { "Content-Type": "application/json" }, // Content-Type header
+  //        }
+  //      );
+  //      const uploadText =
+  //        "Here is what I could extract from the uploaded document: \n";
+  //      if (response.status === 200 || response.status === 201) {
+  //       console.log("PO chat response data: ",response)
+  //        const poCheckStatus = await poCheck2(response.data.po_json);
+  //        console.log("Inv check status: ", poCheckStatus);
+  //        value.setPurchaseOrderApiRes(response.data);
+  //        console.log("Data response", response.data);
+  //        const uploadText =
+  //          "Here is what I could extract from the uploaded document: \n";
+  //        console.log(
+  //          "response.data.po_json",
+  //          response.data.po_json["Supplier ID"]
+  //        );
+  //        if (
+  //          // value.supplierDetails.supplierId === "" &&
+  //          response.data.po_json["Supplier ID"] === undefined ||
+  //          response.data.po_json["Supplier ID"] === "" ||
+  //          response.data.po_json["Supplier ID"] === null
+  //        ) {
+  //          console.log("Empty Supplier Id");
+  //          const formattedConversation = response.data.chat_history["admin"]
+  //            .slice(-1)
+  //            .map((text, index) => (
+  //              <ReactMarkdown key={index} className={"botText"}>
+  //                {inputFromUpload ? uploadText + text.slice(5) : text.slice(5)}
+  //              </ReactMarkdown>
+  //            ));
+  //          setMessages((prevMessages) => [
+  //            ...prevMessages,
+  //            { text: formattedConversation, fromUser: false },
+  //          ]);
+  //          // }
+  //          console.log(
+  //            "Submission Status inside HMS",
+  //            response.data.submissionStatus
+  //          );
+  //          const email = response.data.po_email;
+  //          if (email) {
+  //            console.log("Inside Email: ", email, value.poCounter - 1);
+  //            await sendEmail({
+  //              emailUsed: email,
+  //              documentId: `PO${value.poCounter - 1}`,
+  //            });
+  //          }
+  //          if (response.data.submissionStatus == "submitted") {
+  //            // let newPoCounter=value.PoCounter+1
+  //            // value.setPoCounter(newPoCounter);
+  //            // value.setPoCounterId(`PO${newPoCounter}`);
+  //            value.setPoCounter((prevCounter) => prevCounter + 1);
+  //            await poHeaderCreation();
+  //            // }
+  //          } else {
+  //            value.setModalVisible(false);
+  //          }
+  //        } else {
+  //          if (poCheckStatus) {
+  //            const formattedConversation = response.data.chat_history["admin"]
+  //              .slice(-1)
+  //              .map((text, index) => (
+  //                <ReactMarkdown key={index} className={"botText"}>
+  //                  {inputFromUpload ? uploadText + text.slice(5) : text.slice(5)}
+  //                </ReactMarkdown>
+  //              ));
+  //            console.log(
+  //              "Submission Status inside HMS",
+  //              response.data.submissionStatus
+  //            );
+  //            setMessages((prevMessages) => [
+  //              ...prevMessages,
+  //              { text: formattedConversation, fromUser: false },
+  //            ]);
+  //            if (response.data.submissionStatus == "submitted") {
+  //              // let newPoCounter=value.PoCounter+1
+  //              // value.setPoCounter(newPoCounter);
+  //              // value.setPoCounterId(`PO${newPoCounter}`);
+  //              value.setPoCounter((prevCounter) => prevCounter + 1);
+  //              await poHeaderCreation();
+  //              // }
+  //            } else {
+  //              value.setModalVisible(false);
+  //            }
+  //            const email = response.data.po_email;
+  //            if (email) {
+  //              console.log("Inside Email: ", email, value.poCounter - 1);
+  //              await sendEmail({
+  //                emailUsed: email,
+  //                documentId: `PO${value.poCounter - 1}`,
+  //              });
+  //            }
+  //          } else {
+  //            console.log("poCheckStatus:FALSEEEEEEEEEEEEEEEEEEEEE");
+  //          }
+  //        }
+  //        if (typingTimeoutRef.current) {
+  //          clearTimeout(typingTimeoutRef.current);
+  //          typingTimeoutRef.current = null;
+  //        }
+  //        setTyping(false);
+  //      }
+
+  //      if (response.data.test_model_reply === "Creation") {
+  //        value.setIsActive(true);
+  //      } else if (response.data.test_model_reply === "Fetch") {
+  //        value.setIsActive(false);
+  //        // await getInvoiceDetails("INV498");
+  //      } else if (response.data.submissionStatus === "submitted") {
+  //        value.setIsActive(false);
+  //      }
+  //    } catch (error) {
+  //      console.error("Error fetching data:", error);
+  //      if (typingTimeoutRef.current) {
+  //        clearTimeout(typingTimeoutRef.current);
+  //        typingTimeoutRef.current = null;
+  //      }
+  //      setMessages((prevMessages) => [
+  //       ...prevMessages,
+  //       { text: errorMessage, fromUser: false },
+  //     ]);
+  //      setTyping(false);
+  //    }
+  //  };
+  const sendMessage = async (text = null) => {
+    const messageText = (text ?? input).trim();
+    if (!messageText) return;
+
+    if (isStreaming && !allowConcurrentRuns) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          fromUser: false,
+          text: "Please wait for current response to finish.",
+          streaming: false,
+          id: uuidv4(),
+        },
+      ]);
+      setInput("");
+      return;
+    }
+
+    setMessages((prev) => [
+      ...prev,
+      { fromUser: true, text: messageText, id: uuidv4() },
+    ]);
+    setInput("");
+
+    const outgoing = JSON.stringify({
+      message: messageText,
+      thread_id: threadId,
+    });
+
+    // Attach a temporary WS listener that accumulates the streaming response
+    // and calls promotionCheck with the combined response when the stream is done.
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      let buffer = "";
+      const listener = async (evt) => {
+        let msg;
+        try {
+          msg = JSON.parse(evt.data);
+        } catch (err) {
+          return;
+        }
+
+        if (msg.type === "token") {
+          buffer += String(msg.text ?? "");
+        } else if (msg.type === "extraction") {
+          // **NEW: Handle extraction data immediately**
+          console.log("Received extraction data:", msg.data);
+          await poCheck2(msg.data.extracted_details);
+          setExtractedDetails(msg.data.extracted_details);
+          setUserIntent(msg.data.user_intent);
+
+          // Handle submission intent
+          if (msg.data.user_intent?.intent === "Submission") {
+            value.setPoCounterId((prevCounter) => prevCounter + 1);
+            await poHeaderCreation();
+          }
+
+          // Handle email
+          const email = msg.data.extracted_details?.email;
+          if (email) {
+            console.log("Sending email to:", email);
+            await sendEmail({
+              emailUsed: email,
+              documentId: `PO${value.poCounterId - 1}`,
+            });
+          }
+        } else if (msg.type === "event") {
+          const data = msg.data;
+          let text =
+            typeof data === "string"
+              ? data
+              : data?.text ||
+                data?.content ||
+                data?.message ||
+                JSON.stringify(data);
+          buffer += text;
+        } else if (msg.type === "done") {
+          // Stream finished - cleanup
+          console.log("Stream complete");
+          try {
+            wsRef.current.removeEventListener("message", listener);
+          } catch (e) {
+            /* ignore */
+          }
+        }
+      };
+
+      try {
+        wsRef.current.addEventListener("message", listener);
+        try {
+          wsRef.current.send(outgoing);
+          setIsStreaming(true);
+        } catch (err) {
+          console.error("Send failed, queueing", err);
+          outgoingQueueRef.current.push(outgoing);
+          try {
+            wsRef.current.removeEventListener("message", listener);
+          } catch (e) {
+            /* ignore */
+          }
+        }
+      } catch (err) {
+        // fallback if addEventListener isn't available
+        try {
+          wsRef.current.send(outgoing);
+          setIsStreaming(true);
+        } catch (err2) {
+          console.error("Send failed, queueing", err2);
+          outgoingQueueRef.current.push(outgoing);
+        }
+      }
+    } else {
+      // queue the outgoing message and attempt reconnect
+      outgoingQueueRef.current.push(outgoing);
+      setMessages((prev) => [
+        ...prev,
+        {
+          fromUser: false,
+          text: "Message queued — connecting to server...",
+          streaming: false,
+          id: uuidv4(),
+        },
+      ]);
+      if (!connected) {
+        connect();
+      }
+    }
+  };
+  //create po details
   const poDetailsCreation = async () => {
     try {
       const updatedPoItems = value.purchaseItemDetails.map((item) => ({
@@ -749,10 +1365,11 @@ export default function POChatbotPane() {
               isFile: true,
             },
           ]);
-          await handleMessageSubmit(
-            formatInvoice(response.data.structured_data),
-            true
-          );
+          await sendMessage(formatInvoice(response.data.structured_data), true);
+          // await handleMessageSubmit(
+          //   formatInvoice(response.data.structured_data),
+          //   true
+          // );
         } else {
           alert("Please upload a valid PDF file.");
           await clearDataApi();
@@ -890,7 +1507,7 @@ export default function POChatbotPane() {
         <ChatbotInputForm
           input={input}
           setInput={setInput}
-          handleMessageSubmit={handleMessageSubmit}
+          handleMessageSubmit={sendMessage}
           uploadInvoice={uploadInvoice}
           isPickerVisible={isPickerVisible}
           setPickerVisible={setPickerVisible}
