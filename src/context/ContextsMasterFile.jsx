@@ -51,7 +51,7 @@ export default function AuthProvider({ children }) {
   // };
   const getInitialPoCounter = () => {
     const savedCounter = localStorage.getItem("poCounter");
-    return savedCounter !== null ? JSON.parse(savedCounter) : 350;
+    return savedCounter !== null ? JSON.parse(savedCounter) : 450;
   };
   const getInitialPromoCounter = () => {
     const savedCounter = localStorage.getItem("promotionCounter");

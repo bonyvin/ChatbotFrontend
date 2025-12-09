@@ -25,6 +25,7 @@ const PdfCard = ({
   systemDocId,
   poFile,
   promoFile,
+  invoiceFile
 }) => {
   const uploadedFileStatus = uploadedFile && uploadedFile.status;
   // console.log("uploaded file in pdf card: ", uploadedFile);
@@ -33,10 +34,10 @@ const PdfCard = ({
     saveAs(
       blob,
       poFile && poFile?.status
-        ? `PO${poFile?.poNumber}.pdf`
+        ? `PurchaseOrder${poFile?.poNumber}.pdf`
         : promoFile && promoFile?.status
-        ? `PROMO${promoFile?.promoId}.pdf`
-        : `invoice${invoiceID}.pdf`
+        ? `Promotion${promoFile?.promoId}.pdf`
+        : `Invoice${invoiceFile?.invoiceId}.pdf`
     );
   };
   let file = uploadedFile && uploadedFile.file;

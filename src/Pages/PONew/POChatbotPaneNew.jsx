@@ -108,97 +108,6 @@ export default function POChatbotPane() {
       }
     };
 
-    // ws.onmessage = (evt) => {
-    //   let msg;
-    //   try {
-    //     msg = JSON.parse(evt.data);
-    //   } catch (err) {
-    //     console.error("Invalid WS message (non-JSON):", evt.data);
-    //     return;
-    //   }
-
-    //   // Handle different message types from backend
-    //   if (msg.type === "token") {
-    //     const tokenText = String(msg.text ?? "");
-    //     setMessages((prev) => {
-    //       const last = prev[prev.length - 1];
-    //       // key={index}
-    //       // text={message.text ? message.text : message.component}
-    //       // fromUser={message.fromUser}
-    //       // isFile={message.isFile}
-    //       if (last && last.fromUser === false && last.streaming) {
-    //         // if (last && last.role === "bot" && last.fromUser === message.fromUser && last.streaming) {
-    //         const copy = [...prev];
-    //         copy[copy.length - 1] = { ...last, text: last.text + tokenText };
-    //         return copy;
-    //       }
-    //       return [
-    //         ...prev,
-    //         { fromUser: false, text: tokenText, streaming: true, id: uuidv4() },
-    //       ];
-    //     });
-    //     setIsStreaming(true);
-    //   } else if (msg.type === "event") {
-    //     // Extract text from event data
-    //     const data = msg.data;
-    //     let text = "";
-
-    //     if (typeof data === "string") {
-    //       text = data;
-    //     } else if (data && typeof data === "object") {
-    //       // Try to extract text from various possible fields
-    //       text =
-    //         data.text || data.content || data.message || JSON.stringify(data);
-    //     } else {
-    //       text = String(data ?? "");
-    //     }
-
-    //     if (text) {
-    //       setMessages((prev) => {
-    //         const last = prev[prev.length - 1];
-    //         if (last && last.fromUser === false && last.streaming) {
-    //           const copy = [...prev];
-    //           copy[copy.length - 1] = { ...last, text: last.text + text };
-    //           return copy;
-    //         }
-    //         return [
-    //           ...prev,
-    //           { fromUser: false, text, streaming: true, id: uuidv4() },
-    //         ];
-    //       });
-    //       setIsStreaming(true);
-    //     }
-    //   } else if (msg.type === "done") {
-    //     setMessages((prev) => {
-    //       const last = prev[prev.length - 1];
-    //       if (last && last.fromUser === false && last.streaming) {
-    //         const copy = [...prev];
-    //         copy[copy.length - 1] = { ...last, streaming: false };
-    //         return copy;
-    //       }
-    //       return prev;
-    //     });
-    //     setIsStreaming(false);
-    //   } else if (msg.type === "error") {
-    //     const detail = msg.detail ?? "Unknown error from server";
-    //     setMessages((prev) => [
-    //       ...prev,
-    //       {
-    //         fromUser: false,
-    //         text: `Error: ${detail}`,
-    //         streaming: false,
-    //         id: uuidv4(),
-    //       },
-    //     ]);
-    //     setIsStreaming(false);
-    //   } else {
-    //     // Unknown message type
-    //     console.warn("Unknown message type:", msg);
-    //   }
-
-    //   scrollToBottom();
-    // };
-
     ws.onmessage = (evt) => {
       let msg;
       try {
@@ -610,7 +519,7 @@ export default function POChatbotPane() {
   // );
 
   //EXTRACTING FIELD DATA FROM BACKEND
-  // const poCheck2 = useCallback(
+  // const purchaseOrderCheck = useCallback(
   //   async (poObject) => {
   //     let updatedPurchaseOrderData = { ...value.purchaseOrderData };
   //     let supplierStatus = false;
@@ -666,12 +575,12 @@ export default function POChatbotPane() {
   //     value.supplierDetails,
   //   ]
   // );
-  const poCheck2 = useCallback(
+  const purchaseOrderCheck = useCallback(
     async (poObject) => {
       let updatedPurchaseOrderData = { ...value?.purchaseOrderData };
       let supplierStatus = false;
 
-      for (const key of Object.keys(poObject)) {
+      for (const key of Object?.keys(poObject)) {
         if (poObject[key] !== null) {
           switch (key) {
             case "supplier_id":
@@ -814,7 +723,7 @@ export default function POChatbotPane() {
   //     [value.purchaseItemDetails]
   //     // [value.purchaseItemDetails, value.invoiceDatafromConversation]
   //   );
-  //   const poCheck2 = useCallback(
+  //   const purchaseOrderCheck = useCallback(
   //     async (poObject) => {
   //         let updatedPurchaseOrderData = { ...value?.purchaseOrderData };
   //         let supplierStatus = false;
@@ -872,7 +781,7 @@ export default function POChatbotPane() {
   //         updateItemDetails,
   //         purchaseOrderData,
   //         value.supplierDetails,
-  //         // Add dispatch and formatDate/value.purchaseOrderData/poCheck2 dependencies if ESLint requires them
+  //         // Add dispatch and formatDate/value.purchaseOrderData/purchaseOrderCheck dependencies if ESLint requires them
   //     ]
   // );
   //API CALLS
@@ -908,7 +817,7 @@ export default function POChatbotPane() {
   //        "Here is what I could extract from the uploaded document: \n";
   //      if (response.status === 200 || response.status === 201) {
   //       console.log("PO chat response data: ",response)
-  //        const poCheckStatus = await poCheck2(response.data.po_json);
+  //        const poCheckStatus = await purchaseOrderCheck(response.data.po_json);
   //        console.log("Inv check status: ", poCheckStatus);
   //        value.setPurchaseOrderApiRes(response.data);
   //        console.log("Data response", response.data);
@@ -1072,13 +981,13 @@ export default function POChatbotPane() {
         } else if (msg.type === "extraction") {
           // **NEW: Handle extraction data immediately**
           console.log("Received extraction data:", msg.data);
-          await poCheck2(msg.data.extracted_details);
+          await purchaseOrderCheck(msg.data.extracted_details);
           setExtractedDetails(msg.data.extracted_details);
           setUserIntent(msg.data.user_intent);
 
           // Handle submission intent
           if (msg.data.user_intent?.intent === "Submission") {
-            value.setPoCounterId((prevCounter) => prevCounter + 1);
+            value.setPoCounter((prevCounter) => prevCounter + 1);
             await poHeaderCreation();
           }
 
@@ -1228,7 +1137,8 @@ export default function POChatbotPane() {
       // console.log("invoice Creation Response:", response.data);
       await poDetailsCreation();
       setPdfData(value);
-      let poFileDetails = { poStatus: true, poNumber: value.poCounterId };
+      let poFileDetails = { status: true, poNumber: value.poCounterId };
+      console.log("PO File Details: ", poFileDetails);
       setMessages((prevMessages) => [
         ...prevMessages,
         {
