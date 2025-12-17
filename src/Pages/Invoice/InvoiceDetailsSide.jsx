@@ -139,7 +139,7 @@ function InvoiceDetailsSide() {
     }
   // console.log("pod:",value.poDetailsData)
   return (
-    <Grid container component="main" style={{  backgroundColor: "#384B70" }}>
+    <Grid container component="main" className="main-grid">
       <Grid
         item
         xs={8}
@@ -1000,7 +1000,7 @@ function InvoiceDetailsSide() {
         md={4}
         // className="imageBackground"
         style={{
-          marginTop: "7.25vh", //margin-all
+          // marginTop: "7.25vh", //margin-all
           width: "100%",
           display: "flex",
           flexDirection: "column",

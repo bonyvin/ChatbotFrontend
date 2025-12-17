@@ -52,7 +52,7 @@ export default function LLMChatbotTestAgentic() {
   const [allowConcurrentRuns, setAllowConcurrentRuns] = useState(false);
   const [extractedDetails, setExtractedDetails] = useState(null);
   const [userIntent, setUserIntent] = useState(null);
-  
+
   const wsRef = useRef(null);
   const hostRef = useRef({}); // stores reconnect/backoff state
   hostRef.current.shouldReconnect = true;
@@ -916,8 +916,6 @@ export default function LLMChatbotTestAgentic() {
   //   }
   // };
 
-
-
   // const handleMessageSubmit = async (input, inputFromUpload) => {
   //   console.log("Input: ", input);
   //   const textToSend = input.trim();
@@ -1491,18 +1489,7 @@ export default function LLMChatbotTestAgentic() {
   };
   console.log("checkConsole  ", value);
   return (
-    <Sheet
-      className="imageBackground"
-      sx={{
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        backgroundColor: "#FFFAF3",
-        overflowY: "auto",
-        flexGrow: 1,
-      }}
-      ref={messageEl}
-    >
+    <div className="chatbot-card" ref={messageEl}>
       <Backdrop
         sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
         open={uploadLoading}
@@ -1510,14 +1497,7 @@ export default function LLMChatbotTestAgentic() {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
-      <Box
-        style={{
-          display: "flex",
-          flex: 1,
-          flexDirection: "column ",
-          padding: 2,
-          justifyContent: "flex-end",
-        }}
+      <div className="chatbot-area" ref={messageEl}
       >
         {messages.map((message, index) => (
           <div
@@ -1533,7 +1513,7 @@ export default function LLMChatbotTestAgentic() {
           </div>
         ))}
         {typing && <TypingIndicatorComponent scrollToBottom={scrollToBottom} />}
-      </Box>
+      </div>
       <ChatbotInputForm
         input={input}
         setInput={setInput}
@@ -1550,6 +1530,6 @@ export default function LLMChatbotTestAgentic() {
           <Picker data={data} onEmojiSelect={handleEmojiSelect} />
         </div>
       )}
-    </Sheet>
+    </div>
   );
 }

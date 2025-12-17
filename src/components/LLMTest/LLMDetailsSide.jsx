@@ -370,16 +370,7 @@ export default function LLMDetailsSide() {
     <Grid
       container
       component="main"
-      style={{
-        // height: "100vh",
-        // backgroundColor: "#384B70",
-        // height: "auto",
-        // overflow: "visible",
-        minHeight: "100vh",
-        backgroundColor: "#384B70",
-        // height: "auto",
-        overflow: "auto",
-      }}
+      className="main-grid"
     >
       <Grid
         item
@@ -1444,7 +1435,7 @@ export default function LLMDetailsSide() {
         // className="imageBackground"
         // className="grid1"
         style={{
-          marginTop: "7.25vh",
+          // marginTop: "7.25vh",
           width: "100%",
           display: "flex",
           flexDirection: "column",

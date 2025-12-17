@@ -6,6 +6,11 @@
   /* margin-left: 2vw; */
 
 }
+.main-grid{
+  background-color: #384B70;
+  min-height: 100vh;
+  height:100%;
+}
 
 .openSans {
   font-family: "Open Sans", sans-serif;

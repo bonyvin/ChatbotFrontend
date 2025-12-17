@@ -129,50 +129,6 @@ const ChatbotInputForm = ({
   };
 
   return (
-    // <form onSubmit={handleFormSubmit} className="chatbot-input-form">
-    //   <label>
-    //     <input
-    //       type="file"
-    //       style={{ display: "none" }}
-    //       onChange={uploadInvoice}
-    //       onClick={(e) => (e.target.value = "")}
-    //     />
-    //     <Add className="paneIcon" />
-    //   </label>
-
-    //   <label>
-    //     <Smiley
-    //       className="paneIcon"
-    //       onClick={() => setPickerVisible(!isPickerVisible)}
-    //     />
-    //   </label>
-
-    //   <div className="wrapper">
-    //     <textarea
-    //       ref={textareaRef}
-    //       placeholder="Type a message..."
-    //       value={input}
-    //       rows={1}
-    //       onChange={handleChange}
-    //       className="chatInputTextarea"
-    //       onKeyDown={handleKeyDown}
-    //     />
-    //     <div className="micDiv" >
-    //       <MicIcon
-    //         className="micIcon"
-    //         onClick={() => console.log("Mic icon clicked")}
-    //       />
-    //     </div>
-    //   </div>
-
-    //   <label>
-    //     <SendIcon
-    //       className="paneIcon"
-    //       onClick={handleFormSubmit}
-    //     />
-    //   </label>
-    // </form>
-
 
   <form onSubmit={handleFormSubmit} className="chatbot-input-form">
   <div className="inputBox">
