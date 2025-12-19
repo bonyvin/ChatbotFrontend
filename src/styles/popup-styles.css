@@ -1,0 +1,220 @@
+body {
+  font-family: 'Varela Round', sans-serif;
+}
+
+.modal-confirm {
+  color: var(--dark-grey);
+  width: 30rem;
+  font-size: 14px;
+}
+
+.modal-confirm .modal-content {
+  padding: 20px;
+  border-radius: 5px;
+  border: none;
+}
+
+.modal-confirm .modal-header {
+  border-bottom: none;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-confirm h4 {
+  text-align: center;
+  font-size: 26px;
+  margin: 30px 0 -15px;
+}
+
+.modal-confirm .form-control,
+.modal-confirm .btn {
+  /* min-height: 40px; */
+  border-radius: 0.15rem;
+  padding: 0.5rem;
+}
+
+.modal-confirm .close {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+}
+
+.modal-confirm .modal-footer {
+  border: none;
+  text-align: center;
+  border-radius: 5px;
+  font-size: 13px;
+}
+
+.modal-footer {
+  justify-content: center;
+}
+
+.modal-confirm .icon-box {
+  color: var(--white);
+  /* position: absolute; */
+  margin: 0 auto;
+  left: 0;
+  right: 0;
+  top: -70px;
+  width: 95px;
+  height: 95px;
+  border-radius: 50%;
+  z-index: 9;
+  background: var(--white);
+  /* background: #82ce34; */
+  padding: 15px;
+  text-align: center;
+  box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+.modal-confirm .icon-box i {
+  font-size: 58px;
+  position: relative;
+  top: 3px;
+}
+
+.modal-confirm.modal-dialog {
+  margin-top: 80px;
+}
+
+.modal-confirm .btn {
+  color: var(--white);
+  border-radius: 4px;
+  background: var(--accent-blue);
+  /* background: #82ce34; */
+  text-decoration: none;
+  transition: all 0.4s;
+  line-height: normal;
+  border: none;
+}
+
+.modal-confirm .btn:hover,
+.modal-confirm .btn:focus {
+  background: var(--accent-blue);
+  /* background: #6fb32b; */
+  outline: none;
+}
+
+.trigger-btn {
+  display: inline-block;
+  margin: 100px auto;
+}
+
+.tiles {
+  position: relative;
+  border: solid 2px var(--border-grey);
+  border-radius: 5%;
+  box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin: 1rem;
+  padding: 2rem;
+  padding-bottom: 1rem;
+}
+
+.tile-content {
+  position: absolute;
+  top: 3px;
+  /* Adjust this value for the icon's vertical position */
+  right: 10px;
+  /* Adjust this value for the icon's horizontal position */
+  z-index: 10;
+}
+
+
+.tile-icon {
+  font-size: 12px;
+  /* Adjust the icon size */
+  color: var(--placeholder-grey);
+  /* Choose your icon color */
+}
+
+.tileImg {
+  width: 10.5rem;
+  /* display: block;
+  border-radius: 5%; */
+}
+
+.tile-legends {
+  margin-bottom: 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tile-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  /* Ensures both legends take full width */
+}
+
+.legend-circle {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+}
+
+.tile-legend span {
+  font-size: 0.6rem;
+  color: var(--black);
+  width: 6rem;
+  /* Set a fixed width for alignment */
+  text-align: left;
+  /* Align text properly */
+
+}
+
+.insights-box {
+  width: 72.5%;
+  /* background-color: #6495ED; */
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background: linear-gradient(90deg, rgba(100, 149, 237, 0.3672) 68.17%, rgba(100, 149, 237, 0.51) 100%);
+  margin: 1rem;
+  color: var(--insight-blue);
+  margin-left: 0;
+
+}
+
+.insights-box ol {
+  text-align: left;
+
+}
+
+.item-insights-box {
+  /* background-color: #6495ED; */
+  padding: 1rem;
+  border-radius: 0.5rem;
+  /* background: linear-gradient(90deg, rgba(100, 149, 237, 0.3672) 68.17%, rgba(100, 149, 237, 0.51) 100%); */
+}
+
+.item-insights-box ol {
+  text-align: left;
+}
+
+.graph-sub-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 0.6rem;
+  color: var(--black);
+  width: 6rem;
+  /* Set a fixed width for alignment */
+  text-align: left;
+  /* Align text properly */
+}
+
+.insights-text {
+  /* background-color:yellow; */
+  font-size: 0.65rem;
+}

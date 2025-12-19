@@ -1,6 +1,6 @@
 
 import React from 'react';
-import "../../styles/Overall.css";
+import "../../styles/general.css";
 
 const CustomButton = ({ onClick, children,className}) => {
     return (

@@ -1,6 +1,6 @@
 import React from "react";
 import { Form, FormSelect } from "react-bootstrap";
-import "../styles/DynamicCutoutInput.css"; // Custom CSS file for dynamic cutout effect
+import "../styles/dynamic-cutout-input.css"; // Custom CSS file for dynamic cutout effect
 
 export const DynamicCutoutInput = ({
   label,

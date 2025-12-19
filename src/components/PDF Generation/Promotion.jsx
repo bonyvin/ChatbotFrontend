@@ -8,7 +8,7 @@ import {
   Document,
   StyleSheet,
 } from "@react-pdf/renderer";
-import logo from "../../images/symbolBlue.png";
+import logo from "../../images/symbol-blue.png";
 import { AuthContext } from "../../context/ContextsMasterFile";
 import { FETCH_PROMO_BY_ID } from "../../const/ApiConst";
 

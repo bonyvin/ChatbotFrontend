@@ -1,5 +1,5 @@
 import React from "react";
-import typingIndicator from "../../images/typingIndicator1.gif";
+import typingIndicator from "../../images/typing-indicator-1.gif";
 import ChatMessage from "../ChatMessage/ChatMessage";
 import "../../styles/chatbot.css";
 import "../../styles/general.css";

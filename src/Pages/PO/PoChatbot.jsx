@@ -42,7 +42,7 @@ function uuidv4() {
   });
 }
 
-export default function POChatbotPane() {
+export default function PoChatbot() {
   const [messages, setMessages] = useState([]);
   const value = useContext(AuthContext);
   const [itemsArray, setItemsArray] = useState();
@@ -242,7 +242,7 @@ export default function POChatbotPane() {
       hostRef.current.shouldReconnect = false;
       try {
         wsRef.current && wsRef.current.close();
-      } catch (err) {}
+      } catch (err) { }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -251,16 +251,14 @@ export default function POChatbotPane() {
   //save
   const saveFormData = async () => {
     let savedData = `
-      ${
-        value.supplierDetails.supplierId
-          ? `Supplier Id: ${value.supplierDetails.supplierId},`
-          : ""
+      ${value.supplierDetails.supplierId
+        ? `Supplier Id: ${value.supplierDetails.supplierId},`
+        : ""
       }
 
-      ${
-        purchaseOrderData.estDeliveryDate
-          ? `Estimated Delivery Date: ${purchaseOrderData.estDeliveryDate},`
-          : ""
+      ${purchaseOrderData.estDeliveryDate
+        ? `Estimated Delivery Date: ${purchaseOrderData.estDeliveryDate},`
+        : ""
       }
      
     `;
@@ -607,17 +605,17 @@ export default function POChatbotPane() {
 
             case "items":
               updatedPurchaseOrderData.items = poObject[key];
-              
+
               // Optimized inline item details processing
               if (poObject[key] && Array.isArray(poObject[key])) {
                 const itemsData = poObject[key];
-                
+
                 // Early exit if all items are null-like
-                const hasValidItems = itemsData.some(item => 
-                  item && typeof item === 'object' && 
+                const hasValidItems = itemsData.some(item =>
+                  item && typeof item === 'object' &&
                   Object.values(item).some(val => val !== null)
                 );
-                
+
                 if (hasValidItems) {
                   const itemsArray = itemsData.map((item) => ({
                     itemId: item?.item_id || "",
@@ -1006,9 +1004,9 @@ export default function POChatbotPane() {
             typeof data === "string"
               ? data
               : data?.text ||
-                data?.content ||
-                data?.message ||
-                JSON.stringify(data);
+              data?.content ||
+              data?.message ||
+              JSON.stringify(data);
           buffer += text;
         } else if (msg.type === "done") {
           // Stream finished - cleanup
@@ -1211,8 +1209,7 @@ export default function POChatbotPane() {
                       ([subKey, subValue]) =>
                         `${subKey
                           .replace(/_/g, " ")
-                          .replace(/\b\w/g, (char) => char.toUpperCase())}: ${
-                          subValue ?? "N/A"
+                          .replace(/\b\w/g, (char) => char.toUpperCase())}: ${subValue ?? "N/A"
                         }`
                     )
                     .join(", ")
@@ -1223,9 +1220,8 @@ export default function POChatbotPane() {
           // Handle normal key-value pairs
           return `${key
             .replace(/_/g, " ")
-            .replace(/\b\w/g, (char) => char.toUpperCase())}: ${
-            value ?? "N/A"
-          }`;
+            .replace(/\b\w/g, (char) => char.toUpperCase())}: ${value ?? "N/A"
+            }`;
         }
       })
       .join("\n");
@@ -1378,7 +1374,7 @@ export default function POChatbotPane() {
   console.log("checkConsole", value);
   return (
     <div className="chatbot-card">
-      <div className="chatbot-area imageBackground" ref={messageEl}>
+      <div className="chatbot-area" ref={messageEl}>
         {" "}
         <Backdrop
           sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
@@ -1414,6 +1410,9 @@ export default function POChatbotPane() {
             <TypingIndicatorComponent scrollToBottom={scrollToBottom} />
           )}
         </Box>
+
+      </div>
+      <div className="chatbot-message-card">
         <ChatbotInputForm
           input={input}
           setInput={setInput}
@@ -1429,8 +1428,7 @@ export default function POChatbotPane() {
           >
             <Picker data={data} onEmojiSelect={handleEmojiSelect} />
           </div>
-        )}
-      </div>
+        )}</div>
     </div>
   );
 }

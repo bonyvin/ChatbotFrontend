@@ -1,6 +1,6 @@
 import React from "react";
 import user from "../../images/user.png";
-import symbolBlue from "../../images/symbolBlue.png";
+import symbolBlue from "../../images/symbol-blue.png";
 import ReactMarkdown from "react-markdown";
 import "../../styles/general.css";
 

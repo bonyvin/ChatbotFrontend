@@ -12,13 +12,13 @@ import React, {
   useState,
 } from "react";
 import { AuthContext } from "../../context/ContextsMasterFile";
-import ChatbotInputForm from "../ChatMessage/ChatbotInputForm";
-import PdfCard from "../PDF Generation/PdfCard";
-import EmailPdf from "../PDF Generation/EmailPdf";
+import ChatbotInputForm from "../../components/ChatMessage/ChatbotInputForm";
+import PdfCard from "../../components/PDF Generation/PdfCard";
+import EmailPdf from "../../components/PDF Generation/EmailPdf";
 import "../../styles/chatbot.css";
 import "../../styles/general.css";
-import ChatMessage from "../ChatMessage/ChatMessage";
-import TypingIndicatorComponent from "../ChatMessage/TypingIndicatorComponent";
+import ChatMessage from "../../components/ChatMessage/ChatMessage";
+import TypingIndicatorComponent from "../../components/ChatMessage/TypingIndicatorComponent";
 import ReactMarkdown from "react-markdown";
 
 function uuidv4() {
@@ -29,7 +29,7 @@ function uuidv4() {
   });
 }
 
-export default function LLMChatbotTestAgentic() {
+export default function PromoChatbot() {
   const [messages, setMessages] = useState([]);
   const value = useContext(AuthContext);
   const [itemsArray, setItemsArray] = useState();
@@ -204,7 +204,7 @@ export default function LLMChatbotTestAgentic() {
       hostRef.current.shouldReconnect = false;
       try {
         wsRef.current && wsRef.current.close();
-      } catch (err) {}
+      } catch (err) { }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -218,65 +218,53 @@ export default function LLMChatbotTestAgentic() {
     let promotionType = getTrueValueKey(value.typeOfPromotion);
     let savedData = `
       ${promotionType ? `Promotion Type: ${promotionType},` : ""}
-      ${
-        value.promotionData.hierarchyType
-          ? `Hierarchy Type: ${value.promotionData.hierarchyType},`
-          : ""
+      ${value.promotionData.hierarchyType
+        ? `Hierarchy Type: ${value.promotionData.hierarchyType},`
+        : ""
       }
-      ${
-        value.promotionData.hierarchyValue
-          ? `Hierarchy Value: ${value.promotionData.hierarchyValue},`
-          : ""
+      ${value.promotionData.hierarchyValue
+        ? `Hierarchy Value: ${value.promotionData.hierarchyValue},`
+        : ""
       }
-      ${
-        value.promotionData.brand
-          ? `Hierarchy Brand: ${value.promotionData.brand},`
-          : ""
+      ${value.promotionData.brand
+        ? `Hierarchy Brand: ${value.promotionData.brand},`
+        : ""
       }
-      ${
-        value.promotionData.itemList
-          ? `Item List: ${value.promotionData.itemList},`
-          : ""
+      ${value.promotionData.itemList
+        ? `Item List: ${value.promotionData.itemList},`
+        : ""
       }
-      ${
-        value.promotionData.excludedItemList
-          ? `Excluded Item List: ${value.promotionData.excludedItemList},`
-          : ""
+      ${value.promotionData.excludedItemList
+        ? `Excluded Item List: ${value.promotionData.excludedItemList},`
+        : ""
       }
-      ${
-        value.promotionData.discountType
-          ? `Discount Type: ${value.promotionData.discountType},`
-          : ""
+      ${value.promotionData.discountType
+        ? `Discount Type: ${value.promotionData.discountType},`
+        : ""
       }
-      ${
-        value.promotionData.discountValue
-          ? `Discount Value: ${value.promotionData.discountValue},`
-          : ""
+      ${value.promotionData.discountValue
+        ? `Discount Value: ${value.promotionData.discountValue},`
+        : ""
       }
-      ${
-        value.promotionData.startDate
-          ? `Start Date: ${value.promotionData.startDate},`
-          : ""
+      ${value.promotionData.startDate
+        ? `Start Date: ${value.promotionData.startDate},`
+        : ""
       }
-      ${
-        value.promotionData.endDate
-          ? `End Date: ${value.promotionData.endDate},`
-          : ""
+      ${value.promotionData.endDate
+        ? `End Date: ${value.promotionData.endDate},`
+        : ""
       }
-      ${
-        value.promotionData.discountValue
-          ? `Discount Value: ${value.promotionData.discountValue},`
-          : ""
+      ${value.promotionData.discountValue
+        ? `Discount Value: ${value.promotionData.discountValue},`
+        : ""
       }
-      ${
-        value.promotionData.locationList
-          ? `Location List: ${value.promotionData.locationList},`
-          : ""
+      ${value.promotionData.locationList
+        ? `Location List: ${value.promotionData.locationList},`
+        : ""
       }
-      ${
-        value.promotionData.excludedLocationList
-          ? `Excluded Location List: ${value.promotionData.excludedLocationList},`
-          : ""
+      ${value.promotionData.excludedLocationList
+        ? `Excluded Location List: ${value.promotionData.excludedLocationList},`
+        : ""
       }
     `;
     // await handleMessageSubmit(savedData);
@@ -362,7 +350,7 @@ export default function LLMChatbotTestAgentic() {
     const hasChangedStore =
       prevStoreUpload.current.stores != value.storeUpload.stores ||
       prevStoreUpload.current.excludedStores !=
-        value.storeUpload.excludedStores;
+      value.storeUpload.excludedStores;
     if (
       hasChanged &&
       (value.itemUpload.eventItems != null ||
@@ -796,9 +784,9 @@ export default function LLMChatbotTestAgentic() {
             typeof data === "string"
               ? data
               : data?.text ||
-                data?.content ||
-                data?.message ||
-                JSON.stringify(data);
+              data?.content ||
+              data?.message ||
+              JSON.stringify(data);
           buffer += text;
         } else if (msg.type === "done") {
           // Stream finished - cleanup
@@ -1301,8 +1289,7 @@ export default function LLMChatbotTestAgentic() {
                       ([subKey, subValue]) =>
                         `${subKey
                           .replace(/_/g, " ")
-                          .replace(/\b\w/g, (char) => char.toUpperCase())}: ${
-                          subValue ?? "N/A"
+                          .replace(/\b\w/g, (char) => char.toUpperCase())}: ${subValue ?? "N/A"
                         }`
                     )
                     .join(", ")
@@ -1313,9 +1300,8 @@ export default function LLMChatbotTestAgentic() {
           // Handle normal key-value pairs
           return `${key
             .replace(/_/g, " ")
-            .replace(/\b\w/g, (char) => char.toUpperCase())}: ${
-            value ?? "N/A"
-          }`;
+            .replace(/\b\w/g, (char) => char.toUpperCase())}: ${value ?? "N/A"
+            }`;
         }
       })
       .join("\n");
@@ -1489,7 +1475,7 @@ export default function LLMChatbotTestAgentic() {
   };
   console.log("checkConsole  ", value);
   return (
-    <div className="chatbot-card" ref={messageEl}>
+    <div className="chatbot-card" >
       <Backdrop
         sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
         open={uploadLoading}

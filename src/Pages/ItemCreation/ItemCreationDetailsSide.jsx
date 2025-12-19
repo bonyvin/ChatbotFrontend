@@ -29,7 +29,7 @@ import FormSubmissionStatusPopUp from "../../components/PopupMessage/FormSubmiss
 import SupplierInfoPopUp from "../../components/PopupMessage/SupplierInfoPopUp";
 import { AuthContext } from "../../context/ContextsMasterFile";
 import "../../styles/general.css";
-import "../../styles/testStyles.css";
+import "../../styles/test-styles.css";
 import "../../styles/general.css";
 import ChatbotPane from "../Invoice/InvoiceChatbot";
 

@@ -8,7 +8,7 @@ import {
   Document,
   StyleSheet,
 } from "@react-pdf/renderer";
-import logo from "../../images/symbolBlue.png";
+import logo from "../../images/symbol-blue.png";
 
 const w = window.innerWidth;
 const h = window.innerHeight;

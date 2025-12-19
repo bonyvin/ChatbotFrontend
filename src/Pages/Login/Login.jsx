@@ -12,10 +12,10 @@ import { createTheme, styled, ThemeProvider } from "@mui/material/styles";
 import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
 import { useNavigate } from "react-router-dom";
-import kpmgWhite from "../../images/kpmgWhite.png";
-import loginImage from "../../images/loginBackground.png";
+import kpmgWhite from "../../images/kpmg-white.png";
+import loginImage from "../../images/login-background.png";
 import symbol from "../../images/symbol.png";
-import "../../styles/testStyles.css";
+import "../../styles/login-page.css";
 
 
 // TODO remove, this demo shouldn't need to reset the theme.
@@ -80,33 +80,38 @@ export default function SignInSide() {
   }));
   const navigate = useNavigate();
 
-  
+
   return (
     <ThemeProvider theme={theme}>
-      <Grid container component="main" style={{ height: "100vh" }}>
+      <Grid container component="main" sx={{ minHeight: "100vh" }}>
         <CssBaseline />
         <Grid
-          item xs={8} sm={8} md={8}
-          style={{ backgroundColor: "rgba(28, 36, 75, 1)" }}>
-          <div className="img-div"
-            // style={{
-            //   padding: "2%",
-            //   flex: 1,
-            //   display: "flex",
-            //   flexDirection: "column",
-            // }}
-          >
-            <img className="img-div1"
-              src={symbol}
-            />
-            <img className="img-div2"
-              src={kpmgWhite}
-              // style={{width: "15%",display: "flex",alignSelf: "center",marginTop: "5%"}}
-              />
+          item
+          xs={12}
+          md={8}
+          sx={{
+            backgroundColor: "var(--primary-color)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: { xs: "2rem", md: "4rem" },
+          }}
+        >
+          <div className="img-div">
+            <img className="img-div1" src={symbol} alt="symbol" />
+            <img className="img-div2" src={kpmgWhite} alt="kpmg" />
           </div>
 
-          <Box style={{my: 8, mx: 15,display: "flex",flexDirection: "column",alignItems: "center"}}>
-
+          <Box
+            sx={{
+              width: "100%",
+              maxWidth: "400px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
             <div className="textContainer">
               <div className="textStyle">Welcome to KPMG's </div>
               <div className="expContainerHeader">
@@ -114,73 +119,82 @@ export default function SignInSide() {
                 <div className="xHeader">{"X"}</div>
               </div>
             </div>
-            <Box component="form" noValidate onSubmit={handleSubmit}
-              style={{ marginLeft: "10%", marginRight: "10%", width: "90%" }}>
-             
-              <div className="signIn-div"
-              // style={{ alignItems: "flex-start",display: "flex",flexDirection: "column"}}
-              >
-                <div className="signIn-heading"
-                  // style={{fontSize: "1.5 rem",color: "white",fontWeight: "700",marginBottom: "0.5%"}}
-                  >
-                  SIGN IN
-                </div>
-                <div className="signIn-sub-heading"
-                // style={{color: "#CBCBCB",fontSize: "0.5rem",fontWeight: "600",marginBottom: "2%"}}
-                >
+
+            <Box
+              component="form"
+              noValidate
+              onSubmit={handleSubmit}
+              sx={{ width: "100%" }}
+            >
+              <div className="signIn-div">
+                <div className="signIn-heading">SIGN IN</div>
+                <div className="signIn-sub-heading">
                   Sign in to your supplier portal
                 </div>
               </div>
-              <div className="form-details" 
-              // style={{alignItems: "flex-start",display: "flex",flexDirection: "column"}}
-              >
-                <div className="input-heading" 
-                // style={{color: "white",fontSize: "0.75rem",fontWeight: "600"}}
-                >
-                  USERNAME
-                </div>
-                <Grid item xs={12} sm={12} md={12} style={{display: "flex",width: "100%"}}>
-                  <InputGroup>
-                    <Form.Control
-                      aria-label="Dollar amount (with dot and two decimal places)"
-                      style={{backgroundColor: "transparent",borderColor: "#CECCCC",borderRadius: 0,borderWidth: 0,borderBottomWidth: 1,color: "white",}}/>
-                    <InputGroup.Text
-                      style={{backgroundColor: "transparent",borderWidth: 0,borderRadius: 0,borderBottomWidth: 1,display: "flex",justifyContent: "flex-end",alignItems: "flex-end"}}>
-                      <PersonIcon style={{ color: "white" }} />
-                    </InputGroup.Text>
-                  </InputGroup>
-                  
-                </Grid>
-                <div className="input-heading" 
-                // style={{color: "white",fontSize: "0.75rem",fontWeight: "600"}}
-                >
-                  PASSWORD
-                </div>
-                <InputGroup>
+
+              <div className="form-details">
+                <div className="input-heading">USERNAME</div>
+                <InputGroup className="mb-3">
                   <Form.Control
-                    aria-label="Dollar amount (with dot and two decimal places)"
-                    style={{backgroundColor: "transparent",borderColor: "#CECCCC",borderRadius: 0,borderWidth: 0,borderBottomWidth: 1,color: "white",}}/>
+                    style={{
+                      backgroundColor: "transparent",
+                      borderColor: "var(--border-grey)",
+                      borderRadius: 0,
+                      borderWidth: 0,
+                      borderBottomWidth: "1px",
+                      color: "var(--white)",
+                    }}
+                  />
                   <InputGroup.Text
-                    style={{backgroundColor: "transparent",borderWidth: 0,borderRadius: 0, borderBottomWidth: 1,display: "flex", justifyContent: "flex-end",alignItems: "flex-end"}}>
-                    <LockIcon style={{ color: "white" }} />
+                    style={{
+                      backgroundColor: "transparent",
+                      borderWidth: 0,
+                      borderRadius: 0,
+                      borderBottomWidth: "1px",
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      alignItems: "flex-end",
+                    }}
+                  >
+                    <PersonIcon style={{ color: "var(--white)" }} />
                   </InputGroup.Text>
                 </InputGroup>
-                
-                <div className="footer-div" 
-                style={{color: "#CBCBCB",fontSize: "0.6rem",fontWeight: "600",
-                    display: "flex", alignItems: "center", marginBottom: "4%", marginTop: "2%"}}
-                    >
 
-                  
-                  <div style={{backgroundColor: "black",display: "flex",alignContent: "flex-start"}}>
-                    <input type="checkbox" className="checkboxStyle"
-                      style={{}}></input>
-                  </div>
+                <div className="input-heading">PASSWORD</div>
+                <InputGroup className="mb-3">
+                  <Form.Control
+                    type="password"
+                    style={{
+                      backgroundColor: "transparent",
+                      borderColor: "var(--border-grey)",
+                      borderRadius: 0,
+                      borderWidth: 0,
+                      borderBottomWidth: "1px",
+                      color: "var(--white)",
+                    }}
+                  />
+                  <InputGroup.Text
+                    style={{
+                      backgroundColor: "transparent",
+                      borderWidth: 0,
+                      borderRadius: 0,
+                      borderBottomWidth: "1px",
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      alignItems: "flex-end",
+                    }}
+                  >
+                    <LockIcon style={{ color: "var(--white)" }} />
+                  </InputGroup.Text>
+                </InputGroup>
 
+                <div className="footer-div">
+                  <input type="checkbox" className="checkboxStyle" />
                   I agree to the&nbsp;
-                  <div style={{ textDecoration: "underline" }}>
+                  <span style={{ textDecoration: "underline", cursor: "pointer" }}>
                     terms & conditions.
-                  </div>
+                  </span>
                 </div>
               </div>
 
@@ -188,28 +202,33 @@ export default function SignInSide() {
                 type="submit"
                 fullWidth
                 variant="contained"
-                size="3rem"
                 sx={{
-                  color: "blueColor.dark",fontSize: "1.5 rem",fontWeight: "700",backgroundColor: "#fff",
+                  backgroundColor: "var(--white)",
+                  color: "var(--primary-color)",
+                  fontWeight: "700",
+                  padding: "0.8rem",
                   "&:hover": {
-                    backgroundColor: "",
-                  },}}
-                onClick={() => navigate("/chatbot")}>
-                <div
-                  className="openSans" 
-                  id="textID"
-                  style={{color: "#1C244B",fontSize: "1rem",fontWeight: "750",
-                  "&:hover": {color: "#1C244B",fontSize: "1.5 rem",fontWeight: "700",},}}>
-                  LOGIN
-                </div>
+                    backgroundColor: "var(--text-light-grey)",
+                  },
+                  mb: 2,
+                }}
+                onClick={() => navigate("/chatbot")}
+              >
+                LOGIN
               </Button>
+
               <Grid container>
                 <Grid item xs>
                   <Link
                     href="#"
                     className="openSans"
                     variant="body2"
-                    style={{textDecoration: "none",color: "#E3E5E8",fontSize: "0.7rem",fontWeight: "500"}}>
+                    sx={{
+                      textDecoration: "none",
+                      color: "var(--text-light-grey)",
+                      fontSize: "0.7rem",
+                    }}
+                  >
                     Forgot password?
                   </Link>
                 </Grid>
@@ -218,14 +237,21 @@ export default function SignInSide() {
           </Box>
         </Grid>
 
-        <Grid item xs={4} sm={4}md={4}
-          style={{flex: 1,display: "flex",bgcolor: "white",justifyContent: "center"}}>
-          <Box
-            style={{display: "flex",flexDirection: "column",alignItems: "center",backgroundColor: "white",justifyContent: "center" }}>
-            <div className="imageContainer">
-              <img src={loginImage} alt="img"/>
-            </div>
-          </Box>
+        <Grid
+          item
+          xs={false}
+          md={4}
+          sx={{
+            display: { xs: "none", md: "flex" },
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "var(--white)",
+          }}
+        >
+          <div className="imageContainer">
+            <img src={loginImage} alt="login splash" />
+          </div>
         </Grid>
       </Grid>
     </ThemeProvider>

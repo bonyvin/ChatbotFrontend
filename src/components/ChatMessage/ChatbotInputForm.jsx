@@ -3,7 +3,7 @@
 // import Smiley from "@mui/icons-material/EmojiEmotions";
 // import MicIcon from "@mui/icons-material/Mic";
 // import SendIcon from "@mui/icons-material/Send";
-// import "../styles/ChatbotInputForm.css"; // Optional external styling
+// import "../styles/chatbot-input-form.css"; // Optional external styling
 // import { TextField } from "@mui/material";
 
 // const ChatbotInputForm = ({
@@ -78,7 +78,7 @@ import Add from "@mui/icons-material/AddCircle";
 import Smiley from "@mui/icons-material/EmojiEmotions";
 import MicIcon from "@mui/icons-material/Mic";
 import SendIcon from "@mui/icons-material/Send";
-import "../../styles/ChatbotInputForm.css";
+import "../../styles/chatbot-input-form.css";
 
 const ChatbotInputForm = ({
   input,

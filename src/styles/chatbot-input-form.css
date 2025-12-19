@@ -32,10 +32,10 @@
 
 .chatInputTextField {
   min-height: 2rem;
-  background: #ffffff;
+  background: var(--white);
   opacity: 1;
   border-radius: 0.25rem;
-  border-bottom: 1px solid #ededed;
+  border-bottom: 1px solid var(--border-light);
   resize: none;
   transition: border-color 150ms ease;
   flex: 1;
@@ -51,7 +51,8 @@
   position: relative;
   display: flex;
   flex: 1;
-  align-items: stretch; /* key part to allow children to stretch in height */
+  align-items: stretch;
+  /* key part to allow children to stretch in height */
 }
 
 .chatInputTextarea {
@@ -67,13 +68,14 @@
   line-height: 1.5rem;
   flex: 1;
 }
+
 .chatInputTextarea::placeholder {
-  padding-left:0.25rem;
+  padding-left: 0.25rem;
   /* color:red */
 }
 
 .micDiv {
-  background-color: #fff;
+  background-color: var(--white);
   border-top-right-radius: 0.25rem;
   border-bottom-right-radius: 0.25rem;
   overflow: hidden;
@@ -82,12 +84,15 @@
   justify-content: center;
   padding: 0 0.25rem;
   /* Key additions */
-  align-self: stretch; /* makes it expand vertically with textarea */
+  align-self: stretch;
+  /* makes it expand vertically with textarea */
   margin: 0.5rem 0rem 0.5rem 0;
 }
+
 .micIcon {
   cursor: pointer;
 }
+
 /* .micIcon {
   position: absolute;
   right: 2rem;

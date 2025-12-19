@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { BsFillInfoCircleFill } from "react-icons/bs";
 import { FaWindowClose } from "react-icons/fa";
 import ReactMarkdown from "react-markdown";
-import "../../styles/popupStyles.css";
+import "../../styles/popup-styles.css";
 import failure from "../../images/failure.gif";
 
 function SupplierInfoPopUp({ visible, setVisible, data }) {

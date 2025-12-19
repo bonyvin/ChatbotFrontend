@@ -2,7 +2,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import React, { useEffect, useState } from "react";
 import failure from "../../images/failure.gif";
 import success from "../../images/success.gif";
-import "../../styles/popupStyles.css";
+import "../../styles/popup-styles.css";
 
 
 function FormSubmissionStatusPopUp({ visible, text,isSuccessful=true}) {

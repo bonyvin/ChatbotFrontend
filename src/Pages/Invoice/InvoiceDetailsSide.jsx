@@ -36,7 +36,7 @@ import FormSubmissionStatusPopUp from "../../components/PopupMessage/FormSubmiss
 import SupplierInfoPopUp from "../../components/PopupMessage/SupplierInfoPopUp";
 import { AuthContext } from "../../context/ContextsMasterFile";
 import "../../styles/general.css";
-import "../../styles/testStyles.css";
+// import "../../styles/test-styles.css";
 import "../../styles/general.css";
 import InvoiceChatbot from "./InvoiceChatbot";
 import EmailPdf from "../../components/PDF Generation/EmailPdf";
@@ -58,7 +58,7 @@ function InvoiceDetailsSide() {
     scrollToBottom();
   }, [tableToggle]);
   const value = useContext(AuthContext);
-  useEffect(() => {}, [value.poDetailsData.length]);
+  useEffect(() => { }, [value.poDetailsData.length]);
   const showForm = value.isActive;
   function sumQuantities(input) {
     if (!input) return input;
@@ -115,40 +115,38 @@ function InvoiceDetailsSide() {
       console.log("poDetailsData length <= 0, handleItemAndQuantity");
     }
   };
-  
-    const sendEmail = async ({ emailUsed, documentId }) => {
-      // await EmailPdf({
-      //   emailUsed: emailUsed,
-      //   bodyUsed: { "documentType": "Invoice" },
-      //   invoice: true,
-      //   documentId: documentId
-      // });
-      const emailStatus = await EmailPdf({
-        emailUsed: emailUsed,
-        bodyUsed: { documentType: "Invoice" },
-        invoice: true,
-        documentId: documentId,
-      });
-  
-      if (emailStatus && emailStatus.success) {
-        console.log("Email sending was successful! Now calling another function...");
-      } else {
-        console.log("Email sending failed or returned no status.");
-        console.error("Error message:", emailStatus?.message || "Unknown error");
-      }
+
+  const sendEmail = async ({ emailUsed, documentId }) => {
+    // await EmailPdf({
+    //   emailUsed: emailUsed,
+    //   bodyUsed: { "documentType": "Invoice" },
+    //   invoice: true,
+    //   documentId: documentId
+    // });
+    const emailStatus = await EmailPdf({
+      emailUsed: emailUsed,
+      bodyUsed: { documentType: "Invoice" },
+      invoice: true,
+      documentId: documentId,
+    });
+
+    if (emailStatus && emailStatus.success) {
+      console.log("Email sending was successful! Now calling another function...");
+    } else {
+      console.log("Email sending failed or returned no status.");
+      console.error("Error message:", emailStatus?.message || "Unknown error");
     }
+  }
   // console.log("pod:",value.poDetailsData)
   return (
     <Grid container component="main" className="main-grid">
       <Grid
         item
-        xs={8}
-        sm={8}
+        xs={12}
         md={8}
         container
         component="main"
-        style={{ padding: "1rem", paddingLeft: "0.25rem" }}
-        // className="imageBackground"
+        sx={{ padding: "1rem", paddingLeft: "0.25rem" }}
         ref={messagesEndRef}
       >
         <div style={{ position: "absolute" }}>
@@ -184,13 +182,13 @@ function InvoiceDetailsSide() {
             <div className="dialog-container">
               {/* Use PDFViewer to allow for real-time updates */}
               <PDFViewer className="pdf-viewer"
-                // style={{
-                //   flex: 1,
-                //   width: "100%",
-                //   height: "100%",
-                //   border: "none",
-                //   overflow: "hidden",
-                // }}
+              // style={{
+              //   flex: 1,
+              //   width: "100%",
+              //   height: "100%",
+              //   border: "none",
+              //   overflow: "hidden",
+              // }}
               >
                 <PreviewDocs
                   invoicePreview={true}
@@ -206,11 +204,19 @@ function InvoiceDetailsSide() {
 
         <Card
           className="generalView"
-          style={{ width: "100%", backgroundColor: "#73809A", borderRadius: "3%", borderColor: "#73809A", marginLeft: "4%", boxShadow: "2px 2px 8px rgba(66, 57, 57, 0.75)",marginTop:"2.95rem"}}
+          sx={{
+            width: "100%",
+            backgroundColor: "var(--muted-blue)",
+            borderRadius: "var(--radius-lg)",
+            borderColor: "var(--muted-blue)",
+            marginLeft: { xs: 0, md: "1rem" },
+            boxShadow: "var(--shadow-medium)",
+            marginTop: "3rem"
+          }}
           ref={messagesEndRef}
         >
-          
-              <div
+
+          <div
             style={{
               marginLeft: "2%",
               display: "flex",
@@ -222,7 +228,7 @@ function InvoiceDetailsSide() {
               style={{
                 fontSize: "1rem",
                 fontWeight: "700",
-                color: "white",
+                color: "var(--white)",
                 fontFamily: "Montserrat,sans-sherif",
               }}
             >
@@ -231,142 +237,142 @@ function InvoiceDetailsSide() {
             <Typography
               style={{
                 fontSize: "0.6rem",
-                color: "white",
+                color: "var(--white)",
                 fontFamily: "Montserrat,sans-sherif",
               }}>
               Fields marked as * are mandatory
             </Typography>
           </div>
 
-            <Form className="generalRadio">
-              <div style={{ display: "flex", justifyContent: "space-between", marginLeft: "0.8rem",width: "96%"}}>
-                <div
-                  // className="mb-3"
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "flex-start",
-                    alignItems: "center",
-                  }}
-                >
-                  <Form.Check
-                    inline
-                    label="Merchandise"
-                    name="group1"
-                    type={"radio"}
-                    id={`inline- -1`}
-                    className="labelText"
-                    checked={value.typeOfInvoice.merchandise}
-                    onChange={() => handleRadioChange("merchandise")}
-                    // checked={value.invoiceData.invoiceType.match(/merchandise/i) }
-                  />
-                  <Form.Check
-                    inline
-                    label="Non - Merchandise"
-                    name="group1"
-                    type={"radio"}
-                    id={`inline- -2`}
-                    className="labelText"
-                    checked={value.typeOfInvoice.nonMerchandise}
-                    onChange={() => handleRadioChange("nonMerchandise")}
-                    // checked={value.invoiceData.invoiceType === "Non - Merchandise"}
-                  />
-                  <Form.Check
-                    inline
-                    label="Debit Note"
-                    name="group1"
-                    type={"radio"}
-                    id={`inline- -3`}
-                    className="labelText"
-                    checked={value.typeOfInvoice.debitNote}
-                    onChange={() => handleRadioChange("debitNote")}
-                    // checked={value.invoiceData.invoiceType.match(/debit\s*-\s*\s*note\s*: ?(.*?)(?:,|$)/i) }
-                  />
-                  <Form.Check
-                    inline
-                    label="Credit Note"
-                    name="group1"
-                    type={"radio"}
-                    id={`inline- -4`}
-                    className="labelText"
-                    // checked={value.invoiceData.invoiceType === "Credit Note"}
-                    checked={value.typeOfInvoice.creditNote}
-                    onChange={() => handleRadioChange("creditNote")}
-                  />
-                </div>
-                <div
-                  style={{
-                    fontSize: "0.75rem",
-                    fontFamily: "Montserrat,sans-sherif",
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                >
-                  <span>{`System Document ID:  `}</span>
-                  <span
-                    style={{
-                      backgroundColor: "white",
-                      marginLeft: "0.5rem",
-                      // padding: "0.15rem",
-                      paddingLeft: "1rem",
-                      paddingRight: "1rem",
-                      borderRadius: "4rem",
-                      fontWeight: "600",
-                    }}
-                  >
-                    {value.systemDocumentId}
-                  </span>
-                </div>
+          <Form className="generalRadio">
+            <div style={{ display: "flex", justifyContent: "space-between", marginLeft: "0.8rem", width: "96%" }}>
+              <div
+                // className="mb-3"
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "flex-start",
+                  alignItems: "center",
+                }}
+              >
+                <Form.Check
+                  inline
+                  label="Merchandise"
+                  name="group1"
+                  type={"radio"}
+                  id={`inline- -1`}
+                  className="labelText"
+                  checked={value.typeOfInvoice.merchandise}
+                  onChange={() => handleRadioChange("merchandise")}
+                // checked={value.invoiceData.invoiceType.match(/merchandise/i) }
+                />
+                <Form.Check
+                  inline
+                  label="Non - Merchandise"
+                  name="group1"
+                  type={"radio"}
+                  id={`inline- -2`}
+                  className="labelText"
+                  checked={value.typeOfInvoice.nonMerchandise}
+                  onChange={() => handleRadioChange("nonMerchandise")}
+                // checked={value.invoiceData.invoiceType === "Non - Merchandise"}
+                />
+                <Form.Check
+                  inline
+                  label="Debit Note"
+                  name="group1"
+                  type={"radio"}
+                  id={`inline- -3`}
+                  className="labelText"
+                  checked={value.typeOfInvoice.debitNote}
+                  onChange={() => handleRadioChange("debitNote")}
+                // checked={value.invoiceData.invoiceType.match(/debit\s*-\s*\s*note\s*: ?(.*?)(?:,|$)/i) }
+                />
+                <Form.Check
+                  inline
+                  label="Credit Note"
+                  name="group1"
+                  type={"radio"}
+                  id={`inline- -4`}
+                  className="labelText"
+                  // checked={value.invoiceData.invoiceType === "Credit Note"}
+                  checked={value.typeOfInvoice.creditNote}
+                  onChange={() => handleRadioChange("creditNote")}
+                />
               </div>
-            </Form>
-            <CardOverflow sx={{ p: 0 }}>
-              <Box
+              <div
+                style={{
+                  fontSize: "0.75rem",
+                  fontFamily: "Montserrat,sans-sherif",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <span>{`System Document ID:  `}</span>
+                <span
+                  style={{
+                    backgroundColor: "var(--white)",
+                    marginLeft: "0.5rem",
+                    // padding: "0.15rem",
+                    paddingLeft: "1rem",
+                    paddingRight: "1rem",
+                    borderRadius: "4rem",
+                    fontWeight: "600",
+                  }}
+                >
+                  {value.systemDocumentId}
+                </span>
+              </div>
+            </div>
+          </Form>
+          <CardOverflow sx={{ p: 0 }}>
+            <Box
               sx={{
                 display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                rowGap: 1,
+                gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)" },
+                rowGap: 1.5,
                 columnGap: 3,
-                px: 4,
+                px: { xs: 2, md: 4 },
                 marginBottom: "1rem"
               }}
             >
-                    <FormControl>
-                      <InputFieldComponent
-                        label="Invoice Date"
-                        required={true}
-                        type="date"
-                        placeholder="Enter your Invoice Date"
-                        value={value.invoiceData?.invoiceDate} // Use raw yyyy-mm-dd format
-                        fun={(text) => {
-                          console.log("Date selected:", text);
-                          value.setInvoiceData({
-                            ...value.invoiceData,
-                            invoiceDate: text, // Save in yyyy-mm-dd format
-                          });
-                        }}
-                      />
-                    </FormControl>
-                    <FormControl >
-                      <InputFieldComponent
-                        label="Supplier ID"
-                        required={true}
-                        placeholder="Supplier ID"
-                        value={value.poDetailsData[0]?.supplierId || ""}
-                        // fun={(text) =>
-                        //   value.setInvoiceData({
-                        //     ...value.invoiceData,
-                        //     supplierId: text,
-                        //   })
-                        // }
-                        fun={(text) =>
-                          value.setPoDetailsData({
-                            ...value.poDetailsData,
-                            supplierId: text,
-                          })
-                        }
-                        editable={true}
-                        // style={{ backgroundColor: "#e8e8e8" }}
-                        EndComponent={
+              <FormControl>
+                <InputFieldComponent
+                  label="Invoice Date"
+                  required={true}
+                  type="date"
+                  placeholder="Enter your Invoice Date"
+                  value={value.invoiceData?.invoiceDate} // Use raw yyyy-mm-dd format
+                  fun={(text) => {
+                    console.log("Date selected:", text);
+                    value.setInvoiceData({
+                      ...value.invoiceData,
+                      invoiceDate: text, // Save in yyyy-mm-dd format
+                    });
+                  }}
+                />
+              </FormControl>
+              <FormControl >
+                <InputFieldComponent
+                  label="Supplier ID"
+                  required={true}
+                  placeholder="Supplier ID"
+                  value={value.poDetailsData[0]?.supplierId || ""}
+                  // fun={(text) =>
+                  //   value.setInvoiceData({
+                  //     ...value.invoiceData,
+                  //     supplierId: text,
+                  //   })
+                  // }
+                  fun={(text) =>
+                    value.setPoDetailsData({
+                      ...value.poDetailsData,
+                      supplierId: text,
+                    })
+                  }
+                  editable={true}
+                  // style={{ backgroundColor: "#e8e8e8" }}
+                  EndComponent={
                     value.supplierDetails.supplierStatus === true ? (
                       <div
                         style={{
@@ -375,190 +381,190 @@ function InvoiceDetailsSide() {
                           height: "100%",
                         }}
                       >
-                                  {" "}
+                        {" "}
                         <BsFillInfoCircleFill
                           onClick={() => setSupplierPopupStatus(true)}
                           style={{ cursor: "pointer" }}
                         />
-                                  {" "}
+                        {" "}
                       </div>
                     ) : null
                   }
 
-                  />
-                    </FormControl>
-                
-                    <FormControl >
-                      <InputFieldComponent
-                        label="PO No."
-                        required={true}
-                        placeholder="Enter your PO No."
-                        value={value.invoiceData?.poNumber}
-                        fun={(text) =>
-                          value.setInvoiceData({
-                            ...value.invoiceData,
-                            poNumber: text,
-                          })
-                        }
-                      />
-                    </FormControl>
-                    <FormControl >
-                      <InputFieldComponent
-                        label="Invoice No."
-                        required={true}
-                        placeholder="Enter your Invoice No."
-                        value={value.invoiceData?.userInvNo}
-                        fun={(text) =>
-                          value.setInvoiceData({
-                            ...value.invoiceData,
-                            userInvNo: text,
-                          })
-                        }
-                        // editable={true}
-                        // style={{ backgroundColor: "#e8e8e8" }}
-                      />
-                    </FormControl>
-                  
-                  
-                    <FormControl>
-                      <InputFieldComponent
-                        label="Payment Terms"
-                        required={true}
-                        placeholder="Payment Terms"
-                        value={value?.poHeaderData?.paymentTerm}
-                        fun={(text) =>
-                          value.setPoHeaderData({
-                            ...value.poHeaderData,
-                            paymentTerm: text,
-                          })
-                        }
-                        editable={true}
-                        // style={{ backgroundColor: "#e8e8e8" }}
-                      />
-                    </FormControl>
-                    <FormControl >
-                      <InputFieldComponent
-                        label="Total Amount"
-                        required={true}
-                        type="number"
-                        placeholder="Total Amount"
-                        value={value.invoiceData?.totalAmount}
-                        fun={(text) =>
-                          value.setInvoiceData({
-                            ...value.invoiceData,
-                            totalAmount: text,
-                          })
-                        }
-                        editable={true}
-                      />
-                    </FormControl>
-                 
-                  
-                    <FormControl >
-                      <InputFieldComponent
-                        label="Total Tax"
-                        required={true}
-                        type="number"
-                        placeholder="Total Tax"
-                        value={value.invoiceData?.totalTax}
-                        fun={(text) =>
-                          value.setInvoiceData({
-                            ...value.invoiceData,
-                            totalTax: text,
-                          })
-                        }
-                        editable={true}
-                      />
-                    </FormControl>
-                    <FormControl >
-                      <InputFieldComponent
-                        label="Total Quantity"
-                        required={true}
-                        placeholder="Enter your Total Quantity"
-                        value={sumQuantities(value.itemDetails?.quantity)}
-                        // value={value.itemDetails.quantity}
-                        fun={(text) =>
-                          value.setItemDetails({
-                            ...value.itemDetails,
-                            quantity: text,
-                          })
-                        }
-                        editable={true}
-                      />
-                    </FormControl>
-              
-                    <FormControl >
-                      <InputFieldComponent
-                        label="Currency"
-                        required={true}
-                        placeholder="Currency"
-                        value={value.poHeaderData?.currency}
-                        fun={(text) =>
-                          value.setPoHeaderData({
-                            ...value.poHeaderData,
-                            currency: text,
-                          })
-                        }
-                        editable={true}
-                        // style={{ backgroundColor: "#e8e8e8" }}
-                      />
-                    </FormControl>
-                    <FormControl sx={{ flex: 1 }}>
-                      <InputFieldComponent
-                        label="Currency Exchange Rate"
-                        required={false}
-                        placeholder="Currency Exchange Rate"
-                        value={value.poHeaderData?.exchangeRate}
-                        fun={(text) =>
-                          value.setPoHeaderData({
-                            ...value.poHeaderData,
-                            exchangeRate: text,
-                          })
-                        }
-                        editable={true}
-                        // style={{ backgroundColor: "#e8e8e8" }}
-                      />
-                    </FormControl>
-                 </Box>
-            </CardOverflow>
-          
+                />
+              </FormControl>
+
+              <FormControl >
+                <InputFieldComponent
+                  label="PO No."
+                  required={true}
+                  placeholder="Enter your PO No."
+                  value={value.invoiceData?.poNumber}
+                  fun={(text) =>
+                    value.setInvoiceData({
+                      ...value.invoiceData,
+                      poNumber: text,
+                    })
+                  }
+                />
+              </FormControl>
+              <FormControl >
+                <InputFieldComponent
+                  label="Invoice No."
+                  required={true}
+                  placeholder="Enter your Invoice No."
+                  value={value.invoiceData?.userInvNo}
+                  fun={(text) =>
+                    value.setInvoiceData({
+                      ...value.invoiceData,
+                      userInvNo: text,
+                    })
+                  }
+                // editable={true}
+                // style={{ backgroundColor: "#e8e8e8" }}
+                />
+              </FormControl>
+
+
+              <FormControl>
+                <InputFieldComponent
+                  label="Payment Terms"
+                  required={true}
+                  placeholder="Payment Terms"
+                  value={value?.poHeaderData?.paymentTerm}
+                  fun={(text) =>
+                    value.setPoHeaderData({
+                      ...value.poHeaderData,
+                      paymentTerm: text,
+                    })
+                  }
+                  editable={true}
+                // style={{ backgroundColor: "#e8e8e8" }}
+                />
+              </FormControl>
+              <FormControl >
+                <InputFieldComponent
+                  label="Total Amount"
+                  required={true}
+                  type="number"
+                  placeholder="Total Amount"
+                  value={value.invoiceData?.totalAmount}
+                  fun={(text) =>
+                    value.setInvoiceData({
+                      ...value.invoiceData,
+                      totalAmount: text,
+                    })
+                  }
+                  editable={true}
+                />
+              </FormControl>
+
+
+              <FormControl >
+                <InputFieldComponent
+                  label="Total Tax"
+                  required={true}
+                  type="number"
+                  placeholder="Total Tax"
+                  value={value.invoiceData?.totalTax}
+                  fun={(text) =>
+                    value.setInvoiceData({
+                      ...value.invoiceData,
+                      totalTax: text,
+                    })
+                  }
+                  editable={true}
+                />
+              </FormControl>
+              <FormControl >
+                <InputFieldComponent
+                  label="Total Quantity"
+                  required={true}
+                  placeholder="Enter your Total Quantity"
+                  value={sumQuantities(value.itemDetails?.quantity)}
+                  // value={value.itemDetails.quantity}
+                  fun={(text) =>
+                    value.setItemDetails({
+                      ...value.itemDetails,
+                      quantity: text,
+                    })
+                  }
+                  editable={true}
+                />
+              </FormControl>
+
+              <FormControl >
+                <InputFieldComponent
+                  label="Currency"
+                  required={true}
+                  placeholder="Currency"
+                  value={value.poHeaderData?.currency}
+                  fun={(text) =>
+                    value.setPoHeaderData({
+                      ...value.poHeaderData,
+                      currency: text,
+                    })
+                  }
+                  editable={true}
+                // style={{ backgroundColor: "#e8e8e8" }}
+                />
+              </FormControl>
+              <FormControl sx={{ flex: 1 }}>
+                <InputFieldComponent
+                  label="Currency Exchange Rate"
+                  required={false}
+                  placeholder="Currency Exchange Rate"
+                  value={value.poHeaderData?.exchangeRate}
+                  fun={(text) =>
+                    value.setPoHeaderData({
+                      ...value.poHeaderData,
+                      exchangeRate: text,
+                    })
+                  }
+                  editable={true}
+                // style={{ backgroundColor: "#e8e8e8" }}
+                />
+              </FormControl>
+            </Box>
+          </CardOverflow>
+
           {/* <Card> */}
-            <div
-              style={{
+          <div
+            style={{
               marginLeft: "2%",
               display: "flex",
               flexDirection: "row",
               alignItems: "center",
             }}
-            >
-              <Typography
-                className="poppins"
-                style={{
-                fontSize: "1rem",
+          >
+            <Typography
+              className="poppins"
+              sx={{
+                fontSize: "var(--font-base)",
                 fontWeight: "700",
-                color: "white",
-                fontFamily: "Montserrat,sans-sherif",
+                color: "var(--white)",
+                fontFamily: "Montserrat, sans-serif",
               }}
-              >
-                Item Details
-              </Typography>
-              <IconButton sx={{
-              color: 'white',
+            >
+              Item Details
+            </Typography>
+            <IconButton sx={{
+              color: 'var(--white)',
               '&:hover': {
                 backgroundColor: '#a0b3d8',
-                color: 'white',
+                color: 'var(--white)',
               },
             }} onClick={handleTableExpand} className="expandIcon">
               {tableToggle ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </IconButton>
-            </div>
-            {tableToggle && (
+          </div>
+          {tableToggle && (
             <div style={{
               marginLeft: "2%",
               display: "flex",
               flexDirection: "row",
               alignItems: "center",
-              width:"96.5%"
+              width: "96.5%"
 
             }}>
               <Paper sx={{ width: "100%" }}>
@@ -572,8 +578,8 @@ function InvoiceDetailsSide() {
                           style={{
                             fontFamily: "Poppins,sans-serif",
                             fontSize: "0.6rem",
-                            color: "#575F6E",
-                            backgroundColor: "#F5F6F8",
+                            color: "var(--dark-grey)",
+                            backgroundColor: "var(--light-bg-grey)",
                           }}
                         >
                           Item ID
@@ -584,8 +590,8 @@ function InvoiceDetailsSide() {
                           style={{
                             fontFamily: "Poppins,sans-serif",
                             fontSize: "0.6rem",
-                            color: "#575F6E",
-                            backgroundColor: "#F5F6F8",
+                            color: "var(--dark-grey)",
+                            backgroundColor: "var(--light-bg-grey)",
                           }}
                         >
                           Item Description
@@ -596,8 +602,8 @@ function InvoiceDetailsSide() {
                           style={{
                             fontFamily: "Poppins,sans-serif",
                             fontSize: "0.6rem",
-                            color: "#575F6E",
-                            backgroundColor: "#F5F6F8",
+                            color: "var(--dark-grey)",
+                            backgroundColor: "var(--light-bg-grey)",
                           }}
                         >
                           Invoice Quantity
@@ -608,8 +614,8 @@ function InvoiceDetailsSide() {
                           style={{
                             fontFamily: "Poppins,sans-serif",
                             fontSize: "0.6rem",
-                            color: "#575F6E",
-                            backgroundColor: "#F5F6F8",
+                            color: "var(--dark-grey)",
+                            backgroundColor: "var(--light-bg-grey)",
                           }}
                         >
                           PO Quantity
@@ -620,8 +626,8 @@ function InvoiceDetailsSide() {
                           style={{
                             fontFamily: "Poppins,sans-serif",
                             fontSize: "0.6rem",
-                            color: "#575F6E",
-                            backgroundColor: "#F5F6F8",
+                            color: "var(--dark-grey)",
+                            backgroundColor: "var(--light-bg-grey)",
                           }}
                         >
                           Invoice Cost
@@ -632,8 +638,8 @@ function InvoiceDetailsSide() {
                           style={{
                             fontFamily: "Poppins,sans-serif",
                             fontSize: "0.6rem",
-                            color: "#575F6E",
-                            backgroundColor: "#F5F6F8",
+                            color: "var(--dark-grey)",
+                            backgroundColor: "var(--light-bg-grey)",
                           }}
                         >
                           PO Cost
@@ -644,8 +650,8 @@ function InvoiceDetailsSide() {
                           style={{
                             fontFamily: "Poppins,sans-serif",
                             fontSize: "0.6rem",
-                            color: "#575F6E",
-                            backgroundColor: "#F5F6F8",
+                            color: "var(--dark-grey)",
+                            backgroundColor: "var(--light-bg-grey)",
                           }}
                         >
                           Inv. Amount
@@ -656,8 +662,8 @@ function InvoiceDetailsSide() {
                           style={{
                             fontFamily: "Poppins,sans-serif",
                             fontSize: "0.6rem",
-                            color: "#575F6E",
-                            backgroundColor: "#F5F6F8",
+                            color: "var(--dark-grey)",
+                            backgroundColor: "var(--light-bg-grey)",
                           }}
                         >
                           PO Amount
@@ -674,7 +680,7 @@ function InvoiceDetailsSide() {
                               style={{
                                 fontFamily: "Poppins,sans-serif",
                                 fontSize: "0.6rem",
-                                color: "#454B54",
+                                color: "var(--dark-grey)",
                               }}
                             >
                               <BsFillInfoCircleFill
@@ -694,7 +700,7 @@ function InvoiceDetailsSide() {
                               style={{
                                 fontFamily: "Poppins,sans-serif",
                                 fontSize: "0.6rem",
-                                color: "#454B54",
+                                color: "var(--dark-grey)",
                               }}
                             >
                               {item.itemDescription}
@@ -719,7 +725,7 @@ function InvoiceDetailsSide() {
                               style={{
                                 fontFamily: "Poppins, sans-serif",
                                 fontSize: "0.6rem",
-                                color: "#454B54",
+                                color: "var(--dark-grey)",
                                 outline: "none",
 
                                 // border:'solid'
@@ -740,7 +746,7 @@ function InvoiceDetailsSide() {
                                   // margin: 2,
                                   borderRadius: 12,
                                   padding: 5,
-                                  border: "1px solid black",
+                                  border: "1px solid var(--black)",
                                 }}
                               >
                                 {item.invQty}
@@ -759,7 +765,7 @@ function InvoiceDetailsSide() {
                                 style={{
                                   fontFamily: "Poppins, sans-serif",
                                   fontSize: "0.6rem",
-                                  color: "#454B54",
+                                  color: "var(--dark-grey)",
                                   border: "none",
                                   width: "100%",
                                   textAlign: "center",
@@ -773,7 +779,7 @@ function InvoiceDetailsSide() {
                               style={{
                                 fontFamily: "Poppins,sans-serif",
                                 fontSize: "0.6rem",
-                                color: "#454B54",
+                                color: "var(--dark-grey)",
                               }}
                             >
                               {item.itemQuantity}
@@ -784,7 +790,7 @@ function InvoiceDetailsSide() {
                               style={{
                                 fontFamily: "Poppins, sans-serif",
                                 fontSize: "0.6rem",
-                                color: "#454B54",
+                                color: "var(--dark-grey)",
                                 outline: "none",
 
                                 // border:'solid'
@@ -947,8 +953,8 @@ function InvoiceDetailsSide() {
                   </Table>
                 </TableContainer>
               </Paper>
-              </div>
-            )}
+            </div>
+          )}
           {/* </Card> */}
           <CardOverflow
             sx={{ borderTop: "1px solid", borderColor: "divider" }}
@@ -993,21 +999,26 @@ function InvoiceDetailsSide() {
         </Card>
         {/* )}  */}
       </Grid>
-      <Grid
-        item
-        xs={4}
-        sm={4}
-        md={4}
-        // className="imageBackground"
-        style={{
-          // marginTop: "7.25vh", //margin-all
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-        }}
+
+      <div
+        className="chatbot-pane-container"
       >
-       <InvoiceChatbot />
-      </Grid>
+        <InvoiceChatbot />
+      </div>
+      {/* <Grid
+              item
+              xs={4}
+              sm={4}
+              md={4}
+              sx={{
+                mt: '7.25vh',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+              }}
+            >
+              <InvoiceChatbot />
+            </Grid> */}
     </Grid>
   );
 }

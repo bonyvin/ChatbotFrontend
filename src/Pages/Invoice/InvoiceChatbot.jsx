@@ -229,7 +229,7 @@ export default function InvoiceChatbot() {
       hostRef.current.shouldReconnect = false;
       try {
         wsRef.current && wsRef.current.close();
-      } catch (err) {}
+      } catch (err) { }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -263,42 +263,37 @@ export default function InvoiceChatbot() {
       });
     let savedData = `
     ${trueValueKey ? `Type of Invoice: ${trueValueKey},` : ""}
-    ${
-      value.invoiceData.invoiceDate
+    ${value.invoiceData.invoiceDate
         ? `Date: ${value.invoiceData.invoiceDate},`
         : ""
-    }
-    ${
-      value.invoiceData.poNumber
+      }
+    ${value.invoiceData.poNumber
         ? `PO number: ${value.invoiceData.poNumber},`
         : ""
-    }
-    ${
-      value.invoiceData.supplierId
+      }
+    ${value.invoiceData.supplierId
         ? `Supplier Id: ${value.invoiceData.supplierId},`
         : ""
-    }
-    ${
-      value.invoiceData.totalAmount
+      }
+    ${value.invoiceData.totalAmount
         ? `Total amount: ${value.invoiceData.totalAmount},`
         : ""
-    }
-    ${
-      value.invoiceData.totalTax
+      }
+    ${value.invoiceData.totalTax
         ? `Total tax: ${value.invoiceData.totalTax},`
         : ""
-    }
+      }
     ${
       // value.itemDetailsInput.items
       itemsPresent
         ? `Items: ${filteredItems},`
         : // ? `Items: ${value.itemDetailsInput.items},`
-          ""
-    }
+        ""
+      }
     ${
       // value.itemDetailsInput.quantity
       quantitiesPresent ? `Quantity: ${filteredQuantities}` : ""
-    }
+      }
     `;
     await sendMessage(savedData);
     // await handleMessageSubmit(savedData);
@@ -596,125 +591,125 @@ export default function InvoiceChatbot() {
 
   //PO DETAILS
   const updateItemDetails = useCallback(
-  (invoiceDatafromConversation) => {
-    // Defensive: normalize input
-    if (!invoiceDatafromConversation) {
-      value.setItemDetails({ items: [], quantity: [], invoiceCost: [] });
-      value.setItemDetailsInput({ items: [], quantity: [], invoiceCost: [] });
-      return;
-    }
-
-    const itemsArray = Array.isArray(invoiceDatafromConversation.items)
-      ? invoiceDatafromConversation.items
-      : [];
-
-    if (itemsArray.length === 0) {
-      value.setItemDetails({ items: [], quantity: [], invoiceCost: [] });
-      value.setItemDetailsInput({ items: [], quantity: [], invoiceCost: [] });
-      return;
-    }
-
-    console.log("updateItemDetails - incoming items:", itemsArray);
-
-    // If every item is empty-like, bail out
-    const allEmpty = itemsArray.every((it) =>
-      Object.values(it).every((v) => v === null || v === undefined || v === "")
-    );
-    if (allEmpty) {
-      console.log("updateItemDetails - all invoice items are empty; skipping");
-      return;
-    }
-
-    // Build dictionary with normalized string keys (support both item_id and itemId)
-    const tempDictionary = itemsArray.reduce((acc, item) => {
-      const key = String(item.item_id ?? item.itemId ?? item.id ?? "");
-      if (!key) return acc;
-      acc[key] = {
-        quantity: Number(item.quantity ?? 0),
-        invoiceCost: Number(item.invoice_cost ?? item.inv_cost ?? 0),
-      };
-      return acc;
-    }, {});
-
-    // Structured arrays for UI controls
-    const updatedItems = itemsArray.map((it) =>
-      String(it.item_id ?? it.itemId ?? it.id ?? "")
-    );
-    const updatedQuantities = itemsArray.map((it) => Number(it.quantity ?? 0));
-    const updatedInvoiceCosts = itemsArray.map((it) =>
-      Number(it.invoice_cost ?? it.inv_cost ?? 0)
-    );
-
-    // update local UI arrays (if you still use them)
-    setItemsArray(updatedItems);
-    setQuantitiesArray(updatedQuantities);
-    setInvoiceCostArray(updatedInvoiceCosts);
-
-    const updatedInvoiceData = {
-      items: updatedItems,
-      quantity: updatedQuantities,
-      invoiceCost: updatedInvoiceCosts,
-    };
-
-    console.log("updateItemDetails - prepared invoice data:", updatedInvoiceData);
-    value.setItemDetails(updatedInvoiceData);
-    value.setItemDetailsInput(updatedInvoiceData);
-
-    // Use the ref snapshot for prev PO details (ensure it's an array)
-    const prevPoDetailsData = Array.isArray(prevPoDetailsDataRef.current)
-      ? prevPoDetailsDataRef.current
-      : [];
-
-    // Map over previous PO items and update values when we have match
-    const updatedPoDetails = prevPoDetailsData.map((poItem) => {
-      const poKey = String(poItem.itemId ?? poItem.item_id ?? "");
-      const found = tempDictionary[poKey];
-      if (found) {
-        return {
-          ...poItem,
-          invQty: found.quantity,
-          invCost: found.invoiceCost,
-          invAmt: found.quantity * found.invoiceCost,
-        };
+    (invoiceDatafromConversation) => {
+      // Defensive: normalize input
+      if (!invoiceDatafromConversation) {
+        value.setItemDetails({ items: [], quantity: [], invoiceCost: [] });
+        value.setItemDetailsInput({ items: [], quantity: [], invoiceCost: [] });
+        return;
       }
-      return poItem;
-    });
 
-    // Find invoice items that are new (not in prevPoDetailsData)
-    const newItems = Object.keys(tempDictionary)
-      .filter(
-        (k) => !prevPoDetailsData.some((entry) => String(entry.itemId) === k)
-      )
-      .map((k) => ({
-        itemId: k,
-        invQty: tempDictionary[k].quantity,
-        invCost: tempDictionary[k].invoiceCost,
-        invAmt: tempDictionary[k].quantity * tempDictionary[k].invoiceCost,
-        itemQuantity: 0,
-        itemDescription: "",
-        totalItemCost: 0,
-        supplierId: "",
-        itemCost: 0,
-        poId: prevPoDetailsData[0]?.poId ?? "",
-      }));
+      const itemsArray = Array.isArray(invoiceDatafromConversation.items)
+        ? invoiceDatafromConversation.items
+        : [];
 
-    const merged = [...updatedPoDetails, ...newItems];
+      if (itemsArray.length === 0) {
+        value.setItemDetails({ items: [], quantity: [], invoiceCost: [] });
+        value.setItemDetailsInput({ items: [], quantity: [], invoiceCost: [] });
+        return;
+      }
 
-    // Update state and the ref synchronously so future calls see latest
-    value.setPoDetailsData(merged);
-    prevPoDetailsDataRef.current = merged;
+      console.log("updateItemDetails - incoming items:", itemsArray);
 
-    console.log("updateItemDetails - merged PO details:", merged);
-  },
-  // include everything used inside the callback that could change
-  [
-    value.setItemDetails,
-    value.setItemDetailsInput,
-    value.setPoDetailsData,
-    // If setItemsArray/setQuantitiesArray/setInvoiceCostArray are stable functions from useState,
-    // it's ok to omit them; otherwise include them.
-  ]
-);
+      // If every item is empty-like, bail out
+      const allEmpty = itemsArray.every((it) =>
+        Object.values(it).every((v) => v === null || v === undefined || v === "")
+      );
+      if (allEmpty) {
+        console.log("updateItemDetails - all invoice items are empty; skipping");
+        return;
+      }
+
+      // Build dictionary with normalized string keys (support both item_id and itemId)
+      const tempDictionary = itemsArray.reduce((acc, item) => {
+        const key = String(item.item_id ?? item.itemId ?? item.id ?? "");
+        if (!key) return acc;
+        acc[key] = {
+          quantity: Number(item.quantity ?? 0),
+          invoiceCost: Number(item.invoice_cost ?? item.inv_cost ?? 0),
+        };
+        return acc;
+      }, {});
+
+      // Structured arrays for UI controls
+      const updatedItems = itemsArray.map((it) =>
+        String(it.item_id ?? it.itemId ?? it.id ?? "")
+      );
+      const updatedQuantities = itemsArray.map((it) => Number(it.quantity ?? 0));
+      const updatedInvoiceCosts = itemsArray.map((it) =>
+        Number(it.invoice_cost ?? it.inv_cost ?? 0)
+      );
+
+      // update local UI arrays (if you still use them)
+      setItemsArray(updatedItems);
+      setQuantitiesArray(updatedQuantities);
+      setInvoiceCostArray(updatedInvoiceCosts);
+
+      const updatedInvoiceData = {
+        items: updatedItems,
+        quantity: updatedQuantities,
+        invoiceCost: updatedInvoiceCosts,
+      };
+
+      console.log("updateItemDetails - prepared invoice data:", updatedInvoiceData);
+      value.setItemDetails(updatedInvoiceData);
+      value.setItemDetailsInput(updatedInvoiceData);
+
+      // Use the ref snapshot for prev PO details (ensure it's an array)
+      const prevPoDetailsData = Array.isArray(prevPoDetailsDataRef.current)
+        ? prevPoDetailsDataRef.current
+        : [];
+
+      // Map over previous PO items and update values when we have match
+      const updatedPoDetails = prevPoDetailsData.map((poItem) => {
+        const poKey = String(poItem.itemId ?? poItem.item_id ?? "");
+        const found = tempDictionary[poKey];
+        if (found) {
+          return {
+            ...poItem,
+            invQty: found.quantity,
+            invCost: found.invoiceCost,
+            invAmt: found.quantity * found.invoiceCost,
+          };
+        }
+        return poItem;
+      });
+
+      // Find invoice items that are new (not in prevPoDetailsData)
+      const newItems = Object.keys(tempDictionary)
+        .filter(
+          (k) => !prevPoDetailsData.some((entry) => String(entry.itemId) === k)
+        )
+        .map((k) => ({
+          itemId: k,
+          invQty: tempDictionary[k].quantity,
+          invCost: tempDictionary[k].invoiceCost,
+          invAmt: tempDictionary[k].quantity * tempDictionary[k].invoiceCost,
+          itemQuantity: 0,
+          itemDescription: "",
+          totalItemCost: 0,
+          supplierId: "",
+          itemCost: 0,
+          poId: prevPoDetailsData[0]?.poId ?? "",
+        }));
+
+      const merged = [...updatedPoDetails, ...newItems];
+
+      // Update state and the ref synchronously so future calls see latest
+      value.setPoDetailsData(merged);
+      prevPoDetailsDataRef.current = merged;
+
+      console.log("updateItemDetails - merged PO details:", merged);
+    },
+    // include everything used inside the callback that could change
+    [
+      value.setItemDetails,
+      value.setItemDetailsInput,
+      value.setPoDetailsData,
+      // If setItemsArray/setQuantitiesArray/setInvoiceCostArray are stable functions from useState,
+      // it's ok to omit them; otherwise include them.
+    ]
+  );
   const getPoDetails = useCallback(
     async (id) => {
       if (prevIdRef.current && prevIdRef.current !== id) {
@@ -833,100 +828,100 @@ export default function InvoiceChatbot() {
     }
   };
   //EXTRACTING FIELD DATA FROM BACKEND
-const invoiceCheck = useCallback(
-  async (invoiceObject) => {
-    let updatedInvoiceData = { ...value.invoiceData };
-    console.log("invoiceObject:", invoiceObject);
-    let poStatus = false;
+  const invoiceCheck = useCallback(
+    async (invoiceObject) => {
+      let updatedInvoiceData = { ...value.invoiceData };
+      console.log("invoiceObject:", invoiceObject);
+      let poStatus = false;
 
-    for (const key of Object.keys(invoiceObject)) {
-      if (invoiceObject[key] !== null) {
-        switch (key) {
+      for (const key of Object.keys(invoiceObject)) {
+        if (invoiceObject[key] !== null) {
+          switch (key) {
 
-          // Matches: 'invoice_type'
-          case "invoice_type":
-            updatedInvoiceData.invoiceType = invoiceObject[key];
-            break;
+            // Matches: 'invoice_type'
+            case "invoice_type":
+              updatedInvoiceData.invoiceType = invoiceObject[key];
+              break;
 
-          // No direct equivalent for "Quantities" — infer from items?
-          // Keeping this optional if you want to attach quantity separately:
-          case "quantity":
-          case "quantities":
-            updatedInvoiceData.quantity = invoiceObject[key];
-            break;
+            // No direct equivalent for "Quantities" — infer from items?
+            // Keeping this optional if you want to attach quantity separately:
+            case "quantity":
+            case "quantities":
+              updatedInvoiceData.quantity = invoiceObject[key];
+              break;
 
-          // Matches: 'invoice_number'
-          case "invoice_number":
-            updatedInvoiceData.userInvNo = invoiceObject[key];
-            break;
+            // Matches: 'invoice_number'
+            case "invoice_number":
+              updatedInvoiceData.userInvNo = invoiceObject[key];
+              break;
 
-          // Matches: 'total_amount'
-          case "total_amount":
-            updatedInvoiceData.totalAmount = invoiceObject[key];
-            break;
+            // Matches: 'total_amount'
+            case "total_amount":
+              updatedInvoiceData.totalAmount = invoiceObject[key];
+              break;
 
-          // Matches: 'date'
-          case "date":
-            updatedInvoiceData.invoiceDate = formatDate(invoiceObject[key]);
-            break;
+            // Matches: 'date'
+            case "date":
+              updatedInvoiceData.invoiceDate = formatDate(invoiceObject[key]);
+              break;
 
-          // Matches: 'total_tax'
-          case "total_tax":
-            updatedInvoiceData.totalTax = invoiceObject[key];
-            break;
+            // Matches: 'total_tax'
+            case "total_tax":
+              updatedInvoiceData.totalTax = invoiceObject[key];
+              break;
 
-          // Matches: 'items'
-          case "items":
-            updatedInvoiceData.items = invoiceObject[key];
-            break;
+            // Matches: 'items'
+            case "items":
+              updatedInvoiceData.items = invoiceObject[key];
+              break;
 
-          // Matches: 'po_number'
-          case "po_number":
-            updatedInvoiceData.poNumber = invoiceObject[key];
+            // Matches: 'po_number'
+            case "po_number":
+              updatedInvoiceData.poNumber = invoiceObject[key];
 
-            poStatus = await getPoDetails(
-              invoiceObject[key]
-            );
+              poStatus = await getPoDetails(
+                invoiceObject[key]
+              );
 
-            console.log("PO status INSIDE GET PO DETAILS:", poStatus);
+              console.log("PO status INSIDE GET PO DETAILS:", poStatus);
 
-            if (poStatus) {
-              updateItemDetails(invoiceObject);
-            } else {
-              value.setinvoiceData({
-                ...value.invoiceData,
-                items: "",
-                quantity: "",
-              });
-            }
-            break;
+              if (poStatus) {
+                updateItemDetails(invoiceObject);
+              } else {
+                value.setinvoiceData({
+                  ...value.invoiceData,
+                  items: "",
+                  quantity: "",
+                });
+              }
+              break;
 
-          // Optional fields
-          case "supplier_id":
-            updatedInvoiceData.supplierId = invoiceObject[key];
-            break;
+            // Optional fields
+            case "supplier_id":
+              updatedInvoiceData.supplierId = invoiceObject[key];
+              break;
 
-          case "email":
-            updatedInvoiceData.email = invoiceObject[key];
-            break;
+            case "email":
+              updatedInvoiceData.email = invoiceObject[key];
+              break;
+          }
         }
       }
-    }
 
-    value.setInvoiceData(updatedInvoiceData);
-    typeSelection(invoiceObject);
+      value.setInvoiceData(updatedInvoiceData);
+      typeSelection(invoiceObject);
 
-    return poStatus;
-  },
-  [
-    getPoDetails,
-    updateItemDetails,
-    // value.invoiceDatafromConversation,
-    value.setInvoiceData,
-    // value.setinvoiceDatafromConversation,
-    value.invoiceData,
-  ]
-);
+      return poStatus;
+    },
+    [
+      getPoDetails,
+      updateItemDetails,
+      // value.invoiceDatafromConversation,
+      value.setInvoiceData,
+      // value.setinvoiceDatafromConversation,
+      value.invoiceData,
+    ]
+  );
 
   // const invoiceCheck = useCallback(
   //   async (invoiceObject, invoiceDatafromConversation) => {
@@ -1251,9 +1246,9 @@ const invoiceCheck = useCallback(
             typeof data === "string"
               ? data
               : data?.text ||
-                data?.content ||
-                data?.message ||
-                JSON.stringify(data);
+              data?.content ||
+              data?.message ||
+              JSON.stringify(data);
           buffer += text;
         } else if (msg.type === "done") {
           // Stream finished - cleanup
@@ -1647,23 +1642,24 @@ const invoiceCheck = useCallback(
             <TypingIndicatorComponent scrollToBottom={scrollToBottom} />
           )}
         </Box>
-        <ChatbotInputForm
-          input={input}
-          setInput={setInput}
-          handleMessageSubmit={sendMessage}
-          uploadInvoice={uploadInvoice}
-          isPickerVisible={isPickerVisible}
-          setPickerVisible={setPickerVisible}
-        />
-        {isPickerVisible && (
-          <div
-            style={{ position: "absolute", zIndex: 1000, bottom: "4rem" }}
-            ref={pickerRef}
-          >
-            <Picker data={data} onEmojiSelect={handleEmojiSelect} />
-          </div>
-        )}
-      </div>
+
+      </div>        
+      <div className="chatbot-message-card"><ChatbotInputForm
+        input={input}
+        setInput={setInput}
+        handleMessageSubmit={sendMessage}
+        uploadInvoice={uploadInvoice}
+        isPickerVisible={isPickerVisible}
+        setPickerVisible={setPickerVisible}
+      />
+      {isPickerVisible && (
+        <div
+          style={{ position: "absolute", zIndex: 1000, bottom: "4rem" }}
+          ref={pickerRef}
+        >
+          <Picker data={data} onEmojiSelect={handleEmojiSelect} />
+        </div>
+      )}</div>
     </div>
   );
 }

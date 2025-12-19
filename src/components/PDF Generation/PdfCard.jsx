@@ -12,7 +12,7 @@ import Invoice from "./Invoice";
 import { saveAs } from "file-saver";
 import DownloadForOfflineIcon from "@mui/icons-material/DownloadForOffline";
 import PrintIcon from "@mui/icons-material/Print";
-import "../../styles/PdfCard.css";
+import "../../styles/pdf-card.css";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import DownloadIcon from "@mui/icons-material/Download";
 import PurchaseOrder from "./PurchaseOrder";

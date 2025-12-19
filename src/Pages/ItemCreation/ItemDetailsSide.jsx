@@ -22,7 +22,7 @@ import {
   Grid,
   Typography,
 } from "@mui/material";
-import "../../styles/Overall.css";
+import "../../styles/general.css";
 import { Box } from "@mui/material";
 // Joy UI components
 import {
@@ -49,7 +49,7 @@ import { DynamicCutoutInput } from "../../components/DynamicCutoutInput";
 import InputFieldComponent from "../../components/InputFieldComponent";
 import ItemInfoPopup from "../../components/PopupMessage/ItemInfoPopup";
 import PopUp from "../../components/PopupMessage/FormSubmissionStatusPopUp";
-import PromoChatbotPane from "../Promotion/PromoChatbotPane.jsx";
+import PromoChatbotPane from "../Promotion/PromoChatbot.jsx";
 import SupplierInfoPopUp from "../../components/PopupMessage/SupplierInfoPopUp";
 
 // React Icons
@@ -62,7 +62,7 @@ import PublishIcon from "@mui/icons-material/Publish";
 import { PDFViewer } from "@react-pdf/renderer";
 import PreviewDocs from "../../components/PDF Generation/PreviewDocs";
 import { AuthContext } from "../../context/ContextsMasterFile";
-import CustomButton from "../../components/CustomButton/CustomButton.js";
+import CustomButton from "../../components/CustomButton/CustomButton.jsx";
 import { ITEMS, STORE_LIST } from "../../const/ApiConst.js";
 import axios from "axios";
 import Tabs from "@mui/material/Tabs";
@@ -307,25 +307,15 @@ function ItemDetailsSide() {
     <Grid
       container
       component="main"
-      style={{
-        // height: "100vh",
-        // backgroundColor: "#384B70",
-        // height: "auto",
-        // overflow: "visible",
-        minHeight: "100vh",
-        backgroundColor: "#384B70",
-        // height: "auto",
-        overflow: "auto",
-      }}
+      className="main-grid"
     >
       <Grid
         item
-        xs={8}
-        sm={8}
+        xs={12}
         md={8}
         container
         component="main"
-        style={{ padding: "1rem", paddingLeft: "0.25rem" }}
+        sx={{ padding: "1rem", paddingLeft: "0.25rem" }}
         ref={messagesEndRef}
       >
         <div style={{ position: "absolute" }}>
@@ -362,10 +352,10 @@ function ItemDetailsSide() {
                             modalType === "items"
                               ? value.promotionData.itemList.includes(item)
                               : modalType === "excluded"
-                              ? value.promotionData.excludedItemList.includes(
+                                ? value.promotionData.excludedItemList.includes(
                                   item
                                 )
-                              : null
+                                : null
                           }
                         />
                       }
@@ -413,10 +403,10 @@ function ItemDetailsSide() {
                             modalType === "stores"
                               ? value.promotionData.locationList.includes(item)
                               : modalType === "storesExcluded"
-                              ? value.promotionData.excludedLocationList.includes(
+                                ? value.promotionData.excludedLocationList.includes(
                                   item
                                 )
-                              : null
+                                : null
                           }
                         />
                       }
@@ -484,19 +474,19 @@ function ItemDetailsSide() {
 
         <Card
           className="generalView"
-          style={{
+          sx={{
             width: "100%",
-            backgroundColor: "#73809A",
-            borderRadius: "1.6vw",
-            borderColor: "#73809A",
-            marginLeft: "3.5%",
-            boxShadow: "2px 2px 8px rgba(66, 57, 57, 0.75)",
+            backgroundColor: "var(--muted-blue)",
+            borderRadius: "var(--radius-lg)",
+            borderColor: "var(--muted-blue)",
+            marginLeft: { xs: 0, md: "1rem" },
+            boxShadow: "var(--shadow-medium)",
             marginTop: "3rem",
           }}
           ref={messagesEndRef}
         >
           {/* <Card ref={messagesEndRef}> */}
-{/* 
+          {/* 
           <Tabs
             value={value}
             onChange={handleChangeTabs}
@@ -574,20 +564,18 @@ function ItemDetailsSide() {
                 onClick={(e) => handleChangeItemTile(e, type)}
                 className={
                   alignment === type
-                    ? `toggle-button-selected${
-                        idx === 0
-                          ? "-start"
-                          : idx === itemTiles.length - 1
-                          ? "-end"
-                          : ""
-                      }`
-                    : `toggle-button${
-                        idx === 0
-                          ? "-start"
-                          : idx === itemTiles.length - 1
-                          ? "-end"
-                          : ""
-                      }`
+                    ? `toggle-button-selected${idx === 0
+                      ? "-start"
+                      : idx === itemTiles.length - 1
+                        ? "-end"
+                        : ""
+                    }`
+                    : `toggle-button${idx === 0
+                      ? "-start"
+                      : idx === itemTiles.length - 1
+                        ? "-end"
+                        : ""
+                    }`
                 }
                 style={{
                   display: "flex",
@@ -612,11 +600,11 @@ function ItemDetailsSide() {
                   style={{ display: "flex", justifyContent: "space-between" }}
                 >
                   <Typography
-                    style={{
-                      fontSize: "0.9rem",
+                    sx={{
+                      fontSize: "var(--font-xs)",
                       fontWeight: "bold",
-                      fontFamily: "Montserrat,sans-sherif",
-                      color: "white",
+                      fontFamily: "Montserrat, sans-serif",
+                      color: "var(--white)",
                     }}
                   >
                     Level
@@ -885,27 +873,9 @@ function ItemDetailsSide() {
         </Card>
         {/* )}  */}
       </Grid>
-      <Grid
-        item
-        xs={4}
-        sm={4}
-        md={4}
-        // className="imageBackground"
-        // className="grid1"
-        style={{
-          marginTop: "7.25vh",
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        {/* <Card
-      className="generalView"
-      style={{ width: "100%" }}
-      ref={messagesEndRef}
-    > */}
+      <div className="chatbot-pane-container">
         <PromoChatbotPane />
-      </Grid>
+      </div>
     </Grid>
   );
 }
