@@ -40,6 +40,7 @@ import PublishIcon from '@mui/icons-material/Publish';
 import PoChatbot from "./PoChatbot";
 import { SUPPLIER_RISK_INSIGHT } from "../../const/ApiConst";
 import InputFieldComponent from "../../components/InputFieldComponent";
+import symbolBlue from "../../images/symbol-blue.png";
 
 function PoDetailsSide() {
   const messagesEndRef = useRef(null);
@@ -244,7 +245,56 @@ function PoDetailsSide() {
             </div>
           </Dialog>
         </div>
-
+        {!showForm ? (
+          <Card
+          className="generalView"
+          sx={{
+            width: "100%",
+            backgroundColor: "var(--white)",
+            borderRadius: "var(--radius-lg)",
+            borderColor: "var(--muted-blue)",
+            marginLeft: { xs: 0, md: "1rem" },
+            boxShadow: "var(--shadow-medium)",
+            marginTop: "3rem",
+            padding:'3rem'
+          }}
+            
+          >
+            <img src={symbolBlue} style={{ width: "4.2rem" }}></img>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                width: "60%",
+              }}
+            >
+              <Typography
+                className="OpenSans"
+                style={{
+                  fontSize: "2rem",
+                  fontWeight: "700",
+                  color: "#00338D",
+                  marginBottom: "1.5rem",
+                  marginTop: "1.5rem",
+                }}
+              >
+                Welcome to ExperienceX !
+              </Typography>
+              <Typography
+                style={{
+                  fontSize: "1rem",
+                  fontWeight: "500",
+                  color: "#00338D",
+                  textAlign: "left",
+                }}
+              >
+                Need help with purchase orders, promotions, invoices, payments, ASNs
+                or more? I've got you covered - happy to assist!
+              </Typography>
+            </div>
+          </Card>
+        ) : (
         <Card
           className="generalView"
           sx={{
@@ -730,8 +780,8 @@ function PoDetailsSide() {
               </CustomButton>
               <CustomButton
 
-                // onClick={() =>(supplierRiskApi('SUP130'),setSupplierPopupStatus(true))}
-                onClick={() => value.setFormSubmit((prevState) => !prevState)}
+                onClick={() =>(supplierRiskApi(value.supplierDetails.supplierId),setSupplierPopupStatus(true))}
+                // onClick={() => value.setFormSubmit((prevState) => !prevState)}
               >
                 <PublishIcon style={{ color: "2E333E" }}></PublishIcon>
                 SUBMIT
@@ -739,27 +789,14 @@ function PoDetailsSide() {
             </CardActions>
             {/* </div> */}
           </CardOverflow>
-        </Card>
+        </Card>)}
       </Grid>
       <div
         className="chatbot-pane-container"
       >
         <PoChatbot />
       </div>
-      {/* <Grid
-        item
-        xs={4}
-        sm={4}
-        md={4}
-        sx={{
-          mt: '7.25vh',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-        }}
-      >
-        <PoChatbot />
-      </Grid> */}
+
     </Grid>
   );
 }

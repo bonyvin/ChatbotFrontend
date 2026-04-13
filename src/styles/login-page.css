@@ -59,6 +59,12 @@
   align-items: baseline;
   margin-top: 0.5rem;
 }
+.textStyleBody {
+  font-weight: 700;
+  color: var(--white);
+  font-size: 0.75rem;
+  line-height: 1;
+}
 
 .textStyleHeader {
   font-weight: 700;

@@ -36,30 +36,6 @@ const theme = createTheme({
   },
 });
 export default function SignInSide() {
-  // const CssTextField = makeStyles({
-  //   root: {
-  //     '& label': {
-  //       color: 'red',
-  //     },
-  //     '& label.Mui-focused': {
-  //       color: 'white',
-  //     },
-  //     '& .MuiInput-underline:after': {
-  //       borderBottomColor: 'yellow',
-  //     },
-  //     '& .MuiOutlinedInput-root': {
-  //       '& fieldset': {
-  //         borderColor: 'white',
-  //       },
-  //       '&:hover fieldset': {
-  //         borderColor: 'white',
-  //       },
-  //       '&.Mui-focused fieldset': {
-  //         borderColor: 'yellow',
-  //       },
-  //     },
-  //   },
-  // })(TextField);
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -90,12 +66,12 @@ export default function SignInSide() {
           xs={12}
           md={8}
           sx={{
-            backgroundColor: "var(--primary-color)",
+            backgroundColor: "#1c244b",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            padding: { xs: "2rem", md: "4rem" },
+            // padding: { xs: "2rem", md: "4rem" },
           }}
         >
           <div className="img-div">
@@ -113,7 +89,7 @@ export default function SignInSide() {
             }}
           >
             <div className="textContainer">
-              <div className="textStyle">Welcome to KPMG's </div>
+              <div className="textStyleBody">Welcome to KPMG's </div>
               <div className="expContainerHeader">
                 <div className="textStyleHeader">{"Experience"}</div>
                 <div className="xHeader">{"X"}</div>
@@ -139,11 +115,11 @@ export default function SignInSide() {
                   <Form.Control
                     style={{
                       backgroundColor: "transparent",
-                      borderColor: "var(--border-grey)",
+                      borderColor: "border-grey",
                       borderRadius: 0,
                       borderWidth: 0,
                       borderBottomWidth: "1px",
-                      color: "var(--white)",
+                      color: "white",
                     }}
                   />
                   <InputGroup.Text
@@ -157,21 +133,21 @@ export default function SignInSide() {
                       alignItems: "flex-end",
                     }}
                   >
-                    <PersonIcon style={{ color: "var(--white)" }} />
+                    <PersonIcon style={{ color: "white" }} />
                   </InputGroup.Text>
                 </InputGroup>
 
                 <div className="input-heading">PASSWORD</div>
-                <InputGroup className="mb-3">
+                <InputGroup className="mb-3"color="white">
                   <Form.Control
-                    type="password"
+                    type="password" 
                     style={{
                       backgroundColor: "transparent",
-                      borderColor: "var(--border-grey)",
+                      borderColor: "border-grey",
                       borderRadius: 0,
                       borderWidth: 0,
                       borderBottomWidth: "1px",
-                      color: "var(--white)",
+                      color: "white",
                     }}
                   />
                   <InputGroup.Text
@@ -185,7 +161,7 @@ export default function SignInSide() {
                       alignItems: "flex-end",
                     }}
                   >
-                    <LockIcon style={{ color: "var(--white)" }} />
+                    <LockIcon style={{ color: "white" }} />
                   </InputGroup.Text>
                 </InputGroup>
 
@@ -203,16 +179,16 @@ export default function SignInSide() {
                 fullWidth
                 variant="contained"
                 sx={{
-                  backgroundColor: "var(--white)",
-                  color: "var(--primary-color)",
+                  backgroundColor: "white",
+                  color: "#1c244b",
                   fontWeight: "700",
                   padding: "0.8rem",
                   "&:hover": {
-                    backgroundColor: "var(--text-light-grey)",
+                    backgroundColor: "text-light-grey",
                   },
                   mb: 2,
                 }}
-                onClick={() => navigate("/chatbot")}
+                onClick={() => navigate("/purchaseorder") }
               >
                 LOGIN
               </Button>
@@ -225,7 +201,7 @@ export default function SignInSide() {
                     variant="body2"
                     sx={{
                       textDecoration: "none",
-                      color: "var(--text-light-grey)",
+                      color: "text-light-grey",
                       fontSize: "0.7rem",
                     }}
                   >
@@ -246,7 +222,7 @@ export default function SignInSide() {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            backgroundColor: "var(--white)",
+            backgroundColor: "white",
           }}
         >
           <div className="imageContainer">

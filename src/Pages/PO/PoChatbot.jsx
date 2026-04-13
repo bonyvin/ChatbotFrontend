@@ -43,7 +43,14 @@ function uuidv4() {
 }
 
 export default function PoChatbot() {
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([
+    {
+      fromUser: false,
+      text: `Hello, how can I assist you today?`,
+      streaming: false,
+      id: uuidv4(),
+    },
+  ]);
   const value = useContext(AuthContext);
   const [itemsArray, setItemsArray] = useState();
   const [quantitiesArray, setQuantitiesArray] = useState();
@@ -191,7 +198,7 @@ export default function PoChatbot() {
         console.log(
           "Extraction data received:",
           extracted_details,
-          user_intent
+          user_intent,
         );
 
         // You can process the extracted details and update the UI as needed
@@ -221,7 +228,7 @@ export default function PoChatbot() {
       if (hostRef.current.shouldReconnect) {
         const nextRetry = Math.min(
           30_000,
-          500 * Math.pow(2, hostRef.current.retries)
+          500 * Math.pow(2, hostRef.current.retries),
         );
         hostRef.current.retries += 1;
         console.log(`Reconnecting in ${nextRetry}ms`);
@@ -242,7 +249,7 @@ export default function PoChatbot() {
       hostRef.current.shouldReconnect = false;
       try {
         wsRef.current && wsRef.current.close();
-      } catch (err) { }
+      } catch (err) {}
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -251,14 +258,16 @@ export default function PoChatbot() {
   //save
   const saveFormData = async () => {
     let savedData = `
-      ${value.supplierDetails.supplierId
-        ? `Supplier Id: ${value.supplierDetails.supplierId},`
-        : ""
+      ${
+        value.supplierDetails.supplierId
+          ? `Supplier Id: ${value.supplierDetails.supplierId},`
+          : ""
       }
 
-      ${purchaseOrderData.estDeliveryDate
-        ? `Estimated Delivery Date: ${purchaseOrderData.estDeliveryDate},`
-        : ""
+      ${
+        purchaseOrderData.estDeliveryDate
+          ? `Estimated Delivery Date: ${purchaseOrderData.estDeliveryDate},`
+          : ""
       }
      
     `;
@@ -372,7 +381,7 @@ export default function PoChatbot() {
             console.log(
               "Supplier Response: ",
               response.data,
-              response.data.lead_time
+              response.data.lead_time,
             );
             // value.setSupplierDetails({
             //   ...value.supplierDetails,
@@ -419,7 +428,7 @@ export default function PoChatbot() {
         return false;
       }
     },
-    [value.supplierDetails]
+    [value.supplierDetails],
   );
 
   //SUPPLIER INSIGHTS
@@ -587,7 +596,7 @@ export default function PoChatbot() {
 
             case "estimated_delivery_date":
               updatedPurchaseOrderData.estDeliveryDate = formatDate(
-                poObject[key]
+                poObject[key],
               );
               break;
 
@@ -611,9 +620,11 @@ export default function PoChatbot() {
                 const itemsData = poObject[key];
 
                 // Early exit if all items are null-like
-                const hasValidItems = itemsData.some(item =>
-                  item && typeof item === 'object' &&
-                  Object.values(item).some(val => val !== null)
+                const hasValidItems = itemsData.some(
+                  (item) =>
+                    item &&
+                    typeof item === "object" &&
+                    Object.values(item).some((val) => val !== null),
                 );
 
                 if (hasValidItems) {
@@ -628,7 +639,8 @@ export default function PoChatbot() {
                     itemId: item.itemId,
                     itemQuantity: item.itemQuantity || 0,
                     itemCost: item.itemCost || 0,
-                    itemDescription: item.itemDescription || `Item ${item.itemId}`,
+                    itemDescription:
+                      item.itemDescription || `Item ${item.itemId}`,
                   }));
 
                   value.setPurchaseItemDetails(newItems);
@@ -651,288 +663,8 @@ export default function PoChatbot() {
       console.log("Final PO Data: ", updatedPurchaseOrderData);
       return supplierStatus;
     },
-    [getSupplierDetails, purchaseOrderData, value.supplierDetails, dispatch]
+    [getSupplierDetails, purchaseOrderData, value.supplierDetails, dispatch],
   );
-  //     const updateItemDetails = useCallback(
-  //     (invoiceDatafromConversation) => {
-  //       if (!invoiceDatafromConversation) {
-  //         console.log("Nothing");
-  //         return;
-  //       }
-  //       console.log("Here");
-
-  //       const itemsArray = invoiceDatafromConversation.map((item) => ({
-  //         itemId: item["item_id"] || "",
-  //         itemQuantity: parseInt(item["quantity"] || "0"),
-  //         itemDescription: item["item_description"] || "",
-  //         itemCost: parseFloat(item["cost_per_unit"] || "0"),
-  //       }));
-  //       const allEntriesAreNullLike = invoiceDatafromConversation.every(item => {
-  //         if (item === null || item === undefined) {
-  //           return true; // Item itself is null or undefined
-  //         }
-  //         if (typeof item === 'object') {
-  //           // For an object, check if all its values are null.
-  //           // Note: Object.values({}) is [], and [].every() is true.
-  //           // So, an empty object {} will be considered "null-like" by this logic.
-  //           return Object.values(item).every(value => value === null);
-  //         }
-  //         // If item is a primitive type other than null/undefined (e.g., a non-empty string, a number)
-  //         // it's not considered "null-like" in this context, so the array isn't "all null-like".
-  //         return false;
-  //       });
-
-  //       if (allEntriesAreNullLike) {
-  //         console.log("The items array is empty, or all items within it are null, undefined, or objects with all-null properties. Halting further item processing.");
-  //         return; // Exit the updateItemDetails function
-  //       }
-
-  //       // Extracting separate arrays for state updates
-  //       const itemIds = itemsArray.map((item) => item.itemId);
-  //       const itemQuantities = itemsArray.map((item) => item.itemQuantity);
-  //       const itemCosts = itemsArray.map((item) => item.itemCost);
-  //       const itemDescriptions = itemsArray.map((item) => item.itemDescription);
-  //       const tempDictionary = {};
-
-  //       itemsArray.forEach((item) => {
-  //         tempDictionary[item.itemId] = {
-  //           itemQuantity: item.itemQuantity || 0,
-  //           itemCost: item.itemCost || 0,
-  //           // itemDescription: item.itemDescription || "",
-  //         };
-  //       });
-  //       const newItems = Object.keys(tempDictionary).map((itemId) => ({
-  //         itemId,
-  //         itemQuantity: tempDictionary[itemId].itemQuantity,
-  //         itemCost: tempDictionary[itemId].itemCost,
-  //         itemDescription: `Item ${itemId}`,
-  //         // itemDescription: tempDictionary[itemId].itemDescription,
-  //       }));
-  //       console.log(
-  //         "item array,tempdict,newitems: ",
-  //         itemsArray,
-  //         tempDictionary,
-  //         newItems
-  //       );
-  //       // Merge updates and new items
-  //       // value.setPurchaseItemDetails([...newItems]);
-  //       value.setPurchaseItemDetails([...newItems]);
-  //     },
-  //     [value.purchaseItemDetails]
-  //     // [value.purchaseItemDetails, value.invoiceDatafromConversation]
-  //   );
-  //   const purchaseOrderCheck = useCallback(
-  //     async (poObject) => {
-  //         let updatedPurchaseOrderData = { ...value?.purchaseOrderData };
-  //         let supplierStatus = false;
-  //         for (const key of Object.keys(poObject)) {
-  //             console.log("Obect : ", poObject);
-  //             // NOTE: The check should likely be for 'null' and 'undefined',
-  //             // but keeping 'poObject[key] !== null' as in the original code for now.
-  //             // However, for the 'supplier_id' key in your object, the value is "null" (a string),
-  //             // which will pass the '!== null' check. I've left the original check.
-
-  //             if (poObject[key] !== null) {
-  //                 switch (key) {
-  //                     case "supplier_id": // Updated Key
-  //                         // updatedPurchaseOrderData.supplierId = poObject[key];
-  //                         supplierStatus = await getSupplierDetails(poObject[key]); // Wait for the update
-  //                         // console.log("Supplier Status:", supplierStatus);
-  //                         // await new Promise((resolve) => setTimeout(resolve, 100)); // Small delay for state update
-  //                         // console.log("Updated Supplier ID (After Await):", value.supplierDetails.supplierId);
-  //                         break;
-  //                     case "estimated_delivery_date": // Updated Key
-  //                         updatedPurchaseOrderData.estDeliveryDate = formatDate(
-  //                             poObject[key]
-  //                         );
-  //                         break;
-  //                     case "total_quantity": // Updated Key
-  //                         updatedPurchaseOrderData.totalQuantity = poObject[key];
-  //                         break;
-  //                     case "total_cost": // Updated Key
-  //                         updatedPurchaseOrderData.totalCost = poObject[key];
-  //                         break;
-  //                     case "total_tax": // Updated Key
-  //                         updatedPurchaseOrderData.totalTax = poObject[key];
-  //                         break;
-  //                     case "items": // Updated Key
-  //                         updatedPurchaseOrderData.items = poObject[key];
-  //                         updateItemDetails(poObject[key]);
-  //                         break;
-  //                     case "email": // New Key added
-  //                         updatedPurchaseOrderData.email = poObject[key];
-  //                         break;
-  //                     // Note: If you had a 'poNumber' case, you'd add it here if the key exists in poObject
-  //                 }
-  //             }
-  //         }
-  //         dispatch({
-  //             type: "UPDATE_PO_DATA",
-  //             payload: updatedPurchaseOrderData,
-  //         });
-
-  //         console.log("Final PO Data: ", updatedPurchaseOrderData);
-  //         return supplierStatus; // Return true or false for further processing
-  //     },
-  //     [
-  //         getSupplierDetails,
-  //         updateItemDetails,
-  //         purchaseOrderData,
-  //         value.supplierDetails,
-  //         // Add dispatch and formatDate/value.purchaseOrderData/purchaseOrderCheck dependencies if ESLint requires them
-  //     ]
-  // );
-  //API CALLS
-  //  const handleMessageSubmit = async (input, inputFromUpload) => {
-  //    if (!input.trim()) return;
-  //    setMessages((prevMessages) => {
-  //      const newMessages = inputFromUpload
-  //        ? [...prevMessages] // Do not add any new message for inputFromUpload
-  //        : [...prevMessages, { text: input, fromUser: true }];
-
-  //      if (!inputFromUpload) {
-  //        setInput(""); // Clear input if it's not from an upload
-  //      }
-  //      return newMessages;
-  //    });
-  //    setInput("");
-  //    typingTimeoutRef.current = setTimeout(() => {
-  //      setTyping(true);
-  //    }, 1500);
-
-  //    try {
-  //      const response = await axios.post(
-  //        CHAT, // API endpoint
-  //        {
-  //          user_id: "admin", // The user_id value
-  //          message: input, // The message value
-  //        },
-  //        {
-  //          headers: { "Content-Type": "application/json" }, // Content-Type header
-  //        }
-  //      );
-  //      const uploadText =
-  //        "Here is what I could extract from the uploaded document: \n";
-  //      if (response.status === 200 || response.status === 201) {
-  //       console.log("PO chat response data: ",response)
-  //        const poCheckStatus = await purchaseOrderCheck(response.data.po_json);
-  //        console.log("Inv check status: ", poCheckStatus);
-  //        value.setPurchaseOrderApiRes(response.data);
-  //        console.log("Data response", response.data);
-  //        const uploadText =
-  //          "Here is what I could extract from the uploaded document: \n";
-  //        console.log(
-  //          "response.data.po_json",
-  //          response.data.po_json["Supplier ID"]
-  //        );
-  //        if (
-  //          // value.supplierDetails.supplierId === "" &&
-  //          response.data.po_json["Supplier ID"] === undefined ||
-  //          response.data.po_json["Supplier ID"] === "" ||
-  //          response.data.po_json["Supplier ID"] === null
-  //        ) {
-  //          console.log("Empty Supplier Id");
-  //          const formattedConversation = response.data.chat_history["admin"]
-  //            .slice(-1)
-  //            .map((text, index) => (
-  //              <ReactMarkdown key={index} className={"botText"}>
-  //                {inputFromUpload ? uploadText + text.slice(5) : text.slice(5)}
-  //              </ReactMarkdown>
-  //            ));
-  //          setMessages((prevMessages) => [
-  //            ...prevMessages,
-  //            { text: formattedConversation, fromUser: false },
-  //          ]);
-  //          // }
-  //          console.log(
-  //            "Submission Status inside HMS",
-  //            response.data.submissionStatus
-  //          );
-  //          const email = response.data.po_email;
-  //          if (email) {
-  //            console.log("Inside Email: ", email, value.poCounter - 1);
-  //            await sendEmail({
-  //              emailUsed: email,
-  //              documentId: `PO${value.poCounter - 1}`,
-  //            });
-  //          }
-  //          if (response.data.submissionStatus == "submitted") {
-  //            // let newPoCounter=value.PoCounter+1
-  //            // value.setPoCounter(newPoCounter);
-  //            // value.setPoCounterId(`PO${newPoCounter}`);
-  //            value.setPoCounter((prevCounter) => prevCounter + 1);
-  //            await poHeaderCreation();
-  //            // }
-  //          } else {
-  //            value.setModalVisible(false);
-  //          }
-  //        } else {
-  //          if (poCheckStatus) {
-  //            const formattedConversation = response.data.chat_history["admin"]
-  //              .slice(-1)
-  //              .map((text, index) => (
-  //                <ReactMarkdown key={index} className={"botText"}>
-  //                  {inputFromUpload ? uploadText + text.slice(5) : text.slice(5)}
-  //                </ReactMarkdown>
-  //              ));
-  //            console.log(
-  //              "Submission Status inside HMS",
-  //              response.data.submissionStatus
-  //            );
-  //            setMessages((prevMessages) => [
-  //              ...prevMessages,
-  //              { text: formattedConversation, fromUser: false },
-  //            ]);
-  //            if (response.data.submissionStatus == "submitted") {
-  //              // let newPoCounter=value.PoCounter+1
-  //              // value.setPoCounter(newPoCounter);
-  //              // value.setPoCounterId(`PO${newPoCounter}`);
-  //              value.setPoCounter((prevCounter) => prevCounter + 1);
-  //              await poHeaderCreation();
-  //              // }
-  //            } else {
-  //              value.setModalVisible(false);
-  //            }
-  //            const email = response.data.po_email;
-  //            if (email) {
-  //              console.log("Inside Email: ", email, value.poCounter - 1);
-  //              await sendEmail({
-  //                emailUsed: email,
-  //                documentId: `PO${value.poCounter - 1}`,
-  //              });
-  //            }
-  //          } else {
-  //            console.log("poCheckStatus:FALSEEEEEEEEEEEEEEEEEEEEE");
-  //          }
-  //        }
-  //        if (typingTimeoutRef.current) {
-  //          clearTimeout(typingTimeoutRef.current);
-  //          typingTimeoutRef.current = null;
-  //        }
-  //        setTyping(false);
-  //      }
-
-  //      if (response.data.test_model_reply === "Creation") {
-  //        value.setIsActive(true);
-  //      } else if (response.data.test_model_reply === "Fetch") {
-  //        value.setIsActive(false);
-  //        // await getInvoiceDetails("INV498");
-  //      } else if (response.data.submissionStatus === "submitted") {
-  //        value.setIsActive(false);
-  //      }
-  //    } catch (error) {
-  //      console.error("Error fetching data:", error);
-  //      if (typingTimeoutRef.current) {
-  //        clearTimeout(typingTimeoutRef.current);
-  //        typingTimeoutRef.current = null;
-  //      }
-  //      setMessages((prevMessages) => [
-  //       ...prevMessages,
-  //       { text: errorMessage, fromUser: false },
-  //     ]);
-  //      setTyping(false);
-  //    }
-  //  };
   const sendMessage = async (text = null) => {
     const messageText = (text ?? input).trim();
     if (!messageText) return;
@@ -950,7 +682,7 @@ export default function PoChatbot() {
       setInput("");
       return;
     }
-
+    value.setIsActive(true);
     setMessages((prev) => [
       ...prev,
       { fromUser: true, text: messageText, id: uuidv4() },
@@ -984,29 +716,62 @@ export default function PoChatbot() {
           setUserIntent(msg.data.user_intent);
 
           // Handle submission intent
-          if (msg.data.user_intent?.intent === "Submission") {
-            value.setPoCounter((prevCounter) => prevCounter + 1);
-            await poHeaderCreation();
-          }
+          // if (msg.data.user_intent?.intent === "Submission") {
+          //   value.setPoCounter((prevCounter) => prevCounter + 1);
+          //   await poHeaderCreation();
+          // }
 
-          // Handle email
-          const email = msg.data.extracted_details?.email;
-          if (email) {
+          // // Handle email
+          // const email = msg.data.extracted_details?.email;
+          // if (
+          //   email &&
+          //   msg.data.extracted_details?.supplier_id &&
+          //   msg.data.extracted_details?.estimated_delivery_date &&
+          //   msg.data.extracted_details?.total_quantity &&
+          //   msg.data.extracted_details?.total_cost &&
+          //   msg.data.extracted_details?.total_tax &&
+          //   msg.data.extracted_details?.items?.length > 0
+          // ) {
+          //   console.log("Sending email to:", email);
+          //   await sendEmail({
+          //     emailUsed: email,
+          //     documentId: `PO${value.poCounter - 1}`,
+            // });}
+        const isSubmission = msg.data.user_intent?.intent === "Submission";
+
+        if (isSubmission) {
+          // PO created — deactivate form regardless of email
+          // value.setIsActive(false);
+          value.setPoCounter((prevCounter) => prevCounter + 1);
+          await poHeaderCreation();
+
+          // Only send email if all fields are present
+          if (
+            email &&
+            msg.data.extracted_details?.supplier_id &&
+            msg.data.extracted_details?.estimated_delivery_date &&
+            msg.data.extracted_details?.total_quantity &&
+            msg.data.extracted_details?.total_cost &&
+            msg.data.extracted_details?.total_tax &&
+            msg.data.extracted_details?.items?.length > 0
+          ) {
             console.log("Sending email to:", email);
             await sendEmail({
               emailUsed: email,
-              documentId: `PO${value.poCounterId - 1}`,
+              documentId: `PO${value.poCounter - 1}`,
             });
           }
+        }
+
         } else if (msg.type === "event") {
           const data = msg.data;
           let text =
             typeof data === "string"
               ? data
               : data?.text ||
-              data?.content ||
-              data?.message ||
-              JSON.stringify(data);
+                data?.content ||
+                data?.message ||
+                JSON.stringify(data);
           buffer += text;
         } else if (msg.type === "done") {
           // Stream finished - cleanup
@@ -1055,6 +820,7 @@ export default function PoChatbot() {
           id: uuidv4(),
         },
       ]);
+
       if (!connected) {
         connect();
       }
@@ -1209,10 +975,11 @@ export default function PoChatbot() {
                       ([subKey, subValue]) =>
                         `${subKey
                           .replace(/_/g, " ")
-                          .replace(/\b\w/g, (char) => char.toUpperCase())}: ${subValue ?? "N/A"
-                        }`
+                          .replace(/\b\w/g, (char) => char.toUpperCase())}: ${
+                          subValue ?? "N/A"
+                        }`,
                     )
-                    .join(", ")
+                    .join(", "),
               )
               .join("\n")
           );
@@ -1220,8 +987,9 @@ export default function PoChatbot() {
           // Handle normal key-value pairs
           return `${key
             .replace(/_/g, " ")
-            .replace(/\b\w/g, (char) => char.toUpperCase())}: ${value ?? "N/A"
-            }`;
+            .replace(/\b\w/g, (char) => char.toUpperCase())}: ${
+            value ?? "N/A"
+          }`;
         }
       })
       .join("\n");
@@ -1298,7 +1066,7 @@ export default function PoChatbot() {
   //clear data
   const clearDataApi = async () => {
     value.setModalVisible(true);
-    value.setIsActive(false);
+    // value.setIsActive(false);
 
     try {
       // console.log("clearDataApi");
@@ -1348,7 +1116,7 @@ export default function PoChatbot() {
     if (emailStatus && emailStatus.success) {
       console.log(
         "Email sending was successful! Now calling another function...",
-        emailStatus
+        emailStatus,
       );
       clearFormData();
     } else {
@@ -1410,7 +1178,6 @@ export default function PoChatbot() {
             <TypingIndicatorComponent scrollToBottom={scrollToBottom} />
           )}
         </Box>
-
       </div>
       <div className="chatbot-message-card">
         <ChatbotInputForm
@@ -1428,7 +1195,8 @@ export default function PoChatbot() {
           >
             <Picker data={data} onEmojiSelect={handleEmojiSelect} />
           </div>
-        )}</div>
+        )}
+      </div>
     </div>
   );
 }
