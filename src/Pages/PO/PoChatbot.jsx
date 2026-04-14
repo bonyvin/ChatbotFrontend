@@ -90,7 +90,7 @@ export default function PoChatbot() {
   const outgoingQueueRef = useRef([]); // if socket down, queue messages
   const messagesEndRef = useRef(null);
   const containerRef = useRef(null);
-
+  const prevIntentRef = useRef(null);   
   const PORT = 8000;
   const WS_PATH = "/ws/purchase_order_chat";
 
@@ -453,136 +453,7 @@ export default function PoChatbot() {
       console.log("Supplier Risk Error:", error, error.data);
     }
   };
-
-  //ITEM AND QUANTITY UPDATES
-
-  // const updateItemDetails = useCallback(
-  //   (invoiceDatafromConversation) => {
-  //     if (!invoiceDatafromConversation) {
-  //       console.log("Nothing");
-  //       return;
-  //     }
-  //     console.log("Here");
-
-  //     const itemsArray = invoiceDatafromConversation.map((item) => ({
-  //       itemId: item["Item ID"] || "",
-  //       itemQuantity: parseInt(item["Quantity"] || "0"),
-  //       itemDescription: item["Item Description"] || "",
-  //       itemCost: parseFloat(item["Cost Per Unit"] || "0"),
-  //     }));
-  //     const allEntriesAreNullLike = invoiceDatafromConversation.every(item => {
-  //       if (item === null || item === undefined) {
-  //         return true; // Item itself is null or undefined
-  //       }
-  //       if (typeof item === 'object') {
-  //         // For an object, check if all its values are null.
-  //         // Note: Object.values({}) is [], and [].every() is true.
-  //         // So, an empty object {} will be considered "null-like" by this logic.
-  //         return Object.values(item).every(value => value === null);
-  //       }
-  //       // If item is a primitive type other than null/undefined (e.g., a non-empty string, a number)
-  //       // it's not considered "null-like" in this context, so the array isn't "all null-like".
-  //       return false;
-  //     });
-
-  //     if (allEntriesAreNullLike) {
-  //       console.log("The items array is empty, or all items within it are null, undefined, or objects with all-null properties. Halting further item processing.");
-  //       return; // Exit the updateItemDetails function
-  //     }
-
-  //     // Extracting separate arrays for state updates
-  //     const itemIds = itemsArray.map((item) => item.itemId);
-  //     const itemQuantities = itemsArray.map((item) => item.itemQuantity);
-  //     const itemCosts = itemsArray.map((item) => item.itemCost);
-  //     const itemDescriptions = itemsArray.map((item) => item.itemDescription);
-  //     const tempDictionary = {};
-
-  //     itemsArray.forEach((item) => {
-  //       tempDictionary[item.itemId] = {
-  //         itemQuantity: item.itemQuantity || 0,
-  //         itemCost: item.itemCost || 0,
-  //         // itemDescription: item.itemDescription || "",
-  //       };
-  //     });
-  //     const newItems = Object.keys(tempDictionary).map((itemId) => ({
-  //       itemId,
-  //       itemQuantity: tempDictionary[itemId].itemQuantity,
-  //       itemCost: tempDictionary[itemId].itemCost,
-  //       itemDescription: `Item ${itemId}`,
-  //       // itemDescription: tempDictionary[itemId].itemDescription,
-  //     }));
-  //     console.log(
-  //       "item array,tempdict,newitems: ",
-  //       itemsArray,
-  //       tempDictionary,
-  //       newItems
-  //     );
-  //     // Merge updates and new items
-  //     // value.setPurchaseItemDetails([...newItems]);
-  //     value.setPurchaseItemDetails([...newItems]);
-  //   },
-  //   [value.purchaseItemDetails]
-  //   // [value.purchaseItemDetails, value.invoiceDatafromConversation]
-  // );
-
-  //EXTRACTING FIELD DATA FROM BACKEND
-  // const purchaseOrderCheck = useCallback(
-  //   async (poObject) => {
-  //     let updatedPurchaseOrderData = { ...value.purchaseOrderData };
-  //     let supplierStatus = false;
-  //     for (const key of Object.keys(poObject)) {
-  //       console.log("Obect  : ", poObject);
-  //       if (poObject[key] !== null) {
-  //         switch (key) {
-  //           // case "PO Number":
-  //           //   updatedPurchaseOrderData.poNumber = poObject[key];
-  //           //   break;
-  //           case "Estimated Delivery Date":
-  //             updatedPurchaseOrderData.estDeliveryDate = formatDate(
-  //               poObject[key]
-  //             );
-  //             break;
-  //           case "Total Quantity":
-  //             updatedPurchaseOrderData.totalQuantity = poObject[key];
-  //             break;
-  //           case "Total Cost":
-  //             updatedPurchaseOrderData.totalCost = poObject[key];
-  //             break;
-  //           case "Total Tax":
-  //             updatedPurchaseOrderData.totalTax = poObject[key];
-  //             break;
-  //           case "Items":
-  //             updatedPurchaseOrderData.items = poObject[key];
-  //             updateItemDetails(poObject[key]);
-  //             break;
-  //           case "Supplier ID":
-  //             // updatedPurchaseOrderData.supplierId = poObject[key];
-  //             // supplierStatus = await getSupplierDetails(poObject[key]); // Get true/false status
-  //             // console.log("Supplier Status:", supplierStatus);
-  //             // break;
-  //             supplierStatus = await getSupplierDetails(poObject[key]); // Wait for the update
-  //           // await new Promise((resolve) => setTimeout(resolve, 100)); // Small delay for state update
-  //           // console.log("Updated Supplier ID (After Await):", value.supplierDetails.supplierId);
-  //           // break;
-  //         }
-  //       }
-  //     }
-  //     dispatch({
-  //       type: "UPDATE_PO_DATA",
-  //       payload: updatedPurchaseOrderData,
-  //     });
-
-  //     console.log("Final Invoice Data:  ", updatedPurchaseOrderData);
-  //     return supplierStatus; // Return true or false for further processing
-  //   },
-  //   [
-  //     getSupplierDetails,
-  //     updateItemDetails,
-  //     purchaseOrderData,
-  //     value.supplierDetails,
-  //   ]
-  // );
-  const purchaseOrderCheck = useCallback(
+ const purchaseOrderCheck = useCallback(
     async (poObject) => {
       let updatedPurchaseOrderData = { ...value?.purchaseOrderData };
       let supplierStatus = false;
@@ -737,15 +608,21 @@ export default function PoChatbot() {
           //     emailUsed: email,
           //     documentId: `PO${value.poCounter - 1}`,
             // });}
-        const isSubmission = msg.data.user_intent?.intent === "Submission";
 
-        if (isSubmission) {
-          // PO created — deactivate form regardless of email
-          // value.setIsActive(false);
+        const currentIntent = msg.data.user_intent?.intent;
+        const prevIntent = prevIntentRef.current;
+
+        // Detect transition: Submission → Non-Submission
+        if (prevIntent === "Submission" && currentIntent !== "Submission" &&currentIntent !== "Email Fetching") {
           value.setPoCounter((prevCounter) => prevCounter + 1);
-          await poHeaderCreation();
+        }
 
-          // Only send email if all fields are present
+        // Handle Submission intent (without incrementing here)
+        if (currentIntent === "Submission") {
+          await poHeaderCreation();
+        }
+                  const email = msg.data.extracted_details?.email;
+
           if (
             email &&
             msg.data.extracted_details?.supplier_id &&
@@ -758,10 +635,11 @@ export default function PoChatbot() {
             console.log("Sending email to:", email);
             await sendEmail({
               emailUsed: email,
-              documentId: `PO${value.poCounter - 1}`,
+              documentId: `PO${value.poCounter}`, // ⚠️ no -1 now
             });
           }
-        }
+        // Update previous intent
+        prevIntentRef.current = currentIntent;
 
         } else if (msg.type === "event") {
           const data = msg.data;
@@ -918,7 +796,7 @@ export default function PoChatbot() {
       ]);
 
       // value.setModalText("Invoice created successfully!");
-      await clearDataApi();
+      // await clearDataApi();
 
       // Set pdfCardVisible to true to ensure it stays visible
       setPdfCardVisible(false);
@@ -1173,7 +1051,7 @@ export default function PoChatbot() {
                 isFile={message.isFile}
               />
             </div>
-          ))}{" "}
+          ))}
           {typing && (
             <TypingIndicatorComponent scrollToBottom={scrollToBottom} />
           )}

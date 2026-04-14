@@ -1,5 +1,3 @@
-
-
 // React and hooks
 import React, { useContext, useEffect, useRef, useState } from "react";
 
@@ -69,6 +67,8 @@ import CustomButton from "../../components/CustomButton/CustomButton.jsx";
 import { ITEMS, STORE_LIST } from "../../const/ApiConst.js";
 import axios from "axios";
 import PromoChatbot from "./PromoChatbot.jsx";
+import IntroductionCard from "../../components/IntroductionCard.jsx";
+import symbolBlue from "../../images/symbol-blue.png";
 
 export default function LLMDetailsSide() {
   const messagesEndRef = useRef(null);
@@ -105,8 +105,10 @@ export default function LLMDetailsSide() {
   const hierarchyTypeOptions = ["Department", "Class", "Sub Class"];
   const discountTypeOptions = ["Fixed Price", "% Off", "Buy One Get One Free"];
   const showForm = value.isActive;
-  const initialHierarchyTypes = hierarchyTypeOptions.filter((type) =>
-    value.promotionData.hierarchyType && value.promotionData.hierarchyType.includes(type)
+  const initialHierarchyTypes = hierarchyTypeOptions.filter(
+    (type) =>
+      value.promotionData.hierarchyType &&
+      value.promotionData.hierarchyType.includes(type),
   );
   console.log("Initial Hierarchy Types:", initialHierarchyTypes);
   const handleTableExpand = () => {
@@ -179,7 +181,7 @@ export default function LLMDetailsSide() {
     let hierarchyValue = [...newValue];
     let hierarchyArray = [...value.promotionData.hierarchyType];
     let updatedValue = newValue.filter(
-      (item) => item != [...value.promotionData.hierarchyType]
+      (item) => item != [...value.promotionData.hierarchyType],
     );
     console.log(
       "hierarchy value:",
@@ -188,10 +190,10 @@ export default function LLMDetailsSide() {
       hierarchyArray,
       "Hierarchy Filter: ",
       value.promotionData.hierarchyType.filter(
-        (item) => !hierarchyValue.includes(item)
+        (item) => !hierarchyValue.includes(item),
       ),
       "Updated",
-      updatedValue
+      updatedValue,
     );
     value.setPromotionData({
       ...value.promotionData,
@@ -361,16 +363,10 @@ export default function LLMDetailsSide() {
     } catch (error) {
       console.log("Store details Error: ", error);
     }
-    const saveButton = () => {
-
-    }
+    const saveButton = () => {};
   };
   return (
-    <Grid
-      container
-      component="main"
-      className="main-grid"
-    >
+    <Grid container component="main" className="main-grid">
       <Grid
         item
         xs={12}
@@ -415,8 +411,8 @@ export default function LLMDetailsSide() {
                               ? value.promotionData.itemList.includes(item)
                               : modalType === "excluded"
                                 ? value.promotionData.excludedItemList.includes(
-                                  item
-                                )
+                                    item,
+                                  )
                                 : null
                           }
                         />
@@ -466,8 +462,8 @@ export default function LLMDetailsSide() {
                               ? value.promotionData.locationList.includes(item)
                               : modalType === "storesExcluded"
                                 ? value.promotionData.excludedLocationList.includes(
-                                  item
-                                )
+                                    item,
+                                  )
                                 : null
                           }
                         />
@@ -533,517 +529,571 @@ export default function LLMDetailsSide() {
             </div>
           </Dialog>
         </div>
-
-        <Card
+        {!showForm ? (
+                    <Card
           className="generalView"
           sx={{
-
             width: "100%",
-            backgroundColor: "var(--muted-blue)",
+            backgroundColor: "var(--white)",
             borderRadius: "var(--radius-lg)",
             borderColor: "var(--muted-blue)",
             marginLeft: { xs: 0, md: "1rem" },
             boxShadow: "var(--shadow-medium)",
             marginTop: "3rem",
+            padding:'3rem'
           }}
-          ref={messagesEndRef}
-        >
-          {/* <Card ref={messagesEndRef}> */}
-          <div
-            style={{
-              marginLeft: "2%",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-start",
-            }}
+            
           >
-            <Typography
-              sx={{
-                fontSize: "var(--font-base)",
-                fontWeight: "700",
-                color: "var(--white)",
-                fontFamily: "Montserrat, sans-serif",
-              }}
-            >
-              Promotions
-            </Typography>
-            <Typography
-              style={{
-                fontSize: "0.6rem",
-                color: "var(--white)",
-                fontFamily: "Montserrat,sans-sherif",
-              }}
-            >
-              Fields marked as * are mandatory
-            </Typography>
-          </div>
-
-          <Form className="generalRadio">
+            <img src={symbolBlue} style={{ width: "4.2rem" }}></img>
             <div
               style={{
                 display: "flex",
-                justifyContent: "space-between",
-                // marginLeft: "0.9rem",
-                // paddingLeft: "1.5rem",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                width: "60%",
               }}
             >
               <Typography
+                className="OpenSans"
                 style={{
-                  fontSize: "0.8rem",
-                  fontWeight: "600",
+                  fontSize: "2rem",
+                  fontWeight: "700",
+                  color: "#00338D",
+                  marginBottom: "1.5rem",
+                  marginTop: "1.5rem",
+                }}
+              >
+                Welcome to ExperienceX !
+              </Typography>
+              <Typography
+                style={{
+                  fontSize: "1rem",
+                  fontWeight: "500",
+                  color: "#00338D",
+                  textAlign: "left",
+                }}
+              >
+                Need help with purchase orders, promotions, invoices, payments, ASNs
+                or more? I've got you covered - happy to assist!
+              </Typography>
+            </div>
+          </Card>
+        ) : (
+          <Card
+            className="generalView"
+            sx={{
+              width: "100%",
+              backgroundColor: "var(--muted-blue)",
+              borderRadius: "var(--radius-lg)",
+              borderColor: "var(--muted-blue)",
+              marginLeft: { xs: 0, md: "1rem" },
+              boxShadow: "var(--shadow-medium)",
+              marginTop: "3rem",
+            }}
+            ref={messagesEndRef}
+          >
+            {/* <Card ref={messagesEndRef}> */}
+            <div
+              style={{
+                marginLeft: "2%",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: "var(--font-base)",
+                  fontWeight: "700",
+                  color: "var(--white)",
+                  fontFamily: "Montserrat, sans-serif",
+                }}
+              >
+                Promotions
+              </Typography>
+              <Typography
+                style={{
+                  fontSize: "0.6rem",
                   color: "var(--white)",
                   fontFamily: "Montserrat,sans-sherif",
                 }}
               >
-                Type
+                Fields marked as * are mandatory
               </Typography>
             </div>
-            <div
-              style={{
-                //   display: "flex",
-                //   justifyContent: "space-between",
-                width: "90%",
-              }}
-            >
+
+            <Form className="generalRadio">
               <div
-                className="mb-3"
                 style={{
                   display: "flex",
-                  flexDirection: "row",
                   justifyContent: "space-between",
-                  alignItems: "center",
-                  flex: 1,
                   // marginLeft: "0.9rem",
+                  // paddingLeft: "1.5rem",
                 }}
               >
-                <Form.Check
-                  inline
-                  label="Simple"
-                  name="group1"
-                  type={"radio"}
-                  id={`inline- -1`}
-                  className="radioText"
-                  checked={value.typeOfPromotion.simple}
-                  onChange={() => handleRadioChange("simple")}
-                // checked={value.promotionData.invoiceType.match(/merchandise/i) }
-                />
-                <Form.Check
-                  inline
-                  label="Buy X, Get Y"
-                  disabled
-                  name="group1"
-                  type={"radio"}
-                  id={`inline- -2`}
-                  className="radioText"
-                  checked={value.typeOfPromotion.buyXGetY}
-                  onChange={() => handleRadioChange("buyXGetY")}
-                // checked={value.promotionData.invoiceType === "Non - Merchandise"}
-                />
-                <Form.Check
-                  inline
-                  label="Threshold"
-                  disabled
-                  name="group1"
-                  type={"radio"}
-                  id={`inline- -3`}
-                  className="radioText"
-                  checked={value.typeOfPromotion.threshold}
-                  onChange={() => handleRadioChange("threshold")}
-                // checked={value.promotionData.invoiceType.match(/debit\s*-\s*\s*note\s*: ?(.*?)(?:,|$)/i) }
-                />
-                <Form.Check
-                  inline
-                  label="GWP (Gift with Purchase)"
-                  disabled
-                  name="group1"
-                  type={"radio"}
-                  id={`inline- -4`}
-                  className="radioText"
-                  // checked={value.promotionData.invoiceType === "Credit Note"}
-                  checked={value.typeOfPromotion.giftWithPurchase}
-                  onChange={() => handleRadioChange("giftWithPurchase")}
-                />
-              </div>
-            </div>
-          </Form>
-          {/* </Card> */}
-          {/* <Card ref={messagesEndRef}> */}
-          <Box
-            sx={{
-              paddingLeft: "1.5rem",
-            }}
-          >
-            <Stack
-              direction="row"
-              // spacing={3}
-              // sx={{ display: { xs: "none", md: "flex" }, my: 1 }}
-              sx={{ display: { xs: "none", md: "flex" } }}
-            >
-              <Stack spacing={2} sx={{ flexGrow: 1 }}>
-                <div
-                  style={{ display: "flex", justifyContent: "space-between" }}
-                >
-                  <Typography
-                    style={{
-                      fontSize: "0.9rem",
-                      fontWeight: "bold",
-                      fontFamily: "Montserrat,sans-sherif",
-                      color: "var(--white)",
-                    }}
-                  >
-                    Level
-                  </Typography>
-                </div>
-                <Stack
-                  direction="row"
-                  spacing={12}
-                  sx={{ alignItems: "center", width: "90%" }}
-                >
-
-                  <div
-                    className="promotion-detail-text"
-                  >Hierarchy<span style={{ color: "red" }}>*</span></div>
-
-
-                  <FormControl sx={{ flex: 1, alignSelf: 'flex-end' }}>
-                    <span className="form-label-styled" style={{ color: 'var(--white)' }}>Type<span className="required">*</span>
-                    </span>
-                    <Select
-                      multiple
-                      value={initialHierarchyTypes}
-                      placeholder="Select Hierarchy Type"
-                      sx={{
-                        zIndex: 1,
-                        "& .MuiSelect-button": { color: "#212529" },
-                        backgroundColor: "white",
-                      }}
-                      renderValue={(selected) => {
-                        console.log("All selected:", selected);
-                        return selected.map((option) => {
-                          // this will print each individual option string
-                          console.log("Option:", option);
-                          return <div key={option.value}>{option.value}</div>;
-                        });
-                      }}
-                    >
-                      {hierarchyTypeOptions.map((item) => (
-                        <Option key={item} value={item}>
-                          {item}
-                        </Option>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  <FormControl sx={{ flex: 1, position: "relative" }}>
-                    {/* <InputFieldComponent  */}
-                    <InputFieldComponent
-                      label="Value"
-                      required={true}
-                      placeholder="Add Value here"
-                      value={value.promotionData.hierarchyValue}
-                      hierarchyType
-                      fun={(text) =>
-                        value.setPromotionData({
-                          ...value.promotionData,
-                          hierarchyValue: text,
-                        })
-                      }
-                    />
-                  </FormControl>
-                </Stack>
-                <Stack
-                  direction="row"
-                  spacing={12}
-                  sx={{
-                    alignItems: "center",
-                    width: "90%",
-                    justifyContent: "center",
+                <Typography
+                  style={{
+                    fontSize: "0.8rem",
+                    fontWeight: "600",
+                    color: "var(--white)",
+                    fontFamily: "Montserrat,sans-sherif",
                   }}
                 >
-                  <div
-                    className="promotion-detail-text"
-                  >Item<span style={{ color: "red" }}>*</span></div>
-                  <FormControl sx={{ flex: 1 }}>
-                    <InputFieldComponent
-                      label="Item Type"
-                      required={true}
-                      placeholder="Add Item IDs"
-                      // value={Object.keys(selectedItems).filter(
-                      //   (key) => selectedItems[key] === true
-                      // )}
-                      value={value.promotionData.itemList}
-                      fun={(text) =>
-                        value.setPromotionData({
-                          ...value.promotionData,
-                          itemList: text,
-                        })
-                      }
-                      style={{}}
-                      EndComponent={
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            height: "100%",
-                            marginTop: "1.5rem",
-                          }}
-                        >
-                          <Visibility
-                            style={{
-                              backgroundColor: "var(--white)",
-                              cursor: "pointer",
-                            }}
-                            onClick={() => handleItemModal("items")}
-                            id="item"
-                          ></Visibility>
-                        </div>
-                      }
-                    />
-                  </FormControl>
-                  <FormControl
-                    // sx={{ flex: 1, display: "flex", flexDirection: "row", alignItems:"center" }}
-                    style={{
-                      flex: 1,
-                      display: "flex",
-                      flexDirection: "row",
-                      alignItems: "flex-end",
-                      alignSelf: "flex-end"
-                    }}
-                  >
-                    {!value.itemUpload.items && (
-                      <Button
-                        variant="outlined"
-                        endIcon={
-                          <FiUpload
-                            style={{ fontSize: "1rem", color: "white" }}
-                          />
-                        }
-                        style={{
-                          fontFamily: "Monsterrat,sans-serif",
-                          width: "50%",
-                          color: "white",
-                          cursor: "pointer",
-                          // margin: "0.1rem",
-                        }}
-                      >
-                        Upload
-                        {/* Hidden file input */}
-                        <input
-                          type="file"
-                          accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-                          className="upload-input"
-                          onChange={(e) =>
-                            value.setItemUpload({
-                              ...value.itemUpload,
-                              items: true,
-                              eventItems: e,
-                            })
-                          }
-                          onClick={(event) => (event.target.value = "")} // To allow uploading the same file again
-                        />
-                      </Button>
-                    )}
-                    {value.itemUpload.items && (
-                      <div style={{ display: "flex" }}>
-                        <a
-                          href={URL.createObjectURL(
-                            value.itemUpload.eventItems.target.files[0]
-                          )}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {value.itemUpload.eventItems.target.files[0].name
-                            .length < 12
-                            ? value.itemUpload.eventItems.target.files[0].name
-                            : value.itemUpload.eventItems.target.files[0].name.substring(
-                              0,
-                              10
-                            ) + "..."}
-                        </a>
-                        <Cancel
-                          onClick={() =>
-                            value.setItemUpload({
-                              ...value.itemUpload,
-                              items: false,
-                              eventItems: null,
-                            })
-                          }
-                        />
-                      </div>
-                    )}
-
-                    <div
-                      className="upload-btn-info"
-                    >
-                      Only Excel files allowed
-                    </div>
-                  </FormControl>
-                </Stack>
-                <Stack
-                  direction="row"
-                  spacing={12}
-                  sx={{ alignItems: "center", width: "90%" }}
-                >
-                  <div
-                    className="promotion-detail-text"
-                  >
-                    Exclusions
-                  </div>
-
-                  <FormControl sx={{ flex: 1 }} >
-                    <InputFieldComponent
-                      label="Exclusions"
-                      required={false}
-                      placeholder="Add Item IDs to exclude"
-                      // value={Object.keys(excludedSelectedItems).filter(
-                      //   (key) => excludedSelectedItems[key] === true
-                      // )}
-                      value={value.promotionData.excludedItemList}
-                      fun={(text) =>
-                        value.setPromotionData({
-                          ...value.promotionData,
-                          excludedItemList: text,
-                        })
-                      }
-                      style={{}}
-                      EndComponent={
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            height: "100%",
-                            marginTop: "1.5rem",
-                          }}
-                        >
-                          <Visibility
-                            style={{
-                              backgroundColor: "white",
-                              cursor: "pointer",
-                            }}
-                            onClick={() => handleItemModal("items")}
-                            id="item"
-                          ></Visibility>
-                        </div>
-                      }
-                    />
-                  </FormControl>
-                  <FormControl
-                    sx={{ flex: 1, display: "flex", flexDirection: "row", alignSelf: "flex-end" }}
-                  >
-                    {!value.itemUpload.excludedItems && (
-                      <Button
-                        variant="outlined"
-                        endIcon={
-                          <FiUpload
-                            style={{ fontSize: "1rem", color: "white" }}
-                          />
-                        }
-                        style={{
-                          fontFamily: "Monsterrat,sans-serif",
-                          width: "50%",
-                          color: "white",
-                          cursor: "pointer",
-                          // margin: "0.1rem",
-                        }}
-                      >
-                        Upload
-                        {/* Hidden file input */}
-                        <input
-                          type="file"
-                          accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-                          className="upload-input"
-                          onChange={(e) =>
-                            value.setItemUpload({
-                              ...value.itemUpload,
-                              excludedItems: true,
-                              eventExcludedItems: e,
-                            })
-                          }
-                          onClick={(event) => (event.target.value = "")} // To allow uploading the same file again
-                        />
-                      </Button>
-                    )}
-                    {value.itemUpload.excludedItems && (
-                      <div style={{ display: "flex" }}>
-                        <a
-                          href={URL.createObjectURL(
-                            value.itemUpload.eventExcludedItems.target
-                              .files[0]
-                          )}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {value.itemUpload.eventExcludedItems.target.files[0]
-                            .name.length < 12
-                            ? value.itemUpload.eventExcludedItems.target
-                              .files[0].name
-                            : value.itemUpload.eventExcludedItems.target.files[0].name.substring(
-                              0,
-                              10
-                            ) + "..."}
-                        </a>
-                        <Cancel
-                          onClick={() =>
-                            value.setItemUpload({
-                              ...value.itemUpload,
-                              excludedItems: false,
-                              event: null,
-                            })
-                          }
-                        />
-                      </div>
-                    )}
-                    <div
-                      className="upload-btn-info"
-                    >
-                      Only Excel files allowed
-                    </div>
-                  </FormControl>
-                </Stack>
-              </Stack>
-            </Stack>
-            {/* </Card> */}
-          </Box>
-          {/* <Card ref={messagesEndRef}> */}
-          <div ref={messagesEndRef} style={{ marginLeft: "1.5rem" }}>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-              }}
-            >
-              <Typography
+                  Type
+                </Typography>
+              </div>
+              <div
                 style={{
-                  fontSize: "0.9rem",
-                  fontWeight: "bold",
-                  fontFamily: "Montserrat,sans-sherif",
-                  color: "white",
+                  //   display: "flex",
+                  //   justifyContent: "space-between",
+                  width: "90%",
                 }}
               >
-                Discount Details
-              </Typography>
-              <IconButton aria-label="exp" onClick={handleTableExpand} style={{ color: "white", backgroundColor: '#ffffff14' }}>
-                {tableToggle ? <ExpandLess /> : <ExpandMore />}
-              </IconButton>
-            </div>
-            {tableToggle && (
+                <div
+                  className="mb-3"
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    flex: 1,
+                    // marginLeft: "0.9rem",
+                  }}
+                >
+                  <Form.Check
+                    inline
+                    label="Simple"
+                    name="group1"
+                    type={"radio"}
+                    id={`inline- -1`}
+                    className="radioText"
+                    checked={value.typeOfPromotion.simple}
+                    onChange={() => handleRadioChange("simple")}
+                    // checked={value.promotionData.invoiceType.match(/merchandise/i) }
+                  />
+                  <Form.Check
+                    inline
+                    label="Buy X, Get Y"
+                    disabled
+                    name="group1"
+                    type={"radio"}
+                    id={`inline- -2`}
+                    className="radioText"
+                    checked={value.typeOfPromotion.buyXGetY}
+                    onChange={() => handleRadioChange("buyXGetY")}
+                    // checked={value.promotionData.invoiceType === "Non - Merchandise"}
+                  />
+                  <Form.Check
+                    inline
+                    label="Threshold"
+                    disabled
+                    name="group1"
+                    type={"radio"}
+                    id={`inline- -3`}
+                    className="radioText"
+                    checked={value.typeOfPromotion.threshold}
+                    onChange={() => handleRadioChange("threshold")}
+                    // checked={value.promotionData.invoiceType.match(/debit\s*-\s*\s*note\s*: ?(.*?)(?:,|$)/i) }
+                  />
+                  <Form.Check
+                    inline
+                    label="GWP (Gift with Purchase)"
+                    disabled
+                    name="group1"
+                    type={"radio"}
+                    id={`inline- -4`}
+                    className="radioText"
+                    // checked={value.promotionData.invoiceType === "Credit Note"}
+                    checked={value.typeOfPromotion.giftWithPurchase}
+                    onChange={() => handleRadioChange("giftWithPurchase")}
+                  />
+                </div>
+              </div>
+            </Form>
+            {/* </Card> */}
+            {/* <Card ref={messagesEndRef}> */}
+            <Box
+              sx={{
+                paddingLeft: "1.5rem",
+              }}
+            >
               <Stack
-                ref={messagesEndRef}
                 direction="row"
-                spacing={3}
-                sx={{ display: { xs: "none", md: "flex" }, my: 1 }}
+                // spacing={3}
+                // sx={{ display: { xs: "none", md: "flex" }, my: 1 }}
+                sx={{ display: { xs: "none", md: "flex" } }}
               >
                 <Stack spacing={2} sx={{ flexGrow: 1 }}>
+                  <div
+                    style={{ display: "flex", justifyContent: "space-between" }}
+                  >
+                    <Typography
+                      style={{
+                        fontSize: "0.9rem",
+                        fontWeight: "bold",
+                        fontFamily: "Montserrat,sans-sherif",
+                        color: "var(--white)",
+                      }}
+                    >
+                      Level
+                    </Typography>
+                  </div>
                   <Stack
                     direction="row"
                     spacing={12}
                     sx={{ alignItems: "center", width: "90%" }}
                   >
-                    <div
-                      className="promotion-detail-text"
-                    > Discount<span style={{ color: "red" }}>*</span></div>
-                    <FormControl sx={{ flex: 1, alignSelf: 'flex-end' }}>
-                      {/* <Form.Label
+                    <div className="promotion-detail-text">
+                      Hierarchy<span style={{ color: "red" }}>*</span>
+                    </div>
+
+                    <FormControl sx={{ flex: 1, alignSelf: "flex-end" }}>
+                      <span
+                        className="form-label-styled"
+                        style={{ color: "var(--white)" }}
+                      >
+                        Type<span className="required">*</span>
+                      </span>
+                      <Select
+                        multiple
+                        value={initialHierarchyTypes}
+                        placeholder="Select Hierarchy Type"
+                        sx={{
+                          zIndex: 1,
+                          "& .MuiSelect-button": { color: "#212529" },
+                          backgroundColor: "white",
+                        }}
+                        renderValue={(selected) => {
+                          console.log("All selected:", selected);
+                          return selected.map((option) => {
+                            // this will print each individual option string
+                            console.log("Option:", option);
+                            return <div key={option.value}>{option.value}</div>;
+                          });
+                        }}
+                      >
+                        {hierarchyTypeOptions.map((item) => (
+                          <Option key={item} value={item}>
+                            {item}
+                          </Option>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    <FormControl sx={{ flex: 1, position: "relative" }}>
+                      {/* <InputFieldComponent  */}
+                      <InputFieldComponent
+                        label="Value"
+                        required={true}
+                        placeholder="Add Value here"
+                        value={value.promotionData.hierarchyValue}
+                        hierarchyType
+                        fun={(text) =>
+                          value.setPromotionData({
+                            ...value.promotionData,
+                            hierarchyValue: text,
+                          })
+                        }
+                      />
+                    </FormControl>
+                  </Stack>
+                  <Stack
+                    direction="row"
+                    spacing={12}
+                    sx={{
+                      alignItems: "center",
+                      width: "90%",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <div className="promotion-detail-text">
+                      Item<span style={{ color: "red" }}>*</span>
+                    </div>
+                    <FormControl sx={{ flex: 1 }}>
+                      <InputFieldComponent
+                        label="Item Type"
+                        required={true}
+                        placeholder="Add Item IDs"
+                        // value={Object.keys(selectedItems).filter(
+                        //   (key) => selectedItems[key] === true
+                        // )}
+                        value={value.promotionData.itemList}
+                        fun={(text) =>
+                          value.setPromotionData({
+                            ...value.promotionData,
+                            itemList: text,
+                          })
+                        }
+                        style={{}}
+                        EndComponent={
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              height: "100%",
+                              marginTop: "1.5rem",
+                            }}
+                          >
+                            <Visibility
+                              style={{
+                                backgroundColor: "var(--white)",
+                                cursor: "pointer",
+                              }}
+                              onClick={() => handleItemModal("items")}
+                              id="item"
+                            ></Visibility>
+                          </div>
+                        }
+                      />
+                    </FormControl>
+                    <FormControl
+                      // sx={{ flex: 1, display: "flex", flexDirection: "row", alignItems:"center" }}
+                      style={{
+                        flex: 1,
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "flex-end",
+                        alignSelf: "flex-end",
+                      }}
+                    >
+                      {!value.itemUpload.items && (
+                        <Button
+                          variant="outlined"
+                          endIcon={
+                            <FiUpload
+                              style={{ fontSize: "1rem", color: "white" }}
+                            />
+                          }
+                          style={{
+                            fontFamily: "Monsterrat,sans-serif",
+                            width: "50%",
+                            color: "white",
+                            cursor: "pointer",
+                            borderColor: "white",
+                            // margin: "0.1rem",
+                          }}
+                        >
+                          Upload
+                          {/* Hidden file input */}
+                          <input
+                            type="file"
+                            accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                            className="upload-input"
+                            onChange={(e) =>
+                              value.setItemUpload({
+                                ...value.itemUpload,
+                                items: true,
+                                eventItems: e,
+                              })
+                            }
+                            onClick={(event) => (event.target.value = "")} // To allow uploading the same file again
+                          />
+                        </Button>
+                      )}
+                      {value.itemUpload.items && (
+                        <div style={{ display: "flex" }}>
+                          <a
+                            href={URL.createObjectURL(
+                              value.itemUpload.eventItems.target.files[0],
+                            )}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {value.itemUpload.eventItems.target.files[0].name
+                              .length < 12
+                              ? value.itemUpload.eventItems.target.files[0].name
+                              : value.itemUpload.eventItems.target.files[0].name.substring(
+                                  0,
+                                  10,
+                                ) + "..."}
+                          </a>
+                          <Cancel
+                            onClick={() =>
+                              value.setItemUpload({
+                                ...value.itemUpload,
+                                items: false,
+                                eventItems: null,
+                              })
+                            }
+                          />
+                        </div>
+                      )}
+
+                      <div className="upload-btn-info">
+                        Only Excel files allowed
+                      </div>
+                    </FormControl>
+                  </Stack>
+                  <Stack
+                    direction="row"
+                    spacing={12}
+                    sx={{ alignItems: "center", width: "90%" }}
+                  >
+                    <div className="promotion-detail-text">Exclusions</div>
+
+                    <FormControl sx={{ flex: 1 }}>
+                      <InputFieldComponent
+                        label="Exclusions"
+                        required={false}
+                        placeholder="Add Item IDs to exclude"
+                        // value={Object.keys(excludedSelectedItems).filter(
+                        //   (key) => excludedSelectedItems[key] === true
+                        // )}
+                        value={value.promotionData.excludedItemList}
+                        fun={(text) =>
+                          value.setPromotionData({
+                            ...value.promotionData,
+                            excludedItemList: text,
+                          })
+                        }
+                        style={{}}
+                        EndComponent={
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              height: "100%",
+                              marginTop: "1.5rem",
+                            }}
+                          >
+                            <Visibility
+                              style={{
+                                backgroundColor: "white",
+                                cursor: "pointer",
+                              }}
+                              onClick={() => handleItemModal("items")}
+                              id="item"
+                            ></Visibility>
+                          </div>
+                        }
+                      />
+                    </FormControl>
+                    <FormControl
+                      sx={{
+                        flex: 1,
+                        display: "flex",
+                        flexDirection: "row",
+                        alignSelf: "flex-end",
+                      }}
+                    >
+                      {!value.itemUpload.excludedItems && (
+                        <Button
+                          variant="outlined"
+                          endIcon={
+                            <FiUpload
+                              style={{ fontSize: "1rem", color: "white" }}
+                            />
+                          }
+                          style={{
+                            fontFamily: "Monsterrat,sans-serif",
+                            width: "50%",
+                            color: "white",
+                            cursor: "pointer",
+                            borderColor: "white",
+                            // margin: "0.1rem",
+                          }}
+                        >
+                          Upload
+                          {/* Hidden file input */}
+                          <input
+                            type="file"
+                            accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                            className="upload-input"
+                            onChange={(e) =>
+                              value.setItemUpload({
+                                ...value.itemUpload,
+                                excludedItems: true,
+                                eventExcludedItems: e,
+                              })
+                            }
+                            onClick={(event) => (event.target.value = "")} // To allow uploading the same file again
+                          />
+                        </Button>
+                      )}
+                      {value.itemUpload.excludedItems && (
+                        <div style={{ display: "flex" }}>
+                          <a
+                            href={URL.createObjectURL(
+                              value.itemUpload.eventExcludedItems.target
+                                .files[0],
+                            )}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {value.itemUpload.eventExcludedItems.target.files[0]
+                              .name.length < 12
+                              ? value.itemUpload.eventExcludedItems.target
+                                  .files[0].name
+                              : value.itemUpload.eventExcludedItems.target.files[0].name.substring(
+                                  0,
+                                  10,
+                                ) + "..."}
+                          </a>
+                          <Cancel
+                            onClick={() =>
+                              value.setItemUpload({
+                                ...value.itemUpload,
+                                excludedItems: false,
+                                event: null,
+                              })
+                            }
+                          />
+                        </div>
+                      )}
+                      <div className="upload-btn-info">
+                        Only Excel files allowed
+                      </div>
+                    </FormControl>
+                  </Stack>
+                </Stack>
+              </Stack>
+              {/* </Card> */}
+            </Box>
+            {/* <Card ref={messagesEndRef}> */}
+            <div ref={messagesEndRef} style={{ marginLeft: "1.5rem" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <Typography
+                  style={{
+                    fontSize: "0.9rem",
+                    fontWeight: "bold",
+                    fontFamily: "Montserrat,sans-sherif",
+                    color: "white",
+                  }}
+                >
+                  Discount Details
+                </Typography>
+                <IconButton
+                  aria-label="exp"
+                  onClick={handleTableExpand}
+                  style={{ color: "white", backgroundColor: "#ffffff14" }}
+                >
+                  {tableToggle ? <ExpandLess /> : <ExpandMore />}
+                </IconButton>
+              </div>
+              {tableToggle && (
+                <Stack
+                  ref={messagesEndRef}
+                  direction="row"
+                  spacing={3}
+                  sx={{ display: { xs: "none", md: "flex" }, my: 1 }}
+                >
+                  <Stack spacing={2} sx={{ flexGrow: 1 }}>
+                    <Stack
+                      direction="row"
+                      spacing={12}
+                      sx={{ alignItems: "center", width: "90%" }}
+                    >
+                      <div className="promotion-detail-text">
+                        {" "}
+                        Discount<span style={{ color: "red" }}>*</span>
+                      </div>
+                      <FormControl sx={{ flex: 1, alignSelf: "flex-end" }}>
+                        {/* <Form.Label
                         id="custom"
                         className="position-absolute top-0 translate-middle custom"
                         style={{
@@ -1056,360 +1106,373 @@ export default function LLMDetailsSide() {
                         </span>
                         <div style={{ color: "red", zIndex: 2 }}>{"*"}</div>
                       </Form.Label> */}
-                      <span className="form-label-styled" style={{ color: 'white' }}>Discount Type<span className="required">*</span>
-                      </span>
-                      <Select
-                        labelId="demo-simple-select-label"
-                        id="demo-simple-select"
-                        value={value.promotionData.discountType}
-                        placeholder="Select Discount Type"
-                        onChange={handleChangeDiscount}
+                        <span
+                          className="form-label-styled"
+                          style={{ color: "white" }}
+                        >
+                          Discount Type<span className="required">*</span>
+                        </span>
+                        <Select
+                          labelId="demo-simple-select-label"
+                          id="demo-simple-select"
+                          value={value.promotionData.discountType}
+                          placeholder="Select Discount Type"
+                          onChange={handleChangeDiscount}
+                          sx={{
+                            zIndex: 1,
+                            "& .MuiSelect-button": { color: "#212529" }, // Ensures black color for placeholder
+                          }}
+                        >
+                          {discountTypeOptions.map((item) => (
+                            <Option key={item} value={item}>
+                              {item}
+                            </Option>
+                          ))}
+                        </Select>
+                      </FormControl>
+                      <FormControl sx={{ flex: 1 }}>
+                        <InputFieldComponent
+                          label="Discount Value"
+                          required={true}
+                          placeholder="Add Value here"
+                          value={value.promotionData.discountValue}
+                          fun={(text) =>
+                            value.setPromotionData({
+                              ...value.promotionData,
+                              discountValue: text,
+                            })
+                          }
+                        />
+                      </FormControl>
+                    </Stack>
+                    <Stack
+                      direction="row"
+                      spacing={12}
+                      sx={{ alignItems: "center", width: "90%" }}
+                    >
+                      <div className="promotion-detail-text">
+                        Date<span style={{ color: "red" }}>*</span>
+                      </div>
+                      <FormControl sx={{ flex: 1 }}>
+                        <InputFieldComponent
+                          label="Start Date"
+                          required={true}
+                          placeholder="Choose start date"
+                          value={value.promotionData.startDate}
+                          type="date"
+                          fun={(text) =>
+                            value.setPromotionData({
+                              ...value.promotionData,
+                              startDate: text,
+                            })
+                          }
+                        />
+                      </FormControl>
+                      <FormControl sx={{ flex: 1 }}>
+                        <InputFieldComponent
+                          type="date"
+                          label="End Date"
+                          required={true}
+                          placeholder="Choose End Date"
+                          value={value.promotionData.endDate}
+                          fun={(text) =>
+                            value.setPromotionData({
+                              ...value.promotionData,
+                              endDate: text,
+                            })
+                          }
+                        />
+                      </FormControl>
+                    </Stack>
+                    <Stack
+                      direction="row"
+                      spacing={12}
+                      sx={{ alignItems: "center", width: "90%" }}
+                    >
+                      <div className="promotion-detail-text">
+                        Location<span style={{ color: "red" }}>*</span>
+                      </div>
+                      <FormControl sx={{ flex: 1 }}>
+                        <InputFieldComponent
+                          label="Location"
+                          required={true}
+                          placeholder="Add Store IDs"
+                          // value={Object.keys(selectedStores).filter(
+                          //   (key) => selectedStores[key] === true
+                          // )}
+                          value={value.promotionData.locationList}
+                          fun={(text) =>
+                            value.setPromotionData({
+                              ...value.promotionData,
+                              locationList: text,
+                            })
+                          }
+                          EndComponent={
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                height: "100%",
+                                marginTop: "1.5rem",
+                              }}
+                            >
+                              <Visibility
+                                style={{
+                                  backgroundColor: "white",
+                                  cursor: "pointer",
+                                }}
+                                onClick={() => handleStoreModal("stores")}
+                                id="stores"
+                              ></Visibility>
+                            </div>
+                          }
+                        />
+                      </FormControl>
+                      <FormControl
                         sx={{
-                          zIndex: 1,
-                          "& .MuiSelect-button": { color: "#212529" }, // Ensures black color for placeholder
+                          flex: 1,
+                          display: "flex",
+                          flexDirection: "row",
+                          alignSelf: "flex-end",
                         }}
                       >
-                        {discountTypeOptions.map((item) => (
-                          <Option key={item} value={item}>
-                            {item}
-                          </Option>
-                        ))}
-                      </Select>
-                    </FormControl>
-                    <FormControl sx={{ flex: 1 }}>
-                      <InputFieldComponent
-                        label="Discount Amount"
-                        required={true}
-                        placeholder="Add Amount here"
-                        value={value.promotionData.discountValue}
-                        fun={(text) =>
-                          value.setPromotionData({
-                            ...value.promotionData,
-                            discountValue: text,
-                          })
-                        }
-                      />
-                    </FormControl>
-                  </Stack>
-                  <Stack
-                    direction="row"
-                    spacing={12}
-                    sx={{ alignItems: "center", width: "90%" }}
-                  >
-                    <div
-                      className="promotion-detail-text"
-                    >Date<span style={{ color: "red" }}>*</span></div>
-                    <FormControl sx={{ flex: 1 }}>
-                      <InputFieldComponent
-                        label="Start Date"
-                        required={true}
-                        placeholder="Choose start date"
-                        value={value.promotionData.startDate}
-                        type="date"
-                        fun={(text) =>
-                          value.setPromotionData({
-                            ...value.promotionData,
-                            startDate: text,
-                          })
-                        }
-                      />
-                    </FormControl>
-                    <FormControl sx={{ flex: 1 }}>
-                      <InputFieldComponent
-                        type="date"
-                        label="End Date"
-                        required={true}
-                        placeholder="Choose End Date"
-                        value={value.promotionData.endDate}
-                        fun={(text) =>
-                          value.setPromotionData({
-                            ...value.promotionData,
-                            endDate: text,
-                          })
-                        }
-                      />
-                    </FormControl>
-                  </Stack>
-                  <Stack
-                    direction="row"
-                    spacing={12}
-                    sx={{ alignItems: "center", width: "90%" }}
-                  >
-                    <div
-                      className="promotion-detail-text"
-                    >Location<span style={{ color: "red" }}>*</span></div>
-                    <FormControl sx={{ flex: 1 }}>
-                      <InputFieldComponent
-                        label="Location"
-                        required={true}
-                        placeholder="Add Store IDs"
-                        // value={Object.keys(selectedStores).filter(
-                        //   (key) => selectedStores[key] === true
-                        // )}
-                        value={value.promotionData.locationList}
-                        fun={(text) =>
-                          value.setPromotionData({
-                            ...value.promotionData,
-                            locationList: text,
-                          })
-                        }
-                        EndComponent={
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              height: "100%",
-                              marginTop: "1.5rem",
-                            }}
-                          >
-                            <Visibility
-                              style={{
-                                backgroundColor: "white",
-                                cursor: "pointer",
-                              }}
-                              onClick={() => handleStoreModal("stores")}
-                              id="stores"
-                            ></Visibility></div>
-                        }
-                      />
-                    </FormControl>
-                    <FormControl
-                      sx={{ flex: 1, display: "flex", flexDirection: "row", alignSelf: "flex-end" }}
-                    >
-                      {!value.storeUpload.stores && (
-                        // <CustomButton className="upload-btn"                        >
+                        {!value.storeUpload.stores && (
+                          // <CustomButton className="upload-btn"                        >
 
-                        <Button
-                          variant="outlined"
-                          endIcon={<FiUpload style={{ fontSize: "1rem" }} />}
-                          style={{
-                            fontFamily: "Monsterrat,sans-serif",
-                            width: "50%",
-                            color: "white",
-                            cursor: "pointer",
-                            // margin: "0.1rem",
-                          }}
-                        >
-                          Upload
-                          <input
-                            type="file"
-                            className="upload-input"
-                            accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-                            onChange={(e) =>
-                              value.setStoreUpload({
-                                ...value.storeUpload,
-                                stores: true,
-                                eventStores: e,
-                              })
-                            }
-                            onClick={(event) => (event.target.value = "")} // To allow uploading the same file again
-                          />
-                        </Button>
-                      )}
-                      {value.storeUpload.stores && (
-                        <div style={{ display: "flex" }}>
-                          <a
-                            href={URL.createObjectURL(
-                              value.storeUpload.eventStores.target.files[0]
-                            )}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {value.storeUpload.eventStores.target.files[0].name
-                              .length < 12
-                              ? value.storeUpload.eventStores.target.files[0]
-                                .name
-                              : value.storeUpload.eventStores.target.files[0].name.substring(
-                                0,
-                                10
-                              ) + "..."}
-                          </a>
-                          <Cancel
-                            onClick={() =>
-                              value.setStoreUpload({
-                                ...value.storeUpload,
-                                stores: false,
-                                eventStores: null,
-                              })
-                            }
-                          />
-                        </div>
-                      )}
-                      <div className="upload-btn-info"
-                      >
-                        Only Excel files allowed
-                      </div>
-                    </FormControl>
-                  </Stack>
-                  <Stack
-                    direction="row"
-                    spacing={12}
-                    sx={{ alignItems: "center", width: "90%" }}
-                  >
-                    <div
-                      className="promotion-detail-text"
-                    >Exclusions<span style={{ color: "red" }}>*</span></div>
-                    <FormControl sx={{ flex: 1 }}>
-                      <InputFieldComponent
-                        label="Exclusions"
-                        required={false}
-                        placeholder="Add Exclusions"
-                        // value={Object.keys(excludedSelectedStores).filter(
-                        //   (key) => excludedSelectedStores[key] === true
-                        // )}
-                        value={value.promotionData.excludedLocationList}
-                        fun={(text) =>
-                          value.setPromotionData({
-                            ...value.promotionData,
-                            excludedLocationList: text,
-                          })
-                        }
-                        EndComponent={
-                          <div
+                          <Button
+                            variant="outlined"
+                            endIcon={<FiUpload style={{ fontSize: "1rem" }} />}
                             style={{
-                              display: "flex",
-                              alignItems: "center",
-                              height: "100%",
-                              marginTop: "1.5rem",
+                              fontFamily: "Monsterrat,sans-serif",
+                              width: "50%",
+                              color: "white",
+                              cursor: "pointer",
+                              borderColor: "white",
+                              // margin: "0.1rem",
                             }}
                           >
-                            <Visibility
-                              style={{
-                                backgroundColor: "white",
-                                cursor: "pointer",
-                              }}
-                              onClick={() => handleStoreModal("storesExcluded")}
-                              id="storesExcluded"
-                            ></Visibility></div>
-                        }
-                        style={{}}
-                      />
-                    </FormControl>
-                    <FormControl
-                      style={{
-                        flex: 1,
-                        display: "flex",
-                        flexDirection: "row",
-                        alignItems: "flex-end",
-                        alignSelf: "flex-end"
-                      }}
-                    >
-                      {!value.storeUpload.excludedStores && (
-                        // <CustomButton className="upload-btn"
-                        // >
-                        <Button
-                          variant="outlined"
-                          endIcon={<FiUpload style={{ fontSize: "1rem", color: "white" }}
-                          />}
-                          style={{
-                            fontFamily: "Monsterrat,sans-serif",
-                            width: "50%",
-                            color: "white",
-                            cursor: "pointer",
-                            // margin: "0.1rem",
-                          }}
-                        >
-                          Upload
-                          <input
-                            type="file"
-                            accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-                            className="upload-input"
-                            onChange={(e) =>
-                              value.setStoreUpload({
-                                ...value.storeUpload,
-                                excludedStores: true,
-                                eventExcludedStores: e,
-                              })
-                            }
-                            onClick={(event) => (event.target.value = "")} // To allow uploading the same file again
-                          />
-                        </Button>
-                      )}
-                      {value.storeUpload.excludedStores && (
-                        <div style={{ display: "flex" }}>
-                          <a
-                            href={URL.createObjectURL(
-                              value.storeUpload.eventExcludedStores.target
-                                .files[0]
-                            )}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {value.storeUpload.eventExcludedStores.target
-                              .files[0].name.length < 12
-                              ? value.storeUpload.eventExcludedStores.target
-                                .files[0].name
-                              : value.storeUpload.eventExcludedStores.target.files[0].name.substring(
-                                0,
-                                10
-                              ) + "..."}
-                          </a>
-                          <Cancel
-                            onClick={() =>
-                              value.setStoreUpload({
-                                ...value.storeUpload,
-                                excludedStores: false,
-                                eventExcludedStores: null,
-                              })
-                            }
-                          />
+                            Upload
+                            <input
+                              type="file"
+                              className="upload-input"
+                              accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                              onChange={(e) =>
+                                value.setStoreUpload({
+                                  ...value.storeUpload,
+                                  stores: true,
+                                  eventStores: e,
+                                })
+                              }
+                              onClick={(event) => (event.target.value = "")} // To allow uploading the same file again
+                            />
+                          </Button>
+                        )}
+                        {value.storeUpload.stores && (
+                          <div style={{ display: "flex" }}>
+                            <a
+                              href={URL.createObjectURL(
+                                value.storeUpload.eventStores.target.files[0],
+                              )}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {value.storeUpload.eventStores.target.files[0]
+                                .name.length < 12
+                                ? value.storeUpload.eventStores.target.files[0]
+                                    .name
+                                : value.storeUpload.eventStores.target.files[0].name.substring(
+                                    0,
+                                    10,
+                                  ) + "..."}
+                            </a>
+                            <Cancel
+                              onClick={() =>
+                                value.setStoreUpload({
+                                  ...value.storeUpload,
+                                  stores: false,
+                                  eventStores: null,
+                                })
+                              }
+                            />
+                          </div>
+                        )}
+                        <div className="upload-btn-info">
+                          Only Excel files allowed
                         </div>
-                      )}
-                      <div
-                        className="upload-btn-info"
-                      >
-                        Only Excel files allowed
+                      </FormControl>
+                    </Stack>
+                    <Stack
+                      direction="row"
+                      spacing={12}
+                      sx={{ alignItems: "center", width: "90%" }}
+                    >
+                      <div className="promotion-detail-text">
+                        Exclusions<span style={{ color: "red" }}>*</span>
                       </div>
-                    </FormControl>
+                      <FormControl sx={{ flex: 1 }}>
+                        <InputFieldComponent
+                          label="Exclusions"
+                          required={false}
+                          placeholder="Add Exclusions"
+                          // value={Object.keys(excludedSelectedStores).filter(
+                          //   (key) => excludedSelectedStores[key] === true
+                          // )}
+                          value={value.promotionData.excludedLocationList}
+                          fun={(text) =>
+                            value.setPromotionData({
+                              ...value.promotionData,
+                              excludedLocationList: text,
+                            })
+                          }
+                          EndComponent={
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                height: "100%",
+                                marginTop: "1.5rem",
+                              }}
+                            >
+                              <Visibility
+                                style={{
+                                  backgroundColor: "white",
+                                  cursor: "pointer",
+                                }}
+                                onClick={() =>
+                                  handleStoreModal("storesExcluded")
+                                }
+                                id="storesExcluded"
+                              ></Visibility>
+                            </div>
+                          }
+                          style={{}}
+                        />
+                      </FormControl>
+                      <FormControl
+                        style={{
+                          flex: 1,
+                          display: "flex",
+                          flexDirection: "row",
+                          alignItems: "flex-end",
+                          alignSelf: "flex-end",
+                        }}
+                      >
+                        {!value.storeUpload.excludedStores && (
+                          // <CustomButton className="upload-btn"
+                          // >
+                          <Button
+                            variant="outlined"
+                            endIcon={
+                              <FiUpload
+                                style={{ fontSize: "1rem", color: "white" }}
+                              />
+                            }
+                            style={{
+                              fontFamily: "Monsterrat,sans-serif",
+                              width: "50%",
+                              color: "white",
+                              cursor: "pointer",
+                              borderColor: "white",
+                              // margin: "0.1rem",
+                            }}
+                          >
+                            Upload
+                            <input
+                              type="file"
+                              accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                              className="upload-input"
+                              onChange={(e) =>
+                                value.setStoreUpload({
+                                  ...value.storeUpload,
+                                  excludedStores: true,
+                                  eventExcludedStores: e,
+                                })
+                              }
+                              onClick={(event) => (event.target.value = "")} // To allow uploading the same file again
+                            />
+                          </Button>
+                        )}
+                        {value.storeUpload.excludedStores && (
+                          <div style={{ display: "flex" }}>
+                            <a
+                              href={URL.createObjectURL(
+                                value.storeUpload.eventExcludedStores.target
+                                  .files[0],
+                              )}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {value.storeUpload.eventExcludedStores.target
+                                .files[0].name.length < 12
+                                ? value.storeUpload.eventExcludedStores.target
+                                    .files[0].name
+                                : value.storeUpload.eventExcludedStores.target.files[0].name.substring(
+                                    0,
+                                    10,
+                                  ) + "..."}
+                            </a>
+                            <Cancel
+                              onClick={() =>
+                                value.setStoreUpload({
+                                  ...value.storeUpload,
+                                  excludedStores: false,
+                                  eventExcludedStores: null,
+                                })
+                              }
+                            />
+                          </div>
+                        )}
+                        <div className="upload-btn-info">
+                          Only Excel files allowed
+                        </div>
+                      </FormControl>
+                    </Stack>
                   </Stack>
                 </Stack>
-              </Stack>
-            )}
-          </div>
-          {/* </Card> */}
-          <CardOverflow
-            sx={{ borderTop: "1px solid", borderColor: "#e5e5e5" }}
-            style={{
-              flexGrow: 1,
-              display: "flex",
-              justifyContent: "flex-end",
-              paddingBottom: "0.75rem",
-            }}
-          >
-            <CardActions
-              sx={{
-                justifyContent: "center",
-                marginLeft: "1rem",
-                marginRight: "1rem",
+              )}
+            </div>
+            {/* </Card> */}
+            <CardOverflow
+              sx={{ borderTop: "1px solid", borderColor: "#e5e5e5" }}
+              style={{
+                flexGrow: 1,
+                display: "flex",
+                justifyContent: "flex-end",
+                paddingBottom: "0.75rem",
               }}
             >
-              <CustomButton
-                onClick={() => value.setFormSave((prevState) => !prevState)}
+              <CardActions
+                sx={{
+                  justifyContent: "center",
+                  marginLeft: "1rem",
+                  marginRight: "1rem",
+                }}
               >
-                <SaveIcon style={{ color: "2E333E" }}></SaveIcon>
-                SAVE
-              </CustomButton>
+                <CustomButton
+                  onClick={() => value.setFormSave((prevState) => !prevState)}
+                >
+                  <SaveIcon style={{ color: "2E333E" }}></SaveIcon>
+                  SAVE
+                </CustomButton>
 
-              <CustomButton onClick={() => setPromoPreview(true)}>
-                <PreviewIcon style={{ color: "2E333E" }}></PreviewIcon>
-                PREVIEW
-              </CustomButton>
+                <CustomButton onClick={() => setPromoPreview(true)}>
+                  <PreviewIcon style={{ color: "2E333E" }}></PreviewIcon>
+                  PREVIEW
+                </CustomButton>
 
-              <CustomButton
-                onClick={() => value.setFormSubmit((prevState) => !prevState)}
-              >
-                <PublishIcon style={{ color: "2E333E" }}></PublishIcon>
-                SUBMIT
-              </CustomButton>
-            </CardActions>
-          </CardOverflow>
-        </Card>
-        {/* )}  */}
+                <CustomButton
+                  onClick={() => value.setFormSubmit((prevState) => !prevState)}
+                >
+                  <PublishIcon style={{ color: "2E333E" }}></PublishIcon>
+                  SUBMIT
+                </CustomButton>
+              </CardActions>
+            </CardOverflow>
+          </Card>
+        )}
       </Grid>
 
-      <div
-        className="chatbot-pane-container"
-      >
+      <div className="chatbot-pane-container">
         <PromoChatbot />
       </div>
       {/* <Grid
@@ -1429,4 +1492,3 @@ export default function LLMDetailsSide() {
     </Grid>
   );
 }
-

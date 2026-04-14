@@ -30,7 +30,14 @@ function uuidv4() {
 }
 
 export default function PromoChatbot() {
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([
+    {
+      fromUser: false,
+      text: `Hello, how can I assist you today?`,
+      streaming: false,
+      id: uuidv4(),
+    },
+  ]);
   const value = useContext(AuthContext);
   const [itemsArray, setItemsArray] = useState();
   const [quantitiesArray, setQuantitiesArray] = useState();
@@ -183,7 +190,7 @@ export default function PromoChatbot() {
       if (hostRef.current.shouldReconnect) {
         const nextRetry = Math.min(
           30_000,
-          500 * Math.pow(2, hostRef.current.retries)
+          500 * Math.pow(2, hostRef.current.retries),
         );
         hostRef.current.retries += 1;
         console.log(`Reconnecting in ${nextRetry}ms`);
@@ -204,7 +211,7 @@ export default function PromoChatbot() {
       hostRef.current.shouldReconnect = false;
       try {
         wsRef.current && wsRef.current.close();
-      } catch (err) { }
+      } catch (err) {}
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -218,53 +225,65 @@ export default function PromoChatbot() {
     let promotionType = getTrueValueKey(value.typeOfPromotion);
     let savedData = `
       ${promotionType ? `Promotion Type: ${promotionType},` : ""}
-      ${value.promotionData.hierarchyType
-        ? `Hierarchy Type: ${value.promotionData.hierarchyType},`
-        : ""
+      ${
+        value.promotionData.hierarchyType
+          ? `Hierarchy Type: ${value.promotionData.hierarchyType},`
+          : ""
       }
-      ${value.promotionData.hierarchyValue
-        ? `Hierarchy Value: ${value.promotionData.hierarchyValue},`
-        : ""
+      ${
+        value.promotionData.hierarchyValue
+          ? `Hierarchy Value: ${value.promotionData.hierarchyValue},`
+          : ""
       }
-      ${value.promotionData.brand
-        ? `Hierarchy Brand: ${value.promotionData.brand},`
-        : ""
+      ${
+        value.promotionData.brand
+          ? `Hierarchy Brand: ${value.promotionData.brand},`
+          : ""
       }
-      ${value.promotionData.itemList
-        ? `Item List: ${value.promotionData.itemList},`
-        : ""
+      ${
+        value.promotionData.itemList
+          ? `Item List: ${value.promotionData.itemList},`
+          : ""
       }
-      ${value.promotionData.excludedItemList
-        ? `Excluded Item List: ${value.promotionData.excludedItemList},`
-        : ""
+      ${
+        value.promotionData.excludedItemList
+          ? `Excluded Item List: ${value.promotionData.excludedItemList},`
+          : ""
       }
-      ${value.promotionData.discountType
-        ? `Discount Type: ${value.promotionData.discountType},`
-        : ""
+      ${
+        value.promotionData.discountType
+          ? `Discount Type: ${value.promotionData.discountType},`
+          : ""
       }
-      ${value.promotionData.discountValue
-        ? `Discount Value: ${value.promotionData.discountValue},`
-        : ""
+      ${
+        value.promotionData.discountValue
+          ? `Discount Value: ${value.promotionData.discountValue},`
+          : ""
       }
-      ${value.promotionData.startDate
-        ? `Start Date: ${value.promotionData.startDate},`
-        : ""
+      ${
+        value.promotionData.startDate
+          ? `Start Date: ${value.promotionData.startDate},`
+          : ""
       }
-      ${value.promotionData.endDate
-        ? `End Date: ${value.promotionData.endDate},`
-        : ""
+      ${
+        value.promotionData.endDate
+          ? `End Date: ${value.promotionData.endDate},`
+          : ""
       }
-      ${value.promotionData.discountValue
-        ? `Discount Value: ${value.promotionData.discountValue},`
-        : ""
+      ${
+        value.promotionData.discountValue
+          ? `Discount Value: ${value.promotionData.discountValue},`
+          : ""
       }
-      ${value.promotionData.locationList
-        ? `Location List: ${value.promotionData.locationList},`
-        : ""
+      ${
+        value.promotionData.locationList
+          ? `Location List: ${value.promotionData.locationList},`
+          : ""
       }
-      ${value.promotionData.excludedLocationList
-        ? `Excluded Location List: ${value.promotionData.excludedLocationList},`
-        : ""
+      ${
+        value.promotionData.excludedLocationList
+          ? `Excluded Location List: ${value.promotionData.excludedLocationList},`
+          : ""
       }
     `;
     // await handleMessageSubmit(savedData);
@@ -350,7 +369,7 @@ export default function PromoChatbot() {
     const hasChangedStore =
       prevStoreUpload.current.stores != value.storeUpload.stores ||
       prevStoreUpload.current.excludedStores !=
-      value.storeUpload.excludedStores;
+        value.storeUpload.excludedStores;
     if (
       hasChanged &&
       (value.itemUpload.eventItems != null ||
@@ -438,7 +457,7 @@ export default function PromoChatbot() {
             : [invoiceObject.items];
         if (invoiceObject.excluded_items !== undefined)
           updatedPromotionData.excludedItemList = Array.isArray(
-            invoiceObject.excluded_items
+            invoiceObject.excluded_items,
           )
             ? invoiceObject.excluded_items
             : [invoiceObject.excluded_items];
@@ -452,13 +471,13 @@ export default function PromoChatbot() {
           updatedPromotionData.endDate = formatDate(invoiceObject.end_date);
         if (invoiceObject.stores !== undefined)
           updatedPromotionData.locationList = Array.isArray(
-            invoiceObject.stores
+            invoiceObject.stores,
           )
             ? invoiceObject.stores
             : [invoiceObject.stores];
         if (invoiceObject.excluded_stores !== undefined)
           updatedPromotionData.excludedLocationList = Array.isArray(
-            invoiceObject.excluded_stores
+            invoiceObject.excluded_stores,
           )
             ? invoiceObject.excluded_stores
             : [invoiceObject.excluded_stores];
@@ -467,7 +486,7 @@ export default function PromoChatbot() {
           await typeSelection(invoiceObject.promotion_type);
           console.log(
             "Type Selection parameter: ",
-            invoiceObject.promotion_type
+            invoiceObject.promotion_type,
           );
         }
       }
@@ -475,7 +494,7 @@ export default function PromoChatbot() {
       console.log("Final Invoice Data:  ", updatedPromotionData);
       return true;
     },
-    [value.promotionData]
+    [value.promotionData],
   );
   //API CALLS
   const getPromotionDetails = async (threadId, message) => {
@@ -491,11 +510,11 @@ export default function PromoChatbot() {
             Accept: "application/json",
           },
           body: JSON.stringify({ thread_id: threadId, message: message }), // or message if needed
-        }
+        },
       );
       if (!response.ok) {
         throw new Error(
-          `Failed to fetch promotion details: ${response.status} ${response.statusText}`
+          `Failed to fetch promotion details: ${response.status} ${response.statusText}`,
         );
       }
       const data = await response.json();
@@ -730,7 +749,7 @@ export default function PromoChatbot() {
       setInput("");
       return;
     }
-
+    value.setIsActive(true);
     setMessages((prev) => [
       ...prev,
       { fromUser: true, text: messageText, id: uuidv4() },
@@ -784,9 +803,9 @@ export default function PromoChatbot() {
             typeof data === "string"
               ? data
               : data?.text ||
-              data?.content ||
-              data?.message ||
-              JSON.stringify(data);
+                data?.content ||
+                data?.message ||
+                JSON.stringify(data);
           buffer += text;
         } else if (msg.type === "done") {
           // Stream finished - cleanup
@@ -1089,7 +1108,7 @@ export default function PromoChatbot() {
     if (emailStatus && emailStatus.success) {
       console.log(
         "Email sending was successful! Now calling another function...",
-        emailStatus
+        emailStatus,
       );
       clearFormData();
     } else {
@@ -1175,7 +1194,7 @@ export default function PromoChatbot() {
       setPdfCardVisible(true);
       value.setModalDetails({
         visible: true,
-        text: "PO Created Successfully",
+        text: "Promotion Created Successfully",
         isSuccessful: true,
       });
       // console.log("invoice Details Creation Response:", response.data);
@@ -1237,7 +1256,7 @@ export default function PromoChatbot() {
         },
       ]);
       // value.setModalText("Invoice created successfully!");
-      await clearDataApi();
+      // await clearDataApi();
       // Set pdfCardVisible to true to ensure it stays visible
       setPdfCardVisible(false);
     } catch (error) {
@@ -1289,10 +1308,11 @@ export default function PromoChatbot() {
                       ([subKey, subValue]) =>
                         `${subKey
                           .replace(/_/g, " ")
-                          .replace(/\b\w/g, (char) => char.toUpperCase())}: ${subValue ?? "N/A"
-                        }`
+                          .replace(/\b\w/g, (char) => char.toUpperCase())}: ${
+                          subValue ?? "N/A"
+                        }`,
                     )
-                    .join(", ")
+                    .join(", "),
               )
               .join("\n")
           );
@@ -1300,8 +1320,9 @@ export default function PromoChatbot() {
           // Handle normal key-value pairs
           return `${key
             .replace(/_/g, " ")
-            .replace(/\b\w/g, (char) => char.toUpperCase())}: ${value ?? "N/A"
-            }`;
+            .replace(/\b\w/g, (char) => char.toUpperCase())}: ${
+            value ?? "N/A"
+          }`;
         }
       })
       .join("\n");
@@ -1475,7 +1496,7 @@ export default function PromoChatbot() {
   };
   console.log("checkConsole  ", value);
   return (
-    <div className="chatbot-card" >
+    <div className="chatbot-card">
       <Backdrop
         sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
         open={uploadLoading}
@@ -1483,22 +1504,34 @@ export default function PromoChatbot() {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
-      <div className="chatbot-area" ref={messageEl}
-      >
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={message.fromUser ? "user-message" : "bot-message"}
-          >
-            <ChatMessage
+      <div className="chatbot-area" ref={messageEl}>
+        {" "}
+        <Box
+          style={{
+            display: "flex",
+            flex: 1,
+            flexDirection: "column ",
+            padding: 2,
+            justifyContent: "flex-end",
+          }}
+        >
+          {messages.map((message, index) => (
+            <div
               key={index}
-              text={message.text ? message.text : message.component}
-              fromUser={message.fromUser}
-              isFile={message.isFile}
-            />
-          </div>
-        ))}
-        {typing && <TypingIndicatorComponent scrollToBottom={scrollToBottom} />}
+              className={message.fromUser ? "user-message" : "bot-message"}
+            >
+              <ChatMessage
+                key={index}
+                text={message.text ? message.text : message.component}
+                fromUser={message.fromUser}
+                isFile={message.isFile}
+              />
+            </div>
+          ))}
+          {typing && (
+            <TypingIndicatorComponent scrollToBottom={scrollToBottom} />
+          )}
+        </Box>
       </div>
       <ChatbotInputForm
         input={input}
