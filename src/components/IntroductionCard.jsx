@@ -5,7 +5,6 @@ import "../styles/general.css";
 import symbolBlue from "../images/symbol-blue.png";
 const IntroductionCard = () => {
   return (
-    <Grid container component="main" className="main-grid">
     <Card
       className="generalView"
       sx={{
@@ -52,7 +51,7 @@ const IntroductionCard = () => {
           or more? I've got you covered - happy to assist!
         </Typography>
       </div>
-    </Card></Grid>
+    </Card>
   );
 };
 export default IntroductionCard;

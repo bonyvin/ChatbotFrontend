@@ -44,7 +44,14 @@ function uuidv4() {
 }
 
 export default function InvoiceChatbot() {
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([
+    {
+      fromUser: false,
+      text: `Hello, how can I assist you today?`,
+      streaming: false,
+      id: uuidv4(),
+    },
+  ]);
   const value = useContext(AuthContext);
   const [itemsArray, setItemsArray] = useState();
   const [quantitiesArray, setQuantitiesArray] = useState();
@@ -86,6 +93,7 @@ export default function InvoiceChatbot() {
   const outgoingQueueRef = useRef([]); // if socket down, queue messages
   const messagesEndRef = useRef(null);
   const containerRef = useRef(null);
+  const prevIntentRef = useRef(null);
 
   const PORT = 8000;
   const WS_PATH = "/ws/invoice_chat";
@@ -103,14 +111,13 @@ export default function InvoiceChatbot() {
       console.log("ws open");
       hostRef.current.retries = 0;
       setConnected(true);
-
-      // flush queued messages
       if (outgoingQueueRef.current.length > 0) {
         outgoingQueueRef.current.forEach((m) => ws.send(m));
         outgoingQueueRef.current = [];
       }
     };
-    ws.onmessage = (evt) => {
+
+    ws.onmessage = async (evt) => {
       let msg;
       try {
         msg = JSON.parse(evt.data);
@@ -119,7 +126,6 @@ export default function InvoiceChatbot() {
         return;
       }
 
-      // Handle different message types from backend
       if (msg.type === "token") {
         const tokenText = String(msg.text ?? "");
         setMessages((prev) => {
@@ -135,35 +141,46 @@ export default function InvoiceChatbot() {
           ];
         });
         setIsStreaming(true);
-      } else if (msg.type === "event") {
-        // Extract text from event data
-        const data = msg.data;
-        let text = "";
+      } else if (msg.type === "extraction") {
+        // ✅ All extraction logic lives here now
+        console.log("Extraction data received:", msg.data);
+        await invoiceCheck(msg.data.extracted_details);
+        setExtractedDetails(msg.data.extracted_details);
+        setUserIntent(msg.data.user_intent);
 
-        if (typeof data === "string") {
-          text = data;
-        } else if (data && typeof data === "object") {
-          text =
-            data.text || data.content || data.message || JSON.stringify(data);
-        } else {
-          text = String(data ?? "");
+        const currentIntent = msg.data.user_intent?.intent;
+        const prevIntent = prevIntentRef.current;
+
+        if (
+          prevIntent === "Submission" &&
+          currentIntent !== "Submission" &&
+          currentIntent !== "Email Fetching"
+        ) {
+          value.setInvoiceCounter((prevCounter) => prevCounter + 1);
         }
 
-        if (text) {
-          setMessages((prev) => {
-            const last = prev[prev.length - 1];
-            if (last && last.fromUser === false && last.streaming) {
-              const copy = [...prev];
-              copy[copy.length - 1] = { ...last, text: last.text + text };
-              return copy;
-            }
-            return [
-              ...prev,
-              { fromUser: false, text, streaming: true, id: uuidv4() },
-            ];
+        if (currentIntent === "Submission") {
+          await invoiceHeaderCreation();
+        }
+
+        const email = msg.data.extracted_details?.email;
+        if (
+          email &&
+          msg.data.extracted_details?.supplier_id &&
+          msg.data.extracted_details?.estimated_delivery_date &&
+          msg.data.extracted_details?.total_quantity &&
+          msg.data.extracted_details?.total_cost &&
+          msg.data.extracted_details?.total_tax &&
+          msg.data.extracted_details?.items?.length > 0
+        ) {
+          console.log("Sending email to:", email);
+          await sendEmail({
+            emailUsed: email,
+            documentId: `INV${value.invoiceCounter}`,
           });
-          setIsStreaming(true);
         }
+
+        prevIntentRef.current = currentIntent;
       } else if (msg.type === "done") {
         setMessages((prev) => {
           const last = prev[prev.length - 1];
@@ -187,16 +204,7 @@ export default function InvoiceChatbot() {
           },
         ]);
         setIsStreaming(false);
-      } else if (msg.type === "extraction") {
-        // Handle extraction message
-        const { extracted_details, user_intent } = msg.data;
-        console.log(
-          "Extraction data received:",
-          extracted_details,
-          user_intent
-        );
       } else {
-        // Unknown message type
         console.warn("Unknown message type:", msg);
       }
 
@@ -208,7 +216,7 @@ export default function InvoiceChatbot() {
       if (hostRef.current.shouldReconnect) {
         const nextRetry = Math.min(
           30_000,
-          500 * Math.pow(2, hostRef.current.retries)
+          500 * Math.pow(2, hostRef.current.retries),
         );
         hostRef.current.retries += 1;
         console.log(`Reconnecting in ${nextRetry}ms`);
@@ -220,6 +228,135 @@ export default function InvoiceChatbot() {
       console.error("ws error", e);
     };
   };
+  // const connect = () => {
+  //   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  //   const host = window.location.hostname || "localhost";
+  //   const url = `${protocol}//${host}:${PORT}${WS_PATH}`;
+
+  //   const ws = new WebSocket(url);
+  //   wsRef.current = ws;
+
+  //   ws.onopen = () => {
+  //     console.log("ws open");
+  //     hostRef.current.retries = 0;
+  //     setConnected(true);
+
+  //     // flush queued messages
+  //     if (outgoingQueueRef.current.length > 0) {
+  //       outgoingQueueRef.current.forEach((m) => ws.send(m));
+  //       outgoingQueueRef.current = [];
+  //     }
+  //   };
+  //   ws.onmessage = (evt) => {
+  //     let msg;
+  //     try {
+  //       msg = JSON.parse(evt.data);
+  //     } catch (err) {
+  //       console.error("Invalid WS message (non-JSON):", evt.data);
+  //       return;
+  //     }
+
+  //     // Handle different message types from backend
+  //     if (msg.type === "token") {
+  //       const tokenText = String(msg.text ?? "");
+  //       setMessages((prev) => {
+  //         const last = prev[prev.length - 1];
+  //         if (last && last.fromUser === false && last.streaming) {
+  //           const copy = [...prev];
+  //           copy[copy.length - 1] = { ...last, text: last.text + tokenText };
+  //           return copy;
+  //         }
+  //         return [
+  //           ...prev,
+  //           { fromUser: false, text: tokenText, streaming: true, id: uuidv4() },
+  //         ];
+  //       });
+  //       setIsStreaming(true);
+  //     } else if (msg.type === "event") {
+  //       // Extract text from event data
+  //       const data = msg.data;
+  //       let text = "";
+
+  //       if (typeof data === "string") {
+  //         text = data;
+  //       } else if (data && typeof data === "object") {
+  //         text =
+  //           data.text || data.content || data.message || JSON.stringify(data);
+  //       } else {
+  //         text = String(data ?? "");
+  //       }
+
+  //       if (text) {
+  //         setMessages((prev) => {
+  //           const last = prev[prev.length - 1];
+  //           if (last && last.fromUser === false && last.streaming) {
+  //             const copy = [...prev];
+  //             copy[copy.length - 1] = { ...last, text: last.text + text };
+  //             return copy;
+  //           }
+  //           return [
+  //             ...prev,
+  //             { fromUser: false, text, streaming: true, id: uuidv4() },
+  //           ];
+  //         });
+  //         setIsStreaming(true);
+  //       }
+  //     } else if (msg.type === "done") {
+  //       setMessages((prev) => {
+  //         const last = prev[prev.length - 1];
+  //         if (last && last.fromUser === false && last.streaming) {
+  //           const copy = [...prev];
+  //           copy[copy.length - 1] = { ...last, streaming: false };
+  //           return copy;
+  //         }
+  //         return prev;
+  //       });
+  //       setIsStreaming(false);
+  //     } else if (msg.type === "error") {
+  //       const detail = msg.detail ?? "Unknown error from server";
+  //       setMessages((prev) => [
+  //         ...prev,
+  //         {
+  //           fromUser: false,
+  //           text: `Error: ${detail}`,
+  //           streaming: false,
+  //           id: uuidv4(),
+  //         },
+  //       ]);
+  //       setIsStreaming(false);
+  //     } else if (msg.type === "extraction") {
+  //       // Handle extraction message
+  //       const { extracted_details, user_intent } = msg.data;
+  //       console.log(
+  //         "Extraction data received:",
+  //         extracted_details,
+  //         user_intent,
+  //       );
+  //     } else {
+  //       // Unknown message type
+  //       console.warn("Unknown message type:", msg);
+  //     }
+
+  //     scrollToBottom();
+  //   };
+  //   ws.onclose = (e) => {
+  //     console.log("ws closed", e);
+  //     setConnected(false);
+  //     if (hostRef.current.shouldReconnect) {
+  //       const nextRetry = Math.min(
+  //         30_000,
+  //         500 * Math.pow(2, hostRef.current.retries),
+  //       );
+  //       hostRef.current.retries += 1;
+  //       console.log(`Reconnecting in ${nextRetry}ms`);
+  //       setTimeout(() => connect(), nextRetry);
+  //     }
+  //   };
+
+  //   ws.onerror = (e) => {
+  //     console.error("ws error", e);
+  //   };
+  // };
 
   useEffect(() => {
     hostRef.current.shouldReconnect = true;
@@ -229,7 +366,7 @@ export default function InvoiceChatbot() {
       hostRef.current.shouldReconnect = false;
       try {
         wsRef.current && wsRef.current.close();
-      } catch (err) { }
+      } catch (err) {}
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -248,7 +385,7 @@ export default function InvoiceChatbot() {
       itemsPresent &&
       value.itemDetailsInput.items.filter((item, index) => {
         const matchingPoDetail = value.poDetailsData.find(
-          (poItem) => poItem.itemId === item
+          (poItem) => poItem.itemId === item,
         );
         return matchingPoDetail !== undefined;
       });
@@ -257,43 +394,48 @@ export default function InvoiceChatbot() {
       quantitiesPresent &&
       value.itemDetailsInput.quantity.filter((quantity, index) => {
         const matchingPoDetail = value.poDetailsData.find(
-          (poItem) => poItem.itemId === value.itemDetailsInput.items[index]
+          (poItem) => poItem.itemId === value.itemDetailsInput.items[index],
         );
         return matchingPoDetail !== undefined;
       });
     let savedData = `
     ${trueValueKey ? `Type of Invoice: ${trueValueKey},` : ""}
-    ${value.invoiceData.invoiceDate
+    ${
+      value.invoiceData.invoiceDate
         ? `Date: ${value.invoiceData.invoiceDate},`
         : ""
-      }
-    ${value.invoiceData.poNumber
+    }
+    ${
+      value.invoiceData.poNumber
         ? `PO number: ${value.invoiceData.poNumber},`
         : ""
-      }
-    ${value.invoiceData.supplierId
+    }
+    ${
+      value.invoiceData.supplierId
         ? `Supplier Id: ${value.invoiceData.supplierId},`
         : ""
-      }
-    ${value.invoiceData.totalAmount
+    }
+    ${
+      value.invoiceData.totalAmount
         ? `Total amount: ${value.invoiceData.totalAmount},`
         : ""
-      }
-    ${value.invoiceData.totalTax
+    }
+    ${
+      value.invoiceData.totalTax
         ? `Total tax: ${value.invoiceData.totalTax},`
         : ""
-      }
+    }
     ${
       // value.itemDetailsInput.items
       itemsPresent
         ? `Items: ${filteredItems},`
         : // ? `Items: ${value.itemDetailsInput.items},`
-        ""
-      }
+          ""
+    }
     ${
       // value.itemDetailsInput.quantity
       quantitiesPresent ? `Quantity: ${filteredQuantities}` : ""
-      }
+    }
     `;
     await sendMessage(savedData);
     // await handleMessageSubmit(savedData);
@@ -406,7 +548,7 @@ export default function InvoiceChatbot() {
   }
   //TYPE OF INVOICE
   const typeofInv = Object.keys(value.typeOfInvoice).find(
-    (key) => value.typeOfInvoice[key]
+    (key) => value.typeOfInvoice[key],
   );
   const typeSelection = useCallback(
     (invoiceDatafromConversation) => {
@@ -465,7 +607,7 @@ export default function InvoiceChatbot() {
         }
       }
     },
-    [value.invoiceDatafromConversation, value.invoiceData.invoiceType]
+    [value.invoiceDatafromConversation, value.invoiceData.invoiceType],
   );
   //SUM OF QUANTITIES
   function sumQuantities(input) {
@@ -477,7 +619,6 @@ export default function InvoiceChatbot() {
 
     return quantitiesArray.reduce((sum, current) => sum + current, 0);
   }
-
   //GET INV DETAILS
   const handleRadioChange = (type) => {
     value.setTypeOfInvoice({
@@ -613,10 +754,14 @@ export default function InvoiceChatbot() {
 
       // If every item is empty-like, bail out
       const allEmpty = itemsArray.every((it) =>
-        Object.values(it).every((v) => v === null || v === undefined || v === "")
+        Object.values(it).every(
+          (v) => v === null || v === undefined || v === "",
+        ),
       );
       if (allEmpty) {
-        console.log("updateItemDetails - all invoice items are empty; skipping");
+        console.log(
+          "updateItemDetails - all invoice items are empty; skipping",
+        );
         return;
       }
 
@@ -633,11 +778,13 @@ export default function InvoiceChatbot() {
 
       // Structured arrays for UI controls
       const updatedItems = itemsArray.map((it) =>
-        String(it.item_id ?? it.itemId ?? it.id ?? "")
+        String(it.item_id ?? it.itemId ?? it.id ?? ""),
       );
-      const updatedQuantities = itemsArray.map((it) => Number(it.quantity ?? 0));
+      const updatedQuantities = itemsArray.map((it) =>
+        Number(it.quantity ?? 0),
+      );
       const updatedInvoiceCosts = itemsArray.map((it) =>
-        Number(it.invoice_cost ?? it.inv_cost ?? 0)
+        Number(it.invoice_cost ?? it.inv_cost ?? 0),
       );
 
       // update local UI arrays (if you still use them)
@@ -651,7 +798,10 @@ export default function InvoiceChatbot() {
         invoiceCost: updatedInvoiceCosts,
       };
 
-      console.log("updateItemDetails - prepared invoice data:", updatedInvoiceData);
+      console.log(
+        "updateItemDetails - prepared invoice data:",
+        updatedInvoiceData,
+      );
       value.setItemDetails(updatedInvoiceData);
       value.setItemDetailsInput(updatedInvoiceData);
 
@@ -678,17 +828,18 @@ export default function InvoiceChatbot() {
       // Find invoice items that are new (not in prevPoDetailsData)
       const newItems = Object.keys(tempDictionary)
         .filter(
-          (k) => !prevPoDetailsData.some((entry) => String(entry.itemId) === k)
+          (k) => !prevPoDetailsData.some((entry) => String(entry.itemId) === k),
         )
         .map((k) => ({
           itemId: k,
-          invQty: tempDictionary[k].quantity,
-          invCost: tempDictionary[k].invoiceCost,
-          invAmt: tempDictionary[k].quantity * tempDictionary[k].invoiceCost,
+          invQty: tempDictionary[k].quantity || 0,
+          invCost: tempDictionary[k].invoiceCost || 0,
+          invAmt:
+            tempDictionary[k].quantity * tempDictionary[k].invoiceCost || 0,
           itemQuantity: 0,
           itemDescription: "",
           totalItemCost: 0,
-          supplierId: "",
+          supplierId: prevPoDetailsData[0]?.supplierId ?? "sup not found",
           itemCost: 0,
           poId: prevPoDetailsData[0]?.poId ?? "",
         }));
@@ -708,7 +859,7 @@ export default function InvoiceChatbot() {
       value.setPoDetailsData,
       // If setItemsArray/setQuantitiesArray/setInvoiceCostArray are stable functions from useState,
       // it's ok to omit them; otherwise include them.
-    ]
+    ],
   );
   const getPoDetails = useCallback(
     async (id) => {
@@ -733,7 +884,7 @@ export default function InvoiceChatbot() {
         console.log(
           "PO supplier:",
           response.data.po_details[0]?.supplierId,
-          response.data.po_details
+          response.data.po_details,
         );
         if (response.status === 200 || response.status === 201) {
           const poHeader = response.data.po_header;
@@ -746,8 +897,14 @@ export default function InvoiceChatbot() {
             exchangeRate: 1,
             paymentTerm: poHeader.payment_term,
           };
+
           if (response.data.po_details[0]?.supplierId) {
             // await supplierRiskApi(response.data.po_details[0]?.supplierId);
+            value.setInvoiceData((prev) => ({
+              ...prev,
+              supplierId:
+                response.data.po_details[0]?.supplierId || "sup not found",
+            }));
           }
           value.setPoHeaderData(updatedPoHeaderData);
           const newUpdatedData = response.data.po_details.map((item) => ({
@@ -757,7 +914,7 @@ export default function InvoiceChatbot() {
             invCost: 0,
           }));
           value.setItemListPo(
-            response.data.po_details.map((item) => item.itemId)
+            response.data.po_details.map((item) => item.itemId),
           );
           value.setPoDetailsData(newUpdatedData); // Update poDetailsData
           prevPoDetailsDataRef.current = newUpdatedData; // Update ref immediately after setting state
@@ -803,7 +960,7 @@ export default function InvoiceChatbot() {
       value.setPoHeaderData,
       value.setItemListPo,
       updateItemDetails,
-    ]
+    ],
   );
   //SUPPLIER INSIGHTS
   const supplierRiskApi = async (supplierId) => {
@@ -837,7 +994,6 @@ export default function InvoiceChatbot() {
       for (const key of Object.keys(invoiceObject)) {
         if (invoiceObject[key] !== null) {
           switch (key) {
-
             // Matches: 'invoice_type'
             case "invoice_type":
               updatedInvoiceData.invoiceType = invoiceObject[key];
@@ -847,7 +1003,7 @@ export default function InvoiceChatbot() {
             // Keeping this optional if you want to attach quantity separately:
             case "quantity":
             case "quantities":
-              updatedInvoiceData.quantity = invoiceObject[key];
+              updatedInvoiceData.quantity = parseInt(invoiceObject[key]);
               break;
 
             // Matches: 'invoice_number'
@@ -857,7 +1013,7 @@ export default function InvoiceChatbot() {
 
             // Matches: 'total_amount'
             case "total_amount":
-              updatedInvoiceData.totalAmount = invoiceObject[key];
+              updatedInvoiceData.totalAmount = parseFloat(invoiceObject[key]);
               break;
 
             // Matches: 'date'
@@ -867,7 +1023,7 @@ export default function InvoiceChatbot() {
 
             // Matches: 'total_tax'
             case "total_tax":
-              updatedInvoiceData.totalTax = invoiceObject[key];
+              updatedInvoiceData.totalTax = parseFloat(invoiceObject[key]);
               break;
 
             // Matches: 'items'
@@ -879,9 +1035,7 @@ export default function InvoiceChatbot() {
             case "po_number":
               updatedInvoiceData.poNumber = invoiceObject[key];
 
-              poStatus = await getPoDetails(
-                invoiceObject[key]
-              );
+              poStatus = await getPoDetails(invoiceObject[key]);
 
               console.log("PO status INSIDE GET PO DETAILS:", poStatus);
 
@@ -897,9 +1051,9 @@ export default function InvoiceChatbot() {
               break;
 
             // Optional fields
-            case "supplier_id":
-              updatedInvoiceData.supplierId = invoiceObject[key];
-              break;
+            // case "supplier_id":
+            //   updatedInvoiceData.supplierId = invoiceObject[key];
+            //   break;
 
             case "email":
               updatedInvoiceData.email = invoiceObject[key];
@@ -920,260 +1074,154 @@ export default function InvoiceChatbot() {
       value.setInvoiceData,
       // value.setinvoiceDatafromConversation,
       value.invoiceData,
-    ]
+    ],
   );
-
-  // const invoiceCheck = useCallback(
-  //   async (invoiceObject, invoiceDatafromConversation) => {
-  //     let updatedInvoiceData = { ...value.invoiceData };
-  //     console.log("invoiceObject: ", invoiceObject);
-  //     let poStatus = false;
-  //     for (const key of Object.keys(invoiceObject)) {
-  //       if (invoiceObject[key] !== null) {
-  //         switch (key) {
-  //           case "Invoice Type":
-  //             updatedInvoiceData.invoiceType = invoiceObject[key];
-  //             break;
-  //           case "Quantities":
-  //             updatedInvoiceData.quantity = invoiceObject[key];
-  //             break;
-  //           case "Invoice Number":
-  //             updatedInvoiceData.userInvNo = invoiceObject[key];
-  //             break;
-  //           case "Total Amount":
-  //             updatedInvoiceData.totalAmount = invoiceObject[key];
-  //             break;
-  //           case "Date":
-  //             updatedInvoiceData.invoiceDate = formatDate(invoiceObject[key]);
-  //             break;
-  //           case "Total Tax":
-  //             updatedInvoiceData.totalTax = invoiceObject[key];
-  //             break;
-  //           case "Items":
-  //             updatedInvoiceData.items = invoiceObject[key];
-  //             break;
-  //           case "PO Number":
-  //             updatedInvoiceData.poNumber = invoiceObject[key];
-
-  //             poStatus = await getPoDetails(
-  //               invoiceObject[key],
-  //               invoiceDatafromConversation
-  //             );
-  //             console.log("PO status INSIDE GET PO DETAILS:", poStatus);
-  //             if (poStatus) {
-  //               updateItemDetails(invoiceDatafromConversation);
-  //             } else {
-  //               value.setinvoiceDatafromConversation({
-  //                 ...value.invoiceDatafromConversation,
-  //                 Items: "",
-  //                 Quantity: "",
-  //               });
-  //             }
-  //         }
-  //       }
-  //     }
-
-  //     value.setInvoiceData(updatedInvoiceData);
-  //     typeSelection(invoiceDatafromConversation);
-
-  //     return poStatus;
-  //   },
-  //   [
-  //     getPoDetails,
-  //     updateItemDetails,
-  //     //   value.poDetailsData, // Remove unstable dependency
-  //     value.invoiceDatafromConversation,
-  //     value.setInvoiceData, // Add stable setters
-  //     value.setinvoiceDatafromConversation,
-  //     value.invoiceData,
-  //   ]
-  // );
-
   const prevInvoiceDataRef = useRef();
 
-  // useEffect(() => {
-  //   if (
-  //     value.invoiceDatan &&
-  //     JSON.stringify(prevInvoiceDataRef.current) !==
-  //       JSON.stringify(value.invoiceData)
-  //   ) {
-  //     updateItemDetails(value.invoiceData);
-  //     prevInvoiceDataRef.current = value.invoiceData; // Update ref
-  //   }
-  // }, [value.invoiceData, updateItemDetails]);
+  // const sendMessage = async (text = null) => {
+  //   const messageText = (text ?? input).trim();
+  //   if (!messageText) return;
 
-  // const handleMessageSubmit = async (input, inputFromUpload) => {
-  //   if (!input.trim()) return;
-  //   setMessages((prevMessages) => {
-  //     const newMessages = inputFromUpload
-  //       ? [...prevMessages] // Do not add any new message for inputFromUpload
-  //       : [...prevMessages, { text: input, fromUser: true }];
-
-  //     if (!inputFromUpload) {
-  //       setInput(""); // Clear input if it's not from an upload
-  //     }
-
-  //     return newMessages;
-  //   });
-  //   // setMessages(newMessages);
-  //   setInput("");
-  //   //typingIndicator
-  //   typingTimeoutRef.current = setTimeout(() => {
-  //     setTyping(true);
-  //   }, 1500);
-
-  //   //typingIndicator
-  //   try {
-  //     const response = await axios.post(
-  //       // `http://localhost:8000/creation/response?query=${input}`,
-  //       NEW_RESPONSE_CREATION, // API endpoint
+  //   if (isStreaming && !allowConcurrentRuns) {
+  //     setMessages((prev) => [
+  //       ...prev,
   //       {
-  //         user_id: "admin", // The user_id value
-  //         message: input, // The message value
+  //         fromUser: false,
+  //         text: "Please wait for current response to finish.",
+  //         streaming: false,
+  //         id: uuidv4(),
   //       },
+  //     ]);
+  //     setInput("");
+  //     return;
+  //   }
+  //   value.setIsActive(true);
+  //   setMessages((prev) => [
+  //     ...prev,
+  //     { fromUser: true, text: messageText, id: uuidv4() },
+  //   ]);
+  //   setInput("");
 
-  //       { headers: { "Content-Type": "application/json" } }
-  //     );
+  //   const outgoing = JSON.stringify({
+  //     message: messageText,
+  //     thread_id: threadId,
+  //   });
 
-  //     console.log("Data response", response.data);
-  //     if (response.data.test_model_reply === "Creation") {
-  //       value.setIsActive(true);
-  //     } else if (response.data.test_model_reply === "Fetch") {
-  //       value.setIsActive(false);
-  //       // await getInvoiceDetails("INV498");
-  //     } else if (response.data.submissionStatus === "submitted") {
-  //       value.setIsActive(false);
-  //     }
-  //     if (response.status === 200 || response.status === 201) {
-  //       const invoice_json = response.data.invoice_json;
-  //       // const invoice_json = JSON.parse(response.data.invoice_json);
-  //       const totalAmount =
-  //         invoice_json["Total Amount"] &&
-  //         parseFloat(String(invoice_json["Total Amount"]).replace(/,/g, ""));
-  //       const totalTax =
-  //         invoice_json["Total Tax"] &&
-  //         parseFloat(String(invoice_json["Total Tax"]).replace(/,/g, ""));
-  //       console.log("Total amount,total tax:", totalAmount, totalTax);
-  //       const updatedInvoiceJson = {
-  //         ...invoice_json,
-  //         "Total Amount": totalAmount ? totalAmount : null,
-  //         "Total Tax": totalTax ? totalTax : null,
-  //       };
+  //   // Attach a temporary WS listener that accumulates the streaming response
+  //   // and calls promotionCheck with the combined response when the stream is done.
+  //   if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+  //     let buffer = "";
+  //     const listener = async (evt) => {
+  //       let msg;
+  //       try {
+  //         msg = JSON.parse(evt.data);
+  //       } catch (err) {
+  //         return;
+  //       }
 
-  //       value.setinvoiceDatafromConversation(
-  //         response.data.invoiceDatafromConversation
-  //       );
+  //       if (msg.type === "token") {
+  //         buffer += String(msg.text ?? "");
+  //       } else if (msg.type === "extraction") {
+  //         // **NEW: Handle extraction data immediately**
+  //         console.log("Received extraction data:", msg.data);
+  //         await invoiceCheck(msg.data.extracted_details);
+  //         setExtractedDetails(msg.data.extracted_details);
+  //         setUserIntent(msg.data.user_intent);
 
-  //       const invoiceCheckStatus = await invoiceCheck(
-  //         updatedInvoiceJson,
-  //         response.data.invoiceDatafromConversation
-  //       );
-  //       const uploadText =
-  //         "Here is what I could extract from the uploaded document: \n";
-  //       // if (value.invoiceData.poNumber === "") {
-  //       if (
-  //         response.data.invoice_json["PO Number"] === undefined ||
-  //         response.data.invoice_json["PO Number"] === "" ||
-  //         response.data.invoice_json["PO Number"] === null
-  //         // updatedInvoiceJson["PO Number"] &&
-  //         // invoiceCheckStatus &&
-  //         // response.data?.po_items?.length > 0
-  //       ) {
-  //         const botReply = response.data.chat_history.slice(-1);
-  //         const reply = botReply[0].slice(5);
-  //         const formattedConversation = response.data.chat_history
-  //           .slice(-1)
-  //           .map((text, index) => (
-  //             <ReactMarkdown key={index} className={"botText"}>
-  //               {/* {text.slice(5)} */}
-  //               {inputFromUpload ? uploadText + text.slice(5) : text.slice(5)}
-  //             </ReactMarkdown>
-  //           ));
-  //         setMessages((prevMessages) => [
-  //           ...prevMessages,
-  //           { text: formattedConversation, fromUser: false },
-  //         ]);
-  //         // }
-  //         const email = response.data.invoice_email;
-  //         if (email) {
-  //           console.log("Inside Email: ", email, value.invoiceCounter - 1);
+  //         const currentIntent = msg.data.user_intent?.intent;
+  //         const prevIntent = prevIntentRef.current;
+  //         // Handle submission intent
+  //         if (
+  //           prevIntent === "Submission" &&
+  //           currentIntent !== "Submission" &&
+  //           currentIntent !== "Email Fetching"
+  //         ) {
+  //           value.setInvoiceCounter((prevCounter) => prevCounter + 1);
+  //         }
+  //         // Handle Submission intent (without incrementing here)
+  //         if (currentIntent === "Submission") {
+  //           await invoiceHeaderCreation();
+  //         }
+  //         const email = msg.data.extracted_details?.email;
+  //         if (
+  //           email &&
+  //           msg.data.extracted_details?.supplier_id &&
+  //           msg.data.extracted_details?.estimated_delivery_date &&
+  //           msg.data.extracted_details?.total_quantity &&
+  //           msg.data.extracted_details?.total_cost &&
+  //           msg.data.extracted_details?.total_tax &&
+  //           msg.data.extracted_details?.items?.length > 0
+  //         ) {
+  //           console.log("Sending email to:", email);
   //           await sendEmail({
   //             emailUsed: email,
-  //             documentId: `INV${value.invoiceCounter - 1}`,
+  //             documentId: `INV${value.invoiceCounter}`,
   //           });
   //         }
-  //         if (response.data.submissionStatus == "submitted") {
-  //           // let validationStatus = await itemQuantityValidation();
-  //           // if (validationStatus) {
-  //           value.setInvoiceCounter((prevCounter) => prevCounter + 1);
-  //           await invoiceHeaderCreation();
-  //           // }
-  //         } else {
-  //           value.setModalVisible(false);
+  //         // Update previous intent
+  //         prevIntentRef.current = currentIntent;
+  //       } else if (msg.type === "event") {
+  //         const data = msg.data;
+  //         let text =
+  //           typeof data === "string"
+  //             ? data
+  //             : data?.text ||
+  //               data?.content ||
+  //               data?.message ||
+  //               JSON.stringify(data);
+  //         buffer += text;
+  //       } else if (msg.type === "done") {
+  //         // Stream finished - cleanup
+  //         console.log("Stream complete");
+  //         try {
+  //           wsRef.current.removeEventListener("message", listener);
+  //         } catch (e) {
+  //           /* ignore */
   //         }
-  //       } else {
-  //         if (invoiceCheckStatus) {
-  //           const botReply = response.data.chat_history.slice(-1);
-  //           const reply = botReply[0].slice(5);
-  //           const formattedConversation = response.data.chat_history
-  //             .slice(-1)
-  //             .map((text, index) => (
-  //               <ReactMarkdown key={index} className={"botText"}>
-  //                 {inputFromUpload ? uploadText + text.slice(5) : text.slice(5)}
-  //               </ReactMarkdown>
-  //             ));
-  //           setMessages((prevMessages) => [
-  //             ...prevMessages,
-  //             { text: formattedConversation, fromUser: false },
-  //           ]);
+  //       }
+  //     };
 
-  //           if (response.data.submissionStatus == "submitted") {
-  //             // let validationStatus = await itemQuantityValidation();
-  //             // if (validationStatus) {
-  //             value.setInvoiceCounter((prevCounter) => prevCounter + 1);
-  //             await invoiceHeaderCreation();
-  //             // }
-  //           } else {
-  //             value.setModalVisible(false);
-  //           }
-  //           const email = response.data.invoice_email;
-  //           if (email) {
-  //             console.log("Inside Email: ", email, value.invoiceCounter - 1);
-  //             await sendEmail({
-  //               emailUsed: email,
-  //               documentId: `INV${value.invoiceCounter - 1}`,
-  //             });
-  //           }
-  //         } else {
-  //           console.log("invoiceCheckStatus:FALSEEEEEEEEEEEEEEEEEEEEE");
+  //     try {
+  //       wsRef.current.addEventListener("message", listener);
+  //       try {
+  //         wsRef.current.send(outgoing);
+  //         setIsStreaming(true);
+  //       } catch (err) {
+  //         console.error("Send failed, queueing", err);
+  //         outgoingQueueRef.current.push(outgoing);
+  //         try {
+  //           wsRef.current.removeEventListener("message", listener);
+  //         } catch (e) {
+  //           /* ignore */
   //         }
   //       }
-  //       //typingIndicator
-  //       if (typingTimeoutRef.current) {
-  //         clearTimeout(typingTimeoutRef.current);
-  //         typingTimeoutRef.current = null;
+  //     } catch (err) {
+  //       // fallback if addEventListener isn't available
+  //       try {
+  //         wsRef.current.send(outgoing);
+  //         setIsStreaming(true);
+  //       } catch (err2) {
+  //         console.error("Send failed, queueing", err2);
+  //         outgoingQueueRef.current.push(outgoing);
   //       }
-  //       setTyping(false);
-  //       //typingIndicator
   //     }
-  //   } catch (error) {
-  //     //typingIndicator
-  //     if (typingTimeoutRef.current) {
-  //       clearTimeout(typingTimeoutRef.current);
-  //       typingTimeoutRef.current = null;
-  //     }
-  //     setTyping(false);
-  //     //typingIndicator
-  //     setMessages((prevMessages) => [
-  //       ...prevMessages,
-  //       { text: errorMessage, fromUser: false },
+  //   } else {
+  //     // queue the outgoing message and attempt reconnect
+  //     outgoingQueueRef.current.push(outgoing);
+  //     setMessages((prev) => [
+  //       ...prev,
+  //       {
+  //         fromUser: false,
+  //         text: "Message queued — connecting to server...",
+  //         streaming: false,
+  //         id: uuidv4(),
+  //       },
   //     ]);
-
-  //     console.error("Error fetching data:", error);
+  //     if (!connected) {
+  //       connect();
+  //     }
   //   }
   // };
-
-  //create invoice details
 
   const sendMessage = async (text = null) => {
     const messageText = (text ?? input).trim();
@@ -1193,6 +1241,7 @@ export default function InvoiceChatbot() {
       return;
     }
 
+    value.setIsActive(true);
     setMessages((prev) => [
       ...prev,
       { fromUser: true, text: messageText, id: uuidv4() },
@@ -1204,89 +1253,15 @@ export default function InvoiceChatbot() {
       thread_id: threadId,
     });
 
-    // Attach a temporary WS listener that accumulates the streaming response
-    // and calls promotionCheck with the combined response when the stream is done.
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      let buffer = "";
-      const listener = async (evt) => {
-        let msg;
-        try {
-          msg = JSON.parse(evt.data);
-        } catch (err) {
-          return;
-        }
-
-        if (msg.type === "token") {
-          buffer += String(msg.text ?? "");
-        } else if (msg.type === "extraction") {
-          // **NEW: Handle extraction data immediately**
-          console.log("Received extraction data:", msg.data);
-          await invoiceCheck(msg.data.extracted_details);
-          setExtractedDetails(msg.data.extracted_details);
-          setUserIntent(msg.data.user_intent);
-
-          // Handle submission intent
-          if (msg.data.user_intent?.intent === "Submission") {
-            value.setInvoiceCounter((prevCounter) => prevCounter + 1);
-            await invoiceHeaderCreation();
-          }
-
-          // Handle email
-          const email = msg.data.extracted_details?.email;
-          if (email) {
-            console.log("Sending email to:", email);
-            await sendEmail({
-              emailUsed: email,
-              documentId: `INV${value.invoiceCounter - 1}`,
-            });
-          }
-        } else if (msg.type === "event") {
-          const data = msg.data;
-          let text =
-            typeof data === "string"
-              ? data
-              : data?.text ||
-              data?.content ||
-              data?.message ||
-              JSON.stringify(data);
-          buffer += text;
-        } else if (msg.type === "done") {
-          // Stream finished - cleanup
-          console.log("Stream complete");
-          try {
-            wsRef.current.removeEventListener("message", listener);
-          } catch (e) {
-            /* ignore */
-          }
-        }
-      };
-
       try {
-        wsRef.current.addEventListener("message", listener);
-        try {
-          wsRef.current.send(outgoing);
-          setIsStreaming(true);
-        } catch (err) {
-          console.error("Send failed, queueing", err);
-          outgoingQueueRef.current.push(outgoing);
-          try {
-            wsRef.current.removeEventListener("message", listener);
-          } catch (e) {
-            /* ignore */
-          }
-        }
+        wsRef.current.send(outgoing);
+        setIsStreaming(true);
       } catch (err) {
-        // fallback if addEventListener isn't available
-        try {
-          wsRef.current.send(outgoing);
-          setIsStreaming(true);
-        } catch (err2) {
-          console.error("Send failed, queueing", err2);
-          outgoingQueueRef.current.push(outgoing);
-        }
+        console.error("Send failed, queueing", err);
+        outgoingQueueRef.current.push(outgoing);
       }
     } else {
-      // queue the outgoing message and attempt reconnect
       outgoingQueueRef.current.push(outgoing);
       setMessages((prev) => [
         ...prev,
@@ -1297,12 +1272,9 @@ export default function InvoiceChatbot() {
           id: uuidv4(),
         },
       ]);
-      if (!connected) {
-        connect();
-      }
+      if (!connected) connect();
     }
   };
-
   const invoiceDetailsCreation = async () => {
     try {
       setPdfCardVisible(true);
@@ -1313,6 +1285,10 @@ export default function InvoiceChatbot() {
         totalItemCost: item.invAmt,
         itemQuantity: item.invQty,
       }));
+      console.log(
+        "Data being sent for invoice details creation:",
+        updatedInvoiceItems,
+      );
       const response = await axios({
         method: "post",
         url: ADD_INVOICE_DETAILS,
@@ -1346,6 +1322,7 @@ export default function InvoiceChatbot() {
   //create invoice header
   const invoiceHeaderCreation = async () => {
     // extractAndSave(value.invoiceData);
+    console.log("Data being sent for invoice creation:", value.invoiceData);
     const invData = {
       invoiceId: value.systemDocumentId,
       userInvNo: value.invoiceData.userInvNo,
@@ -1396,7 +1373,7 @@ export default function InvoiceChatbot() {
       ]);
 
       // value.setModalText("Invoice created successfully!");
-      await clearDataApi();
+      // await clearDataApi();
 
       // Set pdfCardVisible to true to ensure it stays visible
       setPdfCardVisible(false);
@@ -1438,7 +1415,9 @@ export default function InvoiceChatbot() {
         ([key, value]) =>
           `${key
             .replace(/_/g, " ") // Replace underscores with spaces
-            .replace(/\b\w/g, (char) => char.toUpperCase())}: ${value ?? "N/A"}`
+            .replace(/\b\w/g, (char) =>
+              char.toUpperCase(),
+            )}: ${value ?? "N/A"}`,
       )
       .join("\n");
   };
@@ -1504,7 +1483,7 @@ export default function InvoiceChatbot() {
           // );
         } else {
           alert("Please upload a valid PDF file.");
-          await clearDataApi();
+          // await clearDataApi();
         }
       }
     } catch (error) {
@@ -1581,7 +1560,7 @@ export default function InvoiceChatbot() {
     if (emailStatus && emailStatus.success) {
       console.log(
         "Email sending was successful! Now calling another function...",
-        emailStatus
+        emailStatus,
       );
       clearFormData();
     } else {
@@ -1642,24 +1621,25 @@ export default function InvoiceChatbot() {
             <TypingIndicatorComponent scrollToBottom={scrollToBottom} />
           )}
         </Box>
-
-      </div>        
-      <div className="chatbot-message-card"><ChatbotInputForm
-        input={input}
-        setInput={setInput}
-        handleMessageSubmit={sendMessage}
-        uploadInvoice={uploadInvoice}
-        isPickerVisible={isPickerVisible}
-        setPickerVisible={setPickerVisible}
-      />
-      {isPickerVisible && (
-        <div
-          style={{ position: "absolute", zIndex: 1000, bottom: "4rem" }}
-          ref={pickerRef}
-        >
-          <Picker data={data} onEmojiSelect={handleEmojiSelect} />
-        </div>
-      )}</div>
+      </div>
+      <div className="chatbot-message-card">
+        <ChatbotInputForm
+          input={input}
+          setInput={setInput}
+          handleMessageSubmit={sendMessage}
+          uploadInvoice={uploadInvoice}
+          isPickerVisible={isPickerVisible}
+          setPickerVisible={setPickerVisible}
+        />
+        {isPickerVisible && (
+          <div
+            style={{ position: "absolute", zIndex: 1000, bottom: "4rem" }}
+            ref={pickerRef}
+          >
+            <Picker data={data} onEmojiSelect={handleEmojiSelect} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -587,28 +587,6 @@ export default function PoChatbot() {
           setUserIntent(msg.data.user_intent);
 
           // Handle submission intent
-          // if (msg.data.user_intent?.intent === "Submission") {
-          //   value.setPoCounter((prevCounter) => prevCounter + 1);
-          //   await poHeaderCreation();
-          // }
-
-          // // Handle email
-          // const email = msg.data.extracted_details?.email;
-          // if (
-          //   email &&
-          //   msg.data.extracted_details?.supplier_id &&
-          //   msg.data.extracted_details?.estimated_delivery_date &&
-          //   msg.data.extracted_details?.total_quantity &&
-          //   msg.data.extracted_details?.total_cost &&
-          //   msg.data.extracted_details?.total_tax &&
-          //   msg.data.extracted_details?.items?.length > 0
-          // ) {
-          //   console.log("Sending email to:", email);
-          //   await sendEmail({
-          //     emailUsed: email,
-          //     documentId: `PO${value.poCounter - 1}`,
-            // });}
-
         const currentIntent = msg.data.user_intent?.intent;
         const prevIntent = prevIntentRef.current;
 
