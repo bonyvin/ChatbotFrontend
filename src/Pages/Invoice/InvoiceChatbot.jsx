@@ -98,136 +98,7 @@ export default function InvoiceChatbot() {
   const PORT = 8000;
   const WS_PATH = "/ws/invoice_chat";
 
-  // --- Connect function with exponential backoff ---
-  const connect = () => {
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const host = window.location.hostname || "localhost";
-    const url = `${protocol}//${host}:${PORT}${WS_PATH}`;
-
-    const ws = new WebSocket(url);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      console.log("ws open");
-      hostRef.current.retries = 0;
-      setConnected(true);
-      if (outgoingQueueRef.current.length > 0) {
-        outgoingQueueRef.current.forEach((m) => ws.send(m));
-        outgoingQueueRef.current = [];
-      }
-    };
-
-    ws.onmessage = async (evt) => {
-      let msg;
-      try {
-        msg = JSON.parse(evt.data);
-      } catch (err) {
-        console.error("Invalid WS message (non-JSON):", evt.data);
-        return;
-      }
-
-      if (msg.type === "token") {
-        const tokenText = String(msg.text ?? "");
-        setMessages((prev) => {
-          const last = prev[prev.length - 1];
-          if (last && last.fromUser === false && last.streaming) {
-            const copy = [...prev];
-            copy[copy.length - 1] = { ...last, text: last.text + tokenText };
-            return copy;
-          }
-          return [
-            ...prev,
-            { fromUser: false, text: tokenText, streaming: true, id: uuidv4() },
-          ];
-        });
-        setIsStreaming(true);
-      } else if (msg.type === "extraction") {
-        // ✅ All extraction logic lives here now
-        console.log("Extraction data received:", msg.data);
-        await invoiceCheck(msg.data.extracted_details);
-        setExtractedDetails(msg.data.extracted_details);
-        setUserIntent(msg.data.user_intent);
-
-        const currentIntent = msg.data.user_intent?.intent;
-        const prevIntent = prevIntentRef.current;
-
-        if (
-          prevIntent === "Submission" &&
-          currentIntent !== "Submission" &&
-          currentIntent !== "Email Fetching"
-        ) {
-          value.setInvoiceCounter((prevCounter) => prevCounter + 1);
-        }
-
-        if (currentIntent === "Submission") {
-          await invoiceHeaderCreation();
-        }
-
-        const email = msg.data.extracted_details?.email;
-        if (
-          email &&
-          msg.data.extracted_details?.supplier_id &&
-          msg.data.extracted_details?.estimated_delivery_date &&
-          msg.data.extracted_details?.total_quantity &&
-          msg.data.extracted_details?.total_cost &&
-          msg.data.extracted_details?.total_tax &&
-          msg.data.extracted_details?.items?.length > 0
-        ) {
-          console.log("Sending email to:", email);
-          await sendEmail({
-            emailUsed: email,
-            documentId: `INV${value.invoiceCounter}`,
-          });
-        }
-
-        prevIntentRef.current = currentIntent;
-      } else if (msg.type === "done") {
-        setMessages((prev) => {
-          const last = prev[prev.length - 1];
-          if (last && last.fromUser === false && last.streaming) {
-            const copy = [...prev];
-            copy[copy.length - 1] = { ...last, streaming: false };
-            return copy;
-          }
-          return prev;
-        });
-        setIsStreaming(false);
-      } else if (msg.type === "error") {
-        const detail = msg.detail ?? "Unknown error from server";
-        setMessages((prev) => [
-          ...prev,
-          {
-            fromUser: false,
-            text: `Error: ${detail}`,
-            streaming: false,
-            id: uuidv4(),
-          },
-        ]);
-        setIsStreaming(false);
-      } else {
-        console.warn("Unknown message type:", msg);
-      }
-
-      scrollToBottom();
-    };
-    ws.onclose = (e) => {
-      console.log("ws closed", e);
-      setConnected(false);
-      if (hostRef.current.shouldReconnect) {
-        const nextRetry = Math.min(
-          30_000,
-          500 * Math.pow(2, hostRef.current.retries),
-        );
-        hostRef.current.retries += 1;
-        console.log(`Reconnecting in ${nextRetry}ms`);
-        setTimeout(() => connect(), nextRetry);
-      }
-    };
-
-    ws.onerror = (e) => {
-      console.error("ws error", e);
-    };
-  };
+  // --- Connect with data retrieval  ---
   // const connect = () => {
   //   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
   //   const host = window.location.hostname || "localhost";
@@ -240,14 +111,13 @@ export default function InvoiceChatbot() {
   //     console.log("ws open");
   //     hostRef.current.retries = 0;
   //     setConnected(true);
-
-  //     // flush queued messages
   //     if (outgoingQueueRef.current.length > 0) {
   //       outgoingQueueRef.current.forEach((m) => ws.send(m));
   //       outgoingQueueRef.current = [];
   //     }
   //   };
-  //   ws.onmessage = (evt) => {
+
+  //   ws.onmessage = async (evt) => {
   //     let msg;
   //     try {
   //       msg = JSON.parse(evt.data);
@@ -256,7 +126,6 @@ export default function InvoiceChatbot() {
   //       return;
   //     }
 
-  //     // Handle different message types from backend
   //     if (msg.type === "token") {
   //       const tokenText = String(msg.text ?? "");
   //       setMessages((prev) => {
@@ -272,35 +141,48 @@ export default function InvoiceChatbot() {
   //         ];
   //       });
   //       setIsStreaming(true);
-  //     } else if (msg.type === "event") {
-  //       // Extract text from event data
-  //       const data = msg.data;
-  //       let text = "";
+  //     } else if (msg.type === "extraction") {
+  //       // ✅ All extraction logic lives here now
+  //       console.log("Extraction data received:", msg.data);
+  //       await invoiceCheck(msg.data.extracted_details);
+  //       setExtractedDetails(msg.data.extracted_details);
+  //       setUserIntent(msg.data.user_intent);
 
-  //       if (typeof data === "string") {
-  //         text = data;
-  //       } else if (data && typeof data === "object") {
-  //         text =
-  //           data.text || data.content || data.message || JSON.stringify(data);
-  //       } else {
-  //         text = String(data ?? "");
+  //       const currentIntent = msg.data.user_intent?.intent;
+  //       const prevIntent = prevIntentRef.current;
+
+  //       if (
+  //         prevIntent === "Submission" &&
+  //         currentIntent !== "Submission" &&
+  //         currentIntent !== "Email Fetching"
+  //       ) {
+  //         // value.setInvoiceCounter((prevCounter) => prevCounter + 1);
   //       }
 
-  //       if (text) {
-  //         setMessages((prev) => {
-  //           const last = prev[prev.length - 1];
-  //           if (last && last.fromUser === false && last.streaming) {
-  //             const copy = [...prev];
-  //             copy[copy.length - 1] = { ...last, text: last.text + text };
-  //             return copy;
-  //           }
-  //           return [
-  //             ...prev,
-  //             { fromUser: false, text, streaming: true, id: uuidv4() },
-  //           ];
+  //       if (currentIntent === "Submission") {
+  //         await invoiceHeaderCreation();
+  //       }
+
+  //       const email = msg.data.extracted_details?.email;
+  //       if (
+  //         email &&
+  //         msg.data.extracted_details?.po_number &&
+  //         msg.data.extracted_details?.invoice_number &&
+  //         msg.data.extracted_details?.invoice_type &&
+  //         msg.data.extracted_details?.date &&
+  //         msg.data.extracted_details?.total_amount &&
+  //         msg.data.extracted_details?.total_tax &&
+  //         Array.isArray(msg.data.extracted_details?.items) &&
+  //         msg.data.extracted_details?.items.length > 0
+  //       ) {
+  //         console.log("Sending email to:", email);
+  //         await sendEmail({
+  //           emailUsed: email,
+  //           documentId: `INV${value.invoiceCounter}`,
   //         });
-  //         setIsStreaming(true);
   //       }
+
+  //       prevIntentRef.current = currentIntent;
   //     } else if (msg.type === "done") {
   //       setMessages((prev) => {
   //         const last = prev[prev.length - 1];
@@ -324,16 +206,7 @@ export default function InvoiceChatbot() {
   //         },
   //       ]);
   //       setIsStreaming(false);
-  //     } else if (msg.type === "extraction") {
-  //       // Handle extraction message
-  //       const { extracted_details, user_intent } = msg.data;
-  //       console.log(
-  //         "Extraction data received:",
-  //         extracted_details,
-  //         user_intent,
-  //       );
   //     } else {
-  //       // Unknown message type
   //       console.warn("Unknown message type:", msg);
   //     }
 
@@ -357,6 +230,135 @@ export default function InvoiceChatbot() {
   //     console.error("ws error", e);
   //   };
   // };
+  const connect = () => {
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const host = window.location.hostname || "localhost";
+    const url = `${protocol}//${host}:${PORT}${WS_PATH}`;
+
+    const ws = new WebSocket(url);
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      console.log("ws open");
+      hostRef.current.retries = 0;
+      setConnected(true);
+
+      // flush queued messages
+      if (outgoingQueueRef.current.length > 0) {
+        outgoingQueueRef.current.forEach((m) => ws.send(m));
+        outgoingQueueRef.current = [];
+      }
+    };
+    ws.onmessage = (evt) => {
+      let msg;
+      try {
+        msg = JSON.parse(evt.data);
+      } catch (err) {
+        console.error("Invalid WS message (non-JSON):", evt.data);
+        return;
+      }
+
+      // Handle different message types from backend
+      if (msg.type === "token") {
+        const tokenText = String(msg.text ?? "");
+        setMessages((prev) => {
+          const last = prev[prev.length - 1];
+          if (last && last.fromUser === false && last.streaming) {
+            const copy = [...prev];
+            copy[copy.length - 1] = { ...last, text: last.text + tokenText };
+            return copy;
+          }
+          return [
+            ...prev,
+            { fromUser: false, text: tokenText, streaming: true, id: uuidv4() },
+          ];
+        });
+        setIsStreaming(true);
+      } else if (msg.type === "event") {
+        // Extract text from event data
+        const data = msg.data;
+        let text = "";
+
+        if (typeof data === "string") {
+          text = data;
+        } else if (data && typeof data === "object") {
+          text =
+            data.text || data.content || data.message || JSON.stringify(data);
+        } else {
+          text = String(data ?? "");
+        }
+
+        if (text) {
+          setMessages((prev) => {
+            const last = prev[prev.length - 1];
+            if (last && last.fromUser === false && last.streaming) {
+              const copy = [...prev];
+              copy[copy.length - 1] = { ...last, text: last.text + text };
+              return copy;
+            }
+            return [
+              ...prev,
+              { fromUser: false, text, streaming: true, id: uuidv4() },
+            ];
+          });
+          setIsStreaming(true);
+        }
+      } else if (msg.type === "done") {
+        setMessages((prev) => {
+          const last = prev[prev.length - 1];
+          if (last && last.fromUser === false && last.streaming) {
+            const copy = [...prev];
+            copy[copy.length - 1] = { ...last, streaming: false };
+            return copy;
+          }
+          return prev;
+        });
+        setIsStreaming(false);
+      } else if (msg.type === "error") {
+        const detail = msg.detail ?? "Unknown error from server";
+        setMessages((prev) => [
+          ...prev,
+          {
+            fromUser: false,
+            text: `Error: ${detail}`,
+            streaming: false,
+            id: uuidv4(),
+          },
+        ]);
+        setIsStreaming(false);
+      } else if (msg.type === "extraction") {
+        // Handle extraction message
+        const { extracted_details, user_intent } = msg.data;
+        console.log(
+          "Extraction data received:",
+          extracted_details,
+          user_intent,
+        );
+      } else {
+        // Unknown message type
+        console.warn("Unknown message type:", msg);
+      }
+
+      scrollToBottom();
+    };
+    ws.onclose = (e) => {
+      console.log("ws closed", e);
+      setConnected(false);
+      if (hostRef.current.shouldReconnect) {
+        const nextRetry = Math.min(
+          30_000,
+          500 * Math.pow(2, hostRef.current.retries),
+        );
+        hostRef.current.retries += 1;
+        console.log(`Reconnecting in ${nextRetry}ms`);
+        setTimeout(() => connect(), nextRetry);
+      }
+    };
+
+    ws.onerror = (e) => {
+      console.error("ws error", e);
+    };
+  };
 
   useEffect(() => {
     hostRef.current.shouldReconnect = true;
@@ -503,9 +505,9 @@ export default function InvoiceChatbot() {
       submitFormData();
     }
   }, [value.formSave, value.formSubmit]);
-  // useEffect(()=>{
-  //   typeSelection(value.invoiceDatafromConversation)
-  // },[value.invoiceDatafromConversation])
+  useEffect(() => {
+    typeSelection(value.invoiceData);
+  }, [value.invoiceData]);
   //SCROLLING FUNCTIONALITY
   const scrollToBottom = () => {
     if (messageEl.current) {
@@ -560,7 +562,7 @@ export default function InvoiceChatbot() {
         creditNote: false,
         debitNote: false,
       };
-      if (invoiceVal && Object.keys(invoiceVal).length !== 0) {
+      if (invoiceVal && Object?.keys(invoiceVal).length !== 0) {
         const invoiceType = invoiceVal["Invoice Type"];
         // const invoiceType = invoiceVal["invoiceType"];
         if (invoiceType) {
@@ -628,109 +630,6 @@ export default function InvoiceChatbot() {
       creditNote: type === "creditNote",
     });
   };
-  // const updateItemDetails = useCallback(
-  //   (invoiceDatafromConversation) => {
-  //     if (
-  //       !invoiceDatafromConversation ||
-  //       !Array.isArray(invoiceDatafromConversation.items) ||
-  //       invoiceDatafromConversation.items.length === 0
-  //     ) {
-  //       value.setItemDetails({
-  //         items: [],
-  //         quantity: [],
-  //         invoiceCost: [],
-  //       });
-  //       return;
-  //     }
-  //     // console.log(Array.isArray(invoiceDatafromConversation.items).length);
-  //     const { items: itemsArray = [] } = invoiceDatafromConversation; // Extract "Items" array
-  //     console.log("updateitemdetails invdfc: ", itemsArray);
-  //     // NEW: if *all* items have *all* keys null, bail out
-  //     const allNullEntries = itemsArray.every((item) =>
-  //       Object.values(item).every((v) => v === null)
-  //     );
-  //     if (allNullEntries) {
-  //       // do nothing further
-  //       return;
-  //     }
-  //     // Ensure correct mapping of extracted values
-  //     const tempDictionary = itemsArray.reduce((acc, item) => {
-  //       acc[item["item_id"]] = {
-  //         quantity: item.quantity || 0,
-  //         invoiceCost: item["invoice_cost"] || 0,
-  //       };
-  //       return acc;
-  //     }, {});
-
-  //     // Extract structured arrays for state update
-  //     const updatedItems = itemsArray.map((item) => item["item_id"]);
-  //     const updatedQuantities = itemsArray.map((item) => item.quantity || 0);
-  //     const updatedInvoiceCosts = itemsArray.map(
-  //       (item) => item["invoice_cost"] || 0
-  //     );
-
-  //     setItemsArray(updatedItems);
-  //     setQuantitiesArray(updatedQuantities);
-  //     setInvoiceCostArray(updatedInvoiceCosts);
-
-  //     const updatedInvoiceData = {
-  //       items: updatedItems,
-  //       quantity: updatedQuantities,
-  //       invoiceCost: updatedInvoiceCosts,
-  //     };
-  //     console.log("UpdatedInvoiceData: ", updatedInvoiceData, tempDictionary);
-
-  //     value.setItemDetails(updatedInvoiceData);
-  //     value.setItemDetailsInput({
-  //       items: updatedItems,
-  //       quantity: updatedQuantities,
-  //       invoiceCost: updatedInvoiceCosts,
-  //     });
-
-  //     // Use prevPoDetailsDataRef.current for comparison
-  //     const prevPoDetailsData = prevPoDetailsDataRef.current || [];
-
-  //     const updatedPoDetails = prevPoDetailsData.map((item) =>
-  //       tempDictionary[item.itemId]
-  //         ? {
-  //             ...item,
-  //             invQty: tempDictionary[item.itemId].quantity,
-  //             invAmt:
-  //               tempDictionary[item.itemId].quantity *
-  //               tempDictionary[item.itemId].invoiceCost,
-  //             invCost: tempDictionary[item.itemId].invoiceCost,
-  //           }
-  //         : item
-  //     );
-
-  //     // Identify new items not present in prevPoDetailsData
-  //     const newItems = Object.keys(tempDictionary)
-  //       .filter(
-  //         (itemId) =>
-  //           !prevPoDetailsData.some((entry) => entry.itemId === itemId)
-  //       )
-  //       .map((itemId) => ({
-  //         itemId,
-  //         invQty: tempDictionary[itemId].quantity,
-  //         invAmt:
-  //           tempDictionary[itemId].quantity *
-  //           tempDictionary[itemId].invoiceCost,
-  //         invCost: tempDictionary[itemId].invoiceCost,
-  //         itemQuantity: 0,
-  //         itemDescription: "",
-  //         totalItemCost: 0,
-  //         supplierId: "",
-  //         itemCost: 0,
-  //         poId: prevPoDetailsData[0]?.poId || "", // Preserve existing PO ID
-  //       }));
-
-  //     // Merge updates and new items
-  //     value.setPoDetailsData([...updatedPoDetails, ...newItems]);
-  //   },
-  //   [value.setItemDetails, value.setItemDetailsInput, value.setPoDetailsData]
-  // );
-
-  //PO DETAILS
   const updateItemDetails = useCallback(
     (invoiceDatafromConversation) => {
       // Defensive: normalize input
@@ -826,7 +725,7 @@ export default function InvoiceChatbot() {
       });
 
       // Find invoice items that are new (not in prevPoDetailsData)
-      const newItems = Object.keys(tempDictionary)
+      const newItems = Object?.keys(tempDictionary)
         .filter(
           (k) => !prevPoDetailsData.some((entry) => String(entry.itemId) === k),
         )
@@ -991,7 +890,7 @@ export default function InvoiceChatbot() {
       console.log("invoiceObject:", invoiceObject);
       let poStatus = false;
 
-      for (const key of Object.keys(invoiceObject)) {
+      for (const key of Object?.keys(invoiceObject)) {
         if (invoiceObject[key] !== null) {
           switch (key) {
             // Matches: 'invoice_type'
@@ -1078,151 +977,6 @@ export default function InvoiceChatbot() {
   );
   const prevInvoiceDataRef = useRef();
 
-  // const sendMessage = async (text = null) => {
-  //   const messageText = (text ?? input).trim();
-  //   if (!messageText) return;
-
-  //   if (isStreaming && !allowConcurrentRuns) {
-  //     setMessages((prev) => [
-  //       ...prev,
-  //       {
-  //         fromUser: false,
-  //         text: "Please wait for current response to finish.",
-  //         streaming: false,
-  //         id: uuidv4(),
-  //       },
-  //     ]);
-  //     setInput("");
-  //     return;
-  //   }
-  //   value.setIsActive(true);
-  //   setMessages((prev) => [
-  //     ...prev,
-  //     { fromUser: true, text: messageText, id: uuidv4() },
-  //   ]);
-  //   setInput("");
-
-  //   const outgoing = JSON.stringify({
-  //     message: messageText,
-  //     thread_id: threadId,
-  //   });
-
-  //   // Attach a temporary WS listener that accumulates the streaming response
-  //   // and calls promotionCheck with the combined response when the stream is done.
-  //   if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-  //     let buffer = "";
-  //     const listener = async (evt) => {
-  //       let msg;
-  //       try {
-  //         msg = JSON.parse(evt.data);
-  //       } catch (err) {
-  //         return;
-  //       }
-
-  //       if (msg.type === "token") {
-  //         buffer += String(msg.text ?? "");
-  //       } else if (msg.type === "extraction") {
-  //         // **NEW: Handle extraction data immediately**
-  //         console.log("Received extraction data:", msg.data);
-  //         await invoiceCheck(msg.data.extracted_details);
-  //         setExtractedDetails(msg.data.extracted_details);
-  //         setUserIntent(msg.data.user_intent);
-
-  //         const currentIntent = msg.data.user_intent?.intent;
-  //         const prevIntent = prevIntentRef.current;
-  //         // Handle submission intent
-  //         if (
-  //           prevIntent === "Submission" &&
-  //           currentIntent !== "Submission" &&
-  //           currentIntent !== "Email Fetching"
-  //         ) {
-  //           value.setInvoiceCounter((prevCounter) => prevCounter + 1);
-  //         }
-  //         // Handle Submission intent (without incrementing here)
-  //         if (currentIntent === "Submission") {
-  //           await invoiceHeaderCreation();
-  //         }
-  //         const email = msg.data.extracted_details?.email;
-  //         if (
-  //           email &&
-  //           msg.data.extracted_details?.supplier_id &&
-  //           msg.data.extracted_details?.estimated_delivery_date &&
-  //           msg.data.extracted_details?.total_quantity &&
-  //           msg.data.extracted_details?.total_cost &&
-  //           msg.data.extracted_details?.total_tax &&
-  //           msg.data.extracted_details?.items?.length > 0
-  //         ) {
-  //           console.log("Sending email to:", email);
-  //           await sendEmail({
-  //             emailUsed: email,
-  //             documentId: `INV${value.invoiceCounter}`,
-  //           });
-  //         }
-  //         // Update previous intent
-  //         prevIntentRef.current = currentIntent;
-  //       } else if (msg.type === "event") {
-  //         const data = msg.data;
-  //         let text =
-  //           typeof data === "string"
-  //             ? data
-  //             : data?.text ||
-  //               data?.content ||
-  //               data?.message ||
-  //               JSON.stringify(data);
-  //         buffer += text;
-  //       } else if (msg.type === "done") {
-  //         // Stream finished - cleanup
-  //         console.log("Stream complete");
-  //         try {
-  //           wsRef.current.removeEventListener("message", listener);
-  //         } catch (e) {
-  //           /* ignore */
-  //         }
-  //       }
-  //     };
-
-  //     try {
-  //       wsRef.current.addEventListener("message", listener);
-  //       try {
-  //         wsRef.current.send(outgoing);
-  //         setIsStreaming(true);
-  //       } catch (err) {
-  //         console.error("Send failed, queueing", err);
-  //         outgoingQueueRef.current.push(outgoing);
-  //         try {
-  //           wsRef.current.removeEventListener("message", listener);
-  //         } catch (e) {
-  //           /* ignore */
-  //         }
-  //       }
-  //     } catch (err) {
-  //       // fallback if addEventListener isn't available
-  //       try {
-  //         wsRef.current.send(outgoing);
-  //         setIsStreaming(true);
-  //       } catch (err2) {
-  //         console.error("Send failed, queueing", err2);
-  //         outgoingQueueRef.current.push(outgoing);
-  //       }
-  //     }
-  //   } else {
-  //     // queue the outgoing message and attempt reconnect
-  //     outgoingQueueRef.current.push(outgoing);
-  //     setMessages((prev) => [
-  //       ...prev,
-  //       {
-  //         fromUser: false,
-  //         text: "Message queued — connecting to server...",
-  //         streaming: false,
-  //         id: uuidv4(),
-  //       },
-  //     ]);
-  //     if (!connected) {
-  //       connect();
-  //     }
-  //   }
-  // };
-
   const sendMessage = async (text = null) => {
     const messageText = (text ?? input).trim();
     if (!messageText) return;
@@ -1240,7 +994,6 @@ export default function InvoiceChatbot() {
       setInput("");
       return;
     }
-
     value.setIsActive(true);
     setMessages((prev) => [
       ...prev,
@@ -1253,15 +1006,108 @@ export default function InvoiceChatbot() {
       thread_id: threadId,
     });
 
+    // Attach a temporary WS listener that accumulates the streaming response
+    // and calls promotionCheck with the combined response when the stream is done.
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      let buffer = "";
+      const listener = async (evt) => {
+        let msg;
+        try {
+          msg = JSON.parse(evt.data);
+        } catch (err) {
+          return;
+        }
+
+        if (msg.type === "token") {
+          buffer += String(msg.text ?? "");
+        } else if (msg.type === "extraction") {
+          // **NEW: Handle extraction data immediately**
+          console.log("Received extraction data:", msg.data);
+          await invoiceCheck(msg.data.extracted_details);
+          setExtractedDetails(msg.data.extracted_details);
+          setUserIntent(msg.data.user_intent);
+
+          const currentIntent = msg.data.user_intent?.intent;
+          const prevIntent = prevIntentRef.current;
+          // Handle submission intent
+          // if (
+          //   prevIntent === "Submission" &&
+          //   currentIntent !== "Submission" &&
+          //   currentIntent !== "Email Fetching"
+          // ) {
+          //   value.setInvoiceCounter((prevCounter) => prevCounter + 1);
+          // }
+          // Handle Submission intent (without incrementing here)
+          if (currentIntent === "Submission") {
+            await invoiceHeaderCreation();
+          }
+          const email = msg.data.extracted_details?.email;
+          if (
+            email &&
+            msg.data.extracted_details?.po_number &&
+            msg.data.extracted_details?.invoice_number &&
+            msg.data.extracted_details?.invoice_type &&
+            msg.data.extracted_details?.date &&
+            msg.data.extracted_details?.total_amount &&
+            msg.data.extracted_details?.total_tax &&
+            Array.isArray(msg.data.extracted_details?.items) &&
+            msg.data.extracted_details?.items.length > 0
+          ) {
+            console.log("Sending email to:", email);
+            await sendEmail({
+              emailUsed: email,
+              documentId: `INV${value.invoiceCounter}`,
+            });
+          }
+          // Update previous intent
+          prevIntentRef.current = currentIntent;
+        } else if (msg.type === "event") {
+          const data = msg.data;
+          let text =
+            typeof data === "string"
+              ? data
+              : data?.text ||
+                data?.content ||
+                data?.message ||
+                JSON.stringify(data);
+          buffer += text;
+        } else if (msg.type === "done") {
+          // Stream finished - cleanup
+          console.log("Stream complete");
+          try {
+            wsRef.current.removeEventListener("message", listener);
+          } catch (e) {
+            /* ignore */
+          }
+        }
+      };
+
       try {
-        wsRef.current.send(outgoing);
-        setIsStreaming(true);
+        wsRef.current.addEventListener("message", listener);
+        try {
+          wsRef.current.send(outgoing);
+          setIsStreaming(true);
+        } catch (err) {
+          console.error("Send failed, queueing", err);
+          outgoingQueueRef.current.push(outgoing);
+          try {
+            wsRef.current.removeEventListener("message", listener);
+          } catch (e) {
+            /* ignore */
+          }
+        }
       } catch (err) {
-        console.error("Send failed, queueing", err);
-        outgoingQueueRef.current.push(outgoing);
+        // fallback if addEventListener isn't available
+        try {
+          wsRef.current.send(outgoing);
+          setIsStreaming(true);
+        } catch (err2) {
+          console.error("Send failed, queueing", err2);
+          outgoingQueueRef.current.push(outgoing);
+        }
       }
     } else {
+      // queue the outgoing message and attempt reconnect
       outgoingQueueRef.current.push(outgoing);
       setMessages((prev) => [
         ...prev,
@@ -1272,9 +1118,64 @@ export default function InvoiceChatbot() {
           id: uuidv4(),
         },
       ]);
-      if (!connected) connect();
+      if (!connected) {
+        connect();
+      }
     }
   };
+  //send without any data retrieval
+  // const sendMessage = async (text = null) => {
+  //   const messageText = (text ?? input).trim();
+  //   if (!messageText) return;
+
+  //   if (isStreaming && !allowConcurrentRuns) {
+  //     setMessages((prev) => [
+  //       ...prev,
+  //       {
+  //         fromUser: false,
+  //         text: "Please wait for current response to finish.",
+  //         streaming: false,
+  //         id: uuidv4(),
+  //       },
+  //     ]);
+  //     setInput("");
+  //     return;
+  //   }
+
+  //   value.setIsActive(true);
+  //   setMessages((prev) => [
+  //     ...prev,
+  //     { fromUser: true, text: messageText, id: uuidv4() },
+  //   ]);
+  //   setInput("");
+
+  //   const outgoing = JSON.stringify({
+  //     message: messageText,
+  //     thread_id: threadId,
+  //   });
+
+  //   if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+  //     try {
+  //       wsRef.current.send(outgoing);
+  //       setIsStreaming(true);
+  //     } catch (err) {
+  //       console.error("Send failed, queueing", err);
+  //       outgoingQueueRef.current.push(outgoing);
+  //     }
+  //   } else {
+  //     outgoingQueueRef.current.push(outgoing);
+  //     setMessages((prev) => [
+  //       ...prev,
+  //       {
+  //         fromUser: false,
+  //         text: "Message queued — connecting to server...",
+  //         streaming: false,
+  //         id: uuidv4(),
+  //       },
+  //     ]);
+  //     if (!connected) connect();
+  //   }
+  // };
   const invoiceDetailsCreation = async () => {
     try {
       setPdfCardVisible(true);
@@ -1562,7 +1463,7 @@ export default function InvoiceChatbot() {
         "Email sending was successful! Now calling another function...",
         emailStatus,
       );
-      clearFormData();
+      // clearFormData();
     } else {
       console.log("Email sending failed or returned no status.");
       console.error("Error message:", emailStatus?.message || "Unknown error");

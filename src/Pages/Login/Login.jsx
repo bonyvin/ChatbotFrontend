@@ -188,9 +188,9 @@ export default function SignInSide() {
                   },
                   mb: 2,
                 }}
-                onClick={() => navigate("/invoice") }
+                // onClick={() => navigate("/invoice") }
                 // onClick={() => navigate("/promotion") }
-                // onClick={() => navigate("/purchaseorder") }
+                onClick={() => navigate("/purchaseorder") }
               >
                 LOGIN
               </Button>

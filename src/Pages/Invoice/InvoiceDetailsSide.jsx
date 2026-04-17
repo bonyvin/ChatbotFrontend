@@ -241,18 +241,19 @@ function InvoiceDetailsSide() {
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
-                  marginLeft: "0.8rem",
+                  // marginLeft: "0.8rem",
                   width: "96%",
                 }}
               >
                 <div
                   // className="mb-3"
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "flex-start",
-                    alignItems: "center",
-                  }}
+                  // style={{
+                  //   display: "flex",
+                  //   flexDirection: "row",
+                  //   justifyContent: "flex-start",
+                  //   alignItems: "center",
+                  // }}
+                  class="radioText form-check form-check-inline"
                 >
                   <Form.Check
                     inline
@@ -307,7 +308,8 @@ function InvoiceDetailsSide() {
                     alignItems: "center",
                   }}
                 >
-                  <span>{`System Document ID:  `}</span>
+                  <span                   class="radioText form-check form-check-inline"
+>{`System Document ID:  `}</span>
                   <span
                     style={{
                       backgroundColor: "var(--white)",
@@ -376,12 +378,16 @@ function InvoiceDetailsSide() {
                     editable={true}
                     // style={{ backgroundColor: "#e8e8e8" }}
                     EndComponent={
-                      value.supplierDetails.supplierStatus === true ? (
+                      value.poDetailsData[0]?.supplierId ? 
+                      // value.supplierDetails.supplierStatus === true ? 
+                      (
                         <div
                           style={{
                             display: "flex",
                             alignItems: "center",
                             height: "100%",
+                            top: "70%",
+                            marginTop: "1.5rem",
                           }}
                         >
                           {" "}
@@ -689,9 +695,15 @@ function InvoiceDetailsSide() {
                               >
                                 <BsFillInfoCircleFill
                                   onClick={() => setItemPopupStatus(true)}
+                                  // sx={{
+                                  //   position: "absolute",
+                                  //   left: "1.5rem",
+                                  //   fontSize: "0.6rem",
+                                  //   marginTop: "0.1rem",
+                                  // }}
                                   style={{
                                     position: "absolute",
-                                    left: "1.5rem",
+                                    left: "2.5rem",
                                     fontSize: "0.6rem",
                                     margin: "0.1rem",
                                   }}

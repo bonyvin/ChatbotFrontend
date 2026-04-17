@@ -974,7 +974,7 @@ export default function PoChatbot() {
         "Email sending was successful! Now calling another function...",
         emailStatus,
       );
-      clearFormData();
+      // clearFormData();
     } else {
       console.log("Email sending failed or returned no status.");
       console.error("Error message:", emailStatus?.message || "Unknown error");
@@ -995,7 +995,7 @@ export default function PoChatbot() {
     }
   };
 
-  console.log("checkConsole", value);
+  console.log("checkConsols", value);
   return (
     <div className="chatbot-card">
       <div className="chatbot-area" ref={messageEl}>
