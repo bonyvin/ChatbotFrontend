@@ -2,6 +2,13 @@
 
 export const API_URL = "http://localhost:8000";
 
+export const ORACLE_API_URL='https://rex-npe.retail.ap-singapore-1.ocs.oraclecloud.com/rgbu-rex-modi-stg1-mfcs/MerchIntegrations';
+
+export const ORACLE_CREATE_PO= `${API_URL}/createOraclePo`;
+// export const ORACLE_CREATE_PO= `${ORACLE_API_URL}/services/purchaseOrders/create`;
+
+export const ORACLE_ACCESS_TOKEN=`${API_URL}/oracleAccessToken`;
+
 export const SUPPLIER_RISK_INSIGHT = (supplierId) =>
 
   `${API_URL}/supplier-risk-insights?supplierId=${supplierId}`;
@@ -21,6 +28,8 @@ export const INVOICE_CREATION = API_URL + "/invCreation/";
 export const FETCH_INVOICE_BY_ID = (id) => `${API_URL}/invoiceDetails/${id}`;
 
 export const UPLOAD_GPT = API_URL + "/uploadGpt/";
+
+export const UPLOAD_DOCUMENT = API_URL + "/uploadDocument/";
 
 export const CLEAR_DATA = API_URL + "/clearData";
 

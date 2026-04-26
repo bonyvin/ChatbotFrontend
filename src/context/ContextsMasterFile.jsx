@@ -228,6 +228,7 @@ export default function AuthProvider({ children }) {
     supplierId: "",
     unitCost: "",
   });
+  const [oracleAccessToken, setOracleAccessToken] = useState("");
   const value = {
     isActive,
     setIsActive,
@@ -298,7 +299,9 @@ export default function AuthProvider({ children }) {
     storeUpload,
     setStoreUpload,
     itemCreationData, 
-    setItemCreationData
+    setItemCreationData,
+    oracleAccessToken,
+    setOracleAccessToken
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

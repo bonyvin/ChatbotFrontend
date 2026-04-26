@@ -1,5 +1,5 @@
 /* pdf-card.css */
-.fileContainer {
+.file-container {
   margin-left: 0.55rem;
   /* width: 240px; */
   width: 70%;
@@ -13,7 +13,7 @@
   margin-bottom: 1rem;
 }
 
-.fileContainerUser {
+.file-container-user {
   margin-left: 0.55rem;
   /* width: 240px; */
   width: 70%;
@@ -23,11 +23,13 @@
   flex-direction: column;
   gap: 15px;
   box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
-  background-color: var(--pill-blue);
+  /* background-color: var(--pill-blue); */
+  background-color: var(--muted-blue);
   margin-bottom: 1rem;
 }
 
 .flex {
+  /* width: inherit; */
   width: 100%;
   display: flex;
   gap: 10px;
@@ -40,18 +42,35 @@
   color: var(--primary-color);
   margin: 0.2rem;
   cursor: pointer;
-
+}
+.buttons-user {
+  color: var(--border-light);
+  margin: 0.2rem;
+  cursor: pointer;
 }
 
-.fileIcon {
-  margin: 0.55rem;
-}
 
-.bold {
+.file-name-container {
   font-size: 0.7rem;
   font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 12rem;
 }
-
+.file-name-user-container{
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--white);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 12rem;
+}
+.file-container{
+  display: flex;
+  align-items: center;
+}
 .thin {
   font-size: 11px;
   color: var(--dark-grey);
@@ -70,4 +89,13 @@
   font-weight: 600;
   cursor: pointer;
   user-select: none;
+}
+.file-icon {
+  margin: 0.55rem;
+  color: var(--light-blue);
+}
+
+.file-icon-user {
+  margin: 0.55rem;
+  color: var(--white);
 }

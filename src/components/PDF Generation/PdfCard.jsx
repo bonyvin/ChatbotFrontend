@@ -51,29 +51,32 @@ const PdfCard = ({
     }
   };
   return (
-    <div className={uploadedFileStatus ? "fileContainerUser" : "fileContainer"}>
+    <div className={uploadedFileStatus ? "file-container-user" : "file-container"}>
       {uploadedFileStatus ? (
         <div className="flex">
-          <div>
-            <CgFileDocument
-              color={uploadedFileStatus ? "#FFFFF" : "#90e0ef"}
-              size={20}
-              className="fileIcon"
-            />
-            <span className="bold">{uploadedFile.name}</span>
+            <div className="file-name-user-container">
+              <CgFileDocument
+                // color={uploadedFileStatus ? "#FFFFFF" : "#90e0ef"}
+                // color={uploadedFileStatus ? "#FFFFF" : "#90e0ef"}
+                size={20}
+                className="file-icon-user"
+              />
+              <span className="file-name-user" >
+              {uploadedFile.name}
+            </span>
           </div>
           {file.type.startsWith("image/") ? (
             <img src={fileUrl} alt="Preview" className="max-w-full h-auto" />
           ) : file.type === "application/pdf" ? (
-            <div>
+            <div className="file-name-container">
               <DownloadIcon
                 size={14}
-                className="buttons"
+                className="buttons-user"
                 onClick={() => handleDownloadUploadedFile(file)}
               />
               <VisibilityIcon
                 size={14}
-                className="buttons"
+                className="buttons-user"
                 onClick={() => window.open(fileUrl, "_blank")}
               />
             </div>
@@ -84,8 +87,10 @@ const PdfCard = ({
       ) : (
         <div className="flex">
           <div>
-            <CgFileDocument color="#90e0ef" size={20} className="fileIcon" />
-            <span className="bold">{title}</span>
+            <CgFileDocument color="#90e0ef" size={20} className="file-icon" />
+            <span className="file-name" >
+              {title}
+            </span>
           </div>
           <div>
             {/* Using BlobProvider for both downloading and viewing */}

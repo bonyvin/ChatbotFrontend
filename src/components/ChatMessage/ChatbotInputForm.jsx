@@ -84,7 +84,7 @@ const ChatbotInputForm = ({
   input,
   setInput,
   handleMessageSubmit,
-  uploadInvoice,
+  uploadFunction,
   isPickerVisible,
   setPickerVisible,
   promotion
@@ -142,12 +142,12 @@ const ChatbotInputForm = ({
       onKeyDown={handleKeyDown}
     />
     <div className="actionBar">
-      {/* <Add className="actionIcon left" onClick={uploadInvoice} /> */}
+      {/* <Add className="actionIcon left" onClick={uploadFunction} /> */}
       <label>
         <input
           type="file"
           style={{ display: "none" }}
-          onChange={uploadInvoice}
+          onChange={uploadFunction}
           onClick={(e) => (e.target.value = "")}
         />
         <Add className="actionIcon left" />

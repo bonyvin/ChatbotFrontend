@@ -29,7 +29,9 @@ import {
   FETCH_SUPPLIER_BYID,
   PO_CREATION,
   SUPPLIER_RISK_INSIGHT,
-  UPLOAD_PO,
+  UPLOAD_DOCUMENT,
+  ORACLE_CREATE_PO,
+  ORACLE_ACCESS_TOKEN,
 } from "../../const/ApiConst";
 import EmailPdf from "../../components/PDF Generation/EmailPdf";
 import { BorderColor } from "@mui/icons-material";
@@ -90,7 +92,7 @@ export default function PoChatbot() {
   const outgoingQueueRef = useRef([]); // if socket down, queue messages
   const messagesEndRef = useRef(null);
   const containerRef = useRef(null);
-  const prevIntentRef = useRef(null);   
+  const prevIntentRef = useRef(null);
   const PORT = 8000;
   const WS_PATH = "/ws/purchase_order_chat";
 
@@ -254,6 +256,80 @@ export default function PoChatbot() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // useEffect(() => {
+  //   fetchOracleAccessToken();
+  // }, []);
+
+  // const fetchOracleAccessToken = async () => {
+  //   try {
+  //     const response = await axios.post(ORACLE_ACCESS_TOKEN);
+  //     if (response.status === 200) {
+  //       console.log("Oracle Access Token ");
+  //       value.setOracleAccessToken(response.data.access_token);
+  //       // return response.data.access_token;
+  //     }
+  //   } catch (error) {
+  //     console.log("Error fetching oracle access token:", error);
+  //   }
+  // };
+
+  const oracleCreatePo = async () => {
+    try {
+      const { purchaseOrderData, purchaseItemDetails, supplierDetails } = value;
+
+      const requestBody = {
+        items: [
+          {
+            orderNo: `50${value.poCounter}`,
+            supplier: supplierDetails?.supplierId || 107,
+
+            currencyCode: purchaseOrderData.currency || "USD",
+            terms: purchaseOrderData.payment_term || "01",
+
+            // status: "W",
+            // orderType: "N/B",
+
+            // Dates mapping
+            earliestShipDate: purchaseOrderData.shipByDate,
+            latestShipDate: purchaseOrderData.estimatedDeliveryDate,
+
+            location: 101,
+            locationType: "W",
+
+            // 🔹 Line items mapping
+            details: purchaseItemDetails.map((item) => ({
+              item: item.itemId,
+              location: 101,
+              locationType: "W",
+
+              quantityOrdered: Number(item.itemQuantity),
+              unitCost: Number(item.itemCost),
+
+              earliestShipDate: purchaseOrderData.shipByDate,
+              latestShipDate: purchaseOrderData.estimatedDeliveryDate,
+            })),
+
+            // 🔹 Required by Oracle (minimal structure)
+            itemDetails: purchaseItemDetails.map((item) => ({
+              item: item.itemId,
+            })),
+          },
+        ],
+      };
+      const response = await axios.post(ORACLE_CREATE_PO, requestBody, {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `${value.oracleAccessToken}`,
+        },
+      });
+      if (response.status === 200 || response.status === 201) {
+        console.log("PO created in Oracle successfully: ", response.data);
+      }
+    } catch (error) {
+      console.log("Error creating PO in Oracle: ", error);
+    }
+  };
   //FORM ACTIONS
   //save
   const saveFormData = async () => {
@@ -280,7 +356,8 @@ export default function PoChatbot() {
     value.setPoCounterId(`PO${value.poCounter}`);
   }, [value.poCounter]);
   const submitFormData = async () => {
-    await sendMessage("Please submit the data provided");
+    // await sendMessage("Please submit the data provided");
+    await oracleCreatePo();
     // await handleMessageSubmit("Please submit the data provided");
   };
   //clear
@@ -453,7 +530,7 @@ export default function PoChatbot() {
       console.log("Supplier Risk Error:", error, error.data);
     }
   };
- const purchaseOrderCheck = useCallback(
+  const purchaseOrderCheck = useCallback(
     async (poObject) => {
       let updatedPurchaseOrderData = { ...value?.purchaseOrderData };
       let supplierStatus = false;
@@ -536,7 +613,7 @@ export default function PoChatbot() {
     },
     [getSupplierDetails, purchaseOrderData, value.supplierDetails, dispatch],
   );
-  const sendMessage = async (text = null) => {
+  const sendMessage = async (text = null, fileUpload = false) => {
     const messageText = (text ?? input).trim();
     if (!messageText) return;
 
@@ -556,7 +633,7 @@ export default function PoChatbot() {
     value.setIsActive(true);
     setMessages((prev) => [
       ...prev,
-      { fromUser: true, text: messageText, id: uuidv4() },
+      { fromUser: !fileUpload ? true : false, text: messageText, id: uuidv4() },
     ]);
     setInput("");
 
@@ -587,19 +664,23 @@ export default function PoChatbot() {
           setUserIntent(msg.data.user_intent);
 
           // Handle submission intent
-        const currentIntent = msg.data.user_intent?.intent;
-        const prevIntent = prevIntentRef.current;
+          const currentIntent = msg.data.user_intent?.intent;
+          const prevIntent = prevIntentRef.current;
 
-        // Detect transition: Submission → Non-Submission
-        if (prevIntent === "Submission" && currentIntent !== "Submission" &&currentIntent !== "Email Fetching") {
-          value.setPoCounter((prevCounter) => prevCounter + 1);
-        }
+          // Detect transition: Submission → Non-Submission
+          if (
+            prevIntent === "Submission" &&
+            currentIntent !== "Submission" &&
+            currentIntent !== "Email Fetching"
+          ) {
+            value.setPoCounter((prevCounter) => prevCounter + 1);
+          }
 
-        // Handle Submission intent (without incrementing here)
-        if (currentIntent === "Submission") {
-          await poHeaderCreation();
-        }
-                  const email = msg.data.extracted_details?.email;
+          // Handle Submission intent (without incrementing here)
+          if (currentIntent === "Submission") {
+            await poHeaderCreation();
+          }
+          const email = msg.data.extracted_details?.email;
 
           if (
             email &&
@@ -616,9 +697,8 @@ export default function PoChatbot() {
               documentId: `PO${value.poCounter}`, // ⚠️ no -1 now
             });
           }
-        // Update previous intent
-        prevIntentRef.current = currentIntent;
-
+          // Update previous intent
+          prevIntentRef.current = currentIntent;
         } else if (msg.type === "event") {
           const data = msg.data;
           let text =
@@ -710,6 +790,7 @@ export default function PoChatbot() {
         text: "PO Created Successfully",
         isSuccessful: true,
       });
+      await oracleCreatePo();
 
       // console.log("invoice Details Creation Response:", response.data);
     } catch (error) {
@@ -727,6 +808,7 @@ export default function PoChatbot() {
   };
   //create invoice header
   const poHeaderCreation = async () => {
+    await oracleCreatePo();
     console.log("Invoice Header Creation");
     const poData = {
       // "poNumber": "string",
@@ -737,8 +819,8 @@ export default function PoChatbot() {
       ...purchaseOrderData,
       leadTime: value.supplierDetails.leadTime,
       estimatedDeliveryDate: purchaseOrderData.estDeliveryDate,
-      shipByDate: "2025-02-10",
-      payment_term: "Credit Card",
+      shipByDate: "2026-08-10",
+      payment_term: '02',
       currency: "USD",
       poNumber: value.poCounterId,
     };
@@ -852,7 +934,7 @@ export default function PoChatbot() {
   };
   const [uploadLoading, setUploadLoading] = useState(false);
 
-  const uploadInvoice = async (event) => {
+  const uploadPO = async (event) => {
     let file = event.target.files[0];
     console.log("Event:", event.target.files);
     const formData = new FormData();
@@ -866,7 +948,7 @@ export default function PoChatbot() {
     try {
       const response = await axios({
         method: "POST",
-        url: UPLOAD_PO,
+        url: UPLOAD_DOCUMENT,
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -895,7 +977,12 @@ export default function PoChatbot() {
               isFile: true,
             },
           ]);
-          await sendMessage(formatInvoice(response.data.structured_data), true);
+          let extractedData =
+            "**Details extracted from uploaded document:** \n" +
+            response.data.structured_data;
+          console.log("Structured Data from Upload Response:", extractedData);
+          await sendMessage(extractedData, true);
+          // await sendMessage(formatInvoice(response.data.structured_data), true);
           // await handleMessageSubmit(
           //   formatInvoice(response.data.structured_data),
           //   true
@@ -919,6 +1006,7 @@ export default function PoChatbot() {
       ]);
     }
   };
+
   //clear data
   const clearDataApi = async () => {
     value.setModalVisible(true);
@@ -1040,7 +1128,7 @@ export default function PoChatbot() {
           input={input}
           setInput={setInput}
           handleMessageSubmit={sendMessage}
-          uploadInvoice={uploadInvoice}
+          uploadFunction={uploadPO}
           isPickerVisible={isPickerVisible}
           setPickerVisible={setPickerVisible}
         />

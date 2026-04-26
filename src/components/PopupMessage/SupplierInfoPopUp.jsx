@@ -5,6 +5,8 @@ import { FaWindowClose } from "react-icons/fa";
 import ReactMarkdown from "react-markdown";
 import "../../styles/popup-styles.css";
 import failure from "../../images/failure.gif";
+import Plot from "react-plotly.js";
+import { IoMdCloseCircle } from "react-icons/io";
 
 function SupplierInfoPopUp({ visible, setVisible, data }) {
   const [show, setShow] = useState(false);
@@ -17,7 +19,18 @@ function SupplierInfoPopUp({ visible, setVisible, data }) {
     setShow(false);
     setVisible(false);
   };
-
+  const barChart = data?.insights?.graph_data?.bar_chart
+    ? JSON.parse(data.insights.graph_data.bar_chart)
+    : null;
+  const pieChart = data?.insights?.graph_data?.pie_chart
+    ? JSON.parse(data.insights.graph_data.pie_chart)
+    : null;
+  const gaugeChart = data?.insights?.graph_data?.gauge_chart
+    ? JSON.parse(data.insights.graph_data.gauge_chart)
+    : null;
+  const delayChart = data?.insights?.graph_data?.delay_chart
+    ? JSON.parse(data.insights.graph_data.delay_chart)
+    : null;
   return (
     <div className="text-center">
       {show && (
@@ -32,7 +45,7 @@ function SupplierInfoPopUp({ visible, setVisible, data }) {
           >
             <div
               className="modal-content"
-              style={{ padding: "8%", width: "fit-content" }}
+              style={{ padding: "8%", width: "90vw" }}
             >
               <div
                 style={{
@@ -51,10 +64,11 @@ function SupplierInfoPopUp({ visible, setVisible, data }) {
                   Supplier Risk Assessment
                 </div>
                 <div>
-                  <FaWindowClose
-                    style={{
-                      fontSize: "1.5rem",
-                    }}
+                  <IoMdCloseCircle
+                  className="close-icon"
+                    // style={{
+                    //   fontSize: "1.5rem",
+                    // }}
                     onClick={handleClose}
                   />
                 </div>
@@ -73,10 +87,21 @@ function SupplierInfoPopUp({ visible, setVisible, data }) {
                   >
                     Fill Rate
                   </div>
-                  <img
+                  {/* <img
                     src={`${data?.insights?.graph_data?.bar_chart}`}
                     className="tileImg"
-                  />
+                  /> */}
+                  {barChart && (
+                    <Plot
+                      data={barChart.data}
+                      layout={{
+                        width: 280,
+                        height: 280,
+                        // title: { text: "A Fancy" },
+                      }}
+                      // className="tileImg"
+                    />
+                  )}
                   <div className="graph-sub-heading">
                     <span>{data?.insights?.fill_rate_dict.fill_rate}</span>
                     <span>{data?.insights?.fill_rate_dict.pending_rate}</span>
@@ -111,11 +136,24 @@ function SupplierInfoPopUp({ visible, setVisible, data }) {
                   >
                     Delays
                   </div>
-                  <img
+                  {/* <img
                     // src={graph1}
                     src={`${data?.insights?.graph_data?.delay_chart}`}
                     className="tileImg"
-                  />
+                  /> */}
+                  {pieChart && (
+                    <Plot
+                      data={pieChart.data}
+                      // layout={pieChart.layout}
+                      layout={{
+                        width: 280,
+                        height: 280,
+                        // title: { text: "A Fancy" },
+                      }}
+                      // className="tileImg"
+                    />
+                  )}
+
                   <div className="tile-legends">
                     {/* <div className="tile-legend">
                       <div
@@ -142,10 +180,22 @@ function SupplierInfoPopUp({ visible, setVisible, data }) {
                   >
                     Quality Issues
                   </div>
-                  <img
+                  {/* <img
                     src={`${data?.insights?.graph_data?.pie_chart}`}
                     className="tileImg"
-                  />
+                  /> */}
+                  {gaugeChart && (
+                    <Plot
+                      data={gaugeChart.data}
+                      // layout={gaugeChart.layout}
+                      layout={{
+                        width: 280,
+                        height: 280,
+                        // title: { text: "A Fancy" },
+                      }}
+                      // className="tileImg"
+                    />
+                  )}
                   <div className="tile-legends">
                     {/* <div className="tile-legend">
                       <div
@@ -182,10 +232,22 @@ function SupplierInfoPopUp({ visible, setVisible, data }) {
                   >
                     Risk Score
                   </div>
-                  <img
+                  {/* <img
                     src={`${data?.insights?.graph_data?.gauge_chart}`}
                     className="tileImg"
-                  />
+                  /> */}
+                  {delayChart && (
+                    <Plot
+                      data={delayChart.data}
+                      // layout={delayChart.layout}
+                      layout={{
+                        width: 280,
+                        height: 280,
+                        // title: { text: "A Fancy" },
+                      }}
+                      // className="tileImg"
+                    />
+                  )}
                   <div className="tile-legends">
                     <div className="tile-legend">
                       {/* <div
@@ -218,11 +280,10 @@ function SupplierInfoPopUp({ visible, setVisible, data }) {
                       marginBottom: "1rem",
                     }}
                   >
-                    Key Insights
-                  </div>{" "}
-                  <ReactMarkdown className="insights-text"
+                    Key Insights</div>                  
+                  <ReactMarkdown
+                    // className="insights-text"
                     style={{
-                      backgroundColor:'yellow'
                     }}
                   >
                     {data?.insights?.key_insights}
@@ -282,7 +343,13 @@ function SupplierInfoPopUp({ visible, setVisible, data }) {
                       Medium Risk Supplier
                     </div>
                   </div>{" "}
-                  <div style={{ color: "black", fontSize: "0.75rem",paddingBottom:'2rem'}}>
+                  <div
+                    style={{
+                      color: "black",
+                      fontSize: "0.75rem",
+                      paddingBottom: "2rem",
+                    }}
+                  >
                     Alert: Supplier not meeting environmental and safety
                     standards
                   </div>

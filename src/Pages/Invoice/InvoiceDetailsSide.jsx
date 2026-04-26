@@ -42,6 +42,9 @@ import InvoiceChatbot from "./InvoiceChatbot";
 import EmailPdf from "../../components/PDF Generation/EmailPdf";
 import symbolBlue from "../../images/symbol-blue.png";
 import IntroductionCard from "../../components/IntroductionCard.jsx";
+import { SUPPLIER_RISK_INSIGHT } from "../../const/ApiConst";
+import axios from "axios";
+
 
 function InvoiceDetailsSide() {
   const messagesEndRef = useRef(null);
@@ -118,30 +121,59 @@ function InvoiceDetailsSide() {
     }
   };
 
-  const sendEmail = async ({ emailUsed, documentId }) => {
-    // await EmailPdf({
-    //   emailUsed: emailUsed,
-    //   bodyUsed: { "documentType": "Invoice" },
-    //   invoice: true,
-    //   documentId: documentId
-    // });
-    const emailStatus = await EmailPdf({
-      emailUsed: emailUsed,
-      bodyUsed: { documentType: "Invoice" },
-      invoice: true,
-      documentId: documentId,
-    });
+  // const sendEmail = async ({ emailUsed, documentId }) => {
+  //   // await EmailPdf({
+  //   //   emailUsed: emailUsed,
+  //   //   bodyUsed: { "documentType": "Invoice" },
+  //   //   invoice: true,
+  //   //   documentId: documentId
+  //   // });
+  //   const emailStatus = await EmailPdf({
+  //     emailUsed: emailUsed,
+  //     bodyUsed: { documentType: "Invoice" },
+  //     invoice: true,
+  //     documentId: documentId,
+  //   });
 
-    if (emailStatus && emailStatus.success) {
-      console.log(
-        "Email sending was successful! Now calling another function...",
-      );
-    } else {
-      console.log("Email sending failed or returned no status.");
-      console.error("Error message:", emailStatus?.message || "Unknown error");
+  //   if (emailStatus && emailStatus.success) {
+  //     console.log(
+  //       "Email sending was successful! Now calling another function...",
+  //     );
+  //   } else {
+  //     console.log("Email sending failed or returned no status.");
+  //     console.error("Error message:", emailStatus?.message || "Unknown error");
+  //   }
+  // };
+  // console.log("pod:",value.poDetailsData)
+  
+  useEffect(() => {
+    if (value.poDetailsData[0]?.supplierId && supplierPopupStatus) {
+      console.log("Supplier ID in useEffect:", value.poDetailsData[0]?.supplierId);
+      supplierRiskApi(value.poDetailsData[0]?.supplierId);
+    }
+  }, [supplierPopupStatus]);
+
+  const supplierRiskApi = async (supplierId) => {
+    try {
+      console.log("supplierRiskApi");
+      const response = await axios({
+        method: "get",
+        url: SUPPLIER_RISK_INSIGHT(supplierId),
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+      value.setSupplierDetails((prev) => ({
+        ...prev,
+        supplierInsights: response.data,
+      }));
+      // console.log("invoice Clear Response:", response.data);
+    } catch (error) {
+      console.log("Supplier Risk Error:", error, error.data);
     }
   };
-  // console.log("pod:",value.poDetailsData)
   return (
     <Grid container component="main" className="main-grid">
       <Grid
@@ -162,7 +194,7 @@ function InvoiceDetailsSide() {
           <SupplierInfoPopUp
             visible={supplierPopupStatus}
             setVisible={setSupplierPopupStatus}
-            data={value.supplierDetails.supplierInsights}
+            data={value?.supplierDetails?.supplierInsights}
           />
           <Dialog
             className="invoice-preview"

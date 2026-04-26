@@ -105,7 +105,7 @@ body {
   margin: 100px auto;
 }
 
-.tiles {
+/* .tiles {
   position: relative;
   border: solid 2px var(--border-grey);
   border-radius: 5%;
@@ -116,8 +116,20 @@ body {
   margin: 1rem;
   padding: 2rem;
   padding-bottom: 1rem;
+} */
+.tiles {
+    position: relative;
+    /* border: solid 2px var(--border-grey); */
+    border-radius: 5%;
+    box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin: 1rem;
+    /* padding: 2rem; */
+    padding-bottom: 1rem;
+    align-items: center;
 }
-
 .tile-content {
   position: absolute;
   top: 3px;
@@ -173,7 +185,15 @@ body {
   /* Align text properly */
 
 }
-
+.close-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 1.5rem;
+  color: var(--placeholder-grey);
+  cursor: pointer;
+  z-index: 10;
+}
 .insights-box {
   width: 72.5%;
   /* background-color: #6495ED; */
@@ -183,6 +203,7 @@ body {
   margin: 1rem;
   color: var(--insight-blue);
   margin-left: 0;
+  font-size: 0.75rem;
 
 }
 

@@ -20,6 +20,7 @@ import "../../styles/general.css";
 import ChatMessage from "../../components/ChatMessage/ChatMessage";
 import TypingIndicatorComponent from "../../components/ChatMessage/TypingIndicatorComponent";
 import ReactMarkdown from "react-markdown";
+import { UPLOAD_DOCUMENT, PROMO_CHAT } from "../../const/ApiConst";
 
 function uuidv4() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
@@ -59,6 +60,7 @@ export default function PromoChatbot() {
   const [allowConcurrentRuns, setAllowConcurrentRuns] = useState(false);
   const [extractedDetails, setExtractedDetails] = useState(null);
   const [userIntent, setUserIntent] = useState(null);
+  const uploadError = "An error occured while uploading";
 
   const wsRef = useRef(null);
   const hostRef = useRef({}); // stores reconnect/backoff state
@@ -377,9 +379,9 @@ export default function PromoChatbot() {
     ) {
       console.log("Here", { ...value.itemUpload });
       if (value.itemUpload.items) {
-        uploadInvoice(value.itemUpload.eventItems);
+        uploadPromotion(value.itemUpload.eventItems);
       } else if (value.itemUpload.excludedItems) {
-        uploadInvoice(value.itemUpload.eventExcludedItems);
+        uploadPromotion(value.itemUpload.eventExcludedItems);
       }
       prevItemUpload.current = value.itemUpload; // Update the reference to the latest itemUpload
     } else {
@@ -392,9 +394,9 @@ export default function PromoChatbot() {
     ) {
       console.log("Here", { ...value.storeUpload });
       if (value.storeUpload.stores) {
-        uploadInvoice(value.storeUpload.eventStores);
+        uploadPromotion(value.storeUpload.eventStores);
       } else if (value.storeUpload.excludedStores) {
-        uploadInvoice(value.storeUpload.eventExcludedStores);
+        uploadPromotion(value.storeUpload.eventExcludedStores);
       }
       prevStoreUpload.current = value.storeUpload;
     }
@@ -545,7 +547,7 @@ export default function PromoChatbot() {
     }
   };
 
-  const sendMessage = async (text = null) => {
+  const sendMessage = async (text = null, fileUpload = false) => {
     const messageText = (text ?? input).trim();
     if (!messageText) return;
 
@@ -565,7 +567,7 @@ export default function PromoChatbot() {
     value.setIsActive(true);
     setMessages((prev) => [
       ...prev,
-      { fromUser: true, text: messageText, id: uuidv4() },
+      { fromUser: !fileUpload ? true : false, text: messageText, id: uuidv4() },
     ]);
     setInput("");
 
@@ -1141,7 +1143,9 @@ export default function PromoChatbot() {
       .join("\n");
   };
   const [uploadLoading, setUploadLoading] = useState(false);
-  const uploadInvoice = async (event) => {
+
+  const uploadPromotion = async (event) => {
+    console.log("File upload event: ", event);
     let file = event.target.files[0];
     console.log("Event:", event.target.files);
     const formData = new FormData();
@@ -1155,7 +1159,7 @@ export default function PromoChatbot() {
     try {
       const response = await axios({
         method: "POST",
-        url: `http://localhost:8000/uploadPromo/`,
+        url: UPLOAD_DOCUMENT,
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -1182,6 +1186,11 @@ export default function PromoChatbot() {
               isFile: true,
             },
           ]);
+          let extractedData =
+            "**Details extracted from uploaded document:** \n" +
+            response.data.structured_data;
+          console.log("Structured Data from Upload Response:", extractedData);
+          await sendMessage(extractedData, true);
           // await handleMessageSubmit(
           //   value.itemUpload.items && value.itemUpload.items
           //     ? `Items ${JSON.stringify(
@@ -1284,6 +1293,10 @@ export default function PromoChatbot() {
         text: "An error occured while uploading file",
         isSuccessful: false,
       });
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: uploadError, fromUser: false },
+      ]);
     }
   };
   //clear data
@@ -1350,7 +1363,7 @@ export default function PromoChatbot() {
         input={input}
         setInput={setInput}
         handleMessageSubmit={sendMessage}
-        uploadInvoice={uploadInvoice}
+        uploadFunction={uploadPromotion}
         isPickerVisible={isPickerVisible}
         setPickerVisible={setPickerVisible}
       />

@@ -156,6 +156,34 @@ function PoDetailsSide() {
     // });
   }, [value.poCounter]);
 
+  useEffect(() => {
+    if (value.supplierDetails.supplierId && supplierPopupStatus) {
+      console.log(
+        "Supplier ID in useEffect:",
+        value.supplierDetails.supplierId,
+      );
+      supplierRiskApi(value.supplierDetails.supplierId);
+    }
+  }, [supplierPopupStatus]);
+  // const supplierRiskApi = async (supplierId) => {
+  //   try {
+  //     // console.log("clearDataApi");
+  //     const response = await axios({
+  //       method: "get",
+  //       url: SUPPLIER_RISK_INSIGHT(supplierId),
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         accept: "application/json",
+  //         "Access-Control-Allow-Origin": "*",
+  //       },
+  //     });
+  //     setSupplierInsights(response.data);
+  //     // console.log("invoice Clear Response:", response.data);
+  //   } catch (error) {
+  //     console.log("Supplier Risk Error:", error, error.data);
+  //   }
+  // };
+
   const supplierRiskApi = async (supplierId) => {
     try {
       // console.log("clearDataApi");
@@ -168,13 +196,15 @@ function PoDetailsSide() {
           "Access-Control-Allow-Origin": "*",
         },
       });
-      setSupplierInsights(response.data);
+      value.setSupplierDetails((prev) => ({
+        ...prev,
+        supplierInsights: response.data,
+      }));
       // console.log("invoice Clear Response:", response.data);
     } catch (error) {
       console.log("Supplier Risk Error:", error, error.data);
     }
   };
-
   return (
     <Grid container component="main" className="main-grid">
       <Grid
@@ -195,7 +225,7 @@ function PoDetailsSide() {
           <SupplierInfoPopUp
             visible={supplierPopupStatus}
             setVisible={setSupplierPopupStatus}
-            data={supplierInsights}
+            data={value?.supplierDetails?.supplierInsights}
           />
           <Dialog
             open={poPreview}
@@ -756,11 +786,11 @@ function PoDetailsSide() {
                   PREVIEW
                 </CustomButton>
                 <CustomButton
-                  onClick={() => (
-                    supplierRiskApi(value.supplierDetails.supplierId),
-                    setSupplierPopupStatus(true)
-                  )}
-                  // onClick={() => value.setFormSubmit((prevState) => !prevState)}
+                  // onClick={() =>
+                  //   // supplierRiskApi(value.supplierDetails?.supplierId),
+                  //   setSupplierPopupStatus(true)
+                  // }
+                  onClick={() => value.setFormSubmit((prevState) => !prevState)}
                 >
                   <PublishIcon style={{ color: "2E333E" }}></PublishIcon>
                   SUBMIT

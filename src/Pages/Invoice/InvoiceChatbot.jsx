@@ -28,7 +28,7 @@ import {
   FETCH_PO_BY_ID,
   NEW_RESPONSE_CREATION,
   INVOICE_CREATION,
-  UPLOAD_GPT,
+  UPLOAD_DOCUMENT,
   CLEAR_DATA,
   SUPPLIER_RISK_INSIGHT,
   CLEAR_DATA_NEW,
@@ -804,6 +804,7 @@ export default function InvoiceChatbot() {
               supplierId:
                 response.data.po_details[0]?.supplierId || "sup not found",
             }));
+
           }
           value.setPoHeaderData(updatedPoHeaderData);
           const newUpdatedData = response.data.po_details.map((item) => ({
@@ -977,7 +978,7 @@ export default function InvoiceChatbot() {
   );
   const prevInvoiceDataRef = useRef();
 
-  const sendMessage = async (text = null) => {
+  const sendMessage = async (text = null,fileUpload=false) => {
     const messageText = (text ?? input).trim();
     if (!messageText) return;
 
@@ -997,7 +998,7 @@ export default function InvoiceChatbot() {
     value.setIsActive(true);
     setMessages((prev) => [
       ...prev,
-      { fromUser: true, text: messageText, id: uuidv4() },
+      { fromUser: !fileUpload?true:false, text: messageText, id: uuidv4() },
     ]);
     setInput("");
 
@@ -1338,21 +1339,12 @@ export default function InvoiceChatbot() {
     try {
       const response = await axios({
         method: "POST",
-        url: UPLOAD_GPT,
+        url: UPLOAD_DOCUMENT,
         headers: {
           "Content-Type": "multipart/form-data",
         },
         data: formData,
       });
-      // const response = await axios.post(
-      //   "http://localhost:8000/upload/",
-      //   formData,
-      //   {
-      //     headers: {
-      //       "Content-Type": "multipart/form-data",
-      //     },
-      //   }
-      // );
       console.log("upload response: ", response.data);
       if (response.status === 200 || response.status === 201) {
         // await clearDataApi();
@@ -1377,7 +1369,10 @@ export default function InvoiceChatbot() {
               isFile: true,
             },
           ]);
-          await sendMessage(formatInvoice(response.data.structured_data), true);
+          let extractedData = "**Details extracted from uploaded document:** \n" +response.data.structured_data;
+          console.log("Structured Data from Upload Response:", extractedData);
+          await sendMessage(extractedData,true);
+          // await sendMessage(formatInvoice(response.data.structured_data), true);
           // await handleMessageSubmit(
           //   formatInvoice(response.data.structured_data),
           //   true
@@ -1528,7 +1523,7 @@ export default function InvoiceChatbot() {
           input={input}
           setInput={setInput}
           handleMessageSubmit={sendMessage}
-          uploadInvoice={uploadInvoice}
+          uploadFunction={uploadInvoice}
           isPickerVisible={isPickerVisible}
           setPickerVisible={setPickerVisible}
         />
